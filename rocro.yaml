@@ -1,0 +1,27 @@
+inspecode:
+
+  cpd:              ## supports: C C++ C# Go Java JavaScript Objective-C PHP Python Ruby Scala Swift
+    thresholds:
+      num-issues: 1000
+
+  grep:             ## supports: All Languages
+    thresholds:
+      num-issues: 1000
+
+  jscpd:            ## supports: C C++ C# CoffeeScript CSS Go HTML Java JavaScript Kotlin Objective-C PHP Python Ruby Scala Swift TypeScript
+    thresholds:
+      num-issues: 1000
+
+  misspell:         ## supports: All Languages
+    auto-fix: true
+    thresholds:
+      num-issues: 1000
+
+  scalafmt:         ## supports: Scala
+    auto-fix: true
+    thresholds:
+      num-issues: 1000
+
+  scalastyle:       ## supports: Scala
+    thresholds:
+      num-issues: 1000
