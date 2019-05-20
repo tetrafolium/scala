@@ -1,0 +1,27 @@
+template:
+  languages: &LANGUAGES
+    - C
+    - C#
+    - C++
+    - FORTRAN
+    - Go
+    - Java
+    - JavaScript
+    - Matlab
+    - Objective-C
+    - PHP
+    - PLSQL
+    - Python
+    - Ruby
+    - Scala
+    - Swift
+  issue: &CODE_DUPLICATION_ISSUE
+    category: Code Duplication
+    type: Duplicated Code
+    severity: Warning
+    weight: 1
+
+default:
+  context:
+    languages: *LANGUAGES
+  report:
