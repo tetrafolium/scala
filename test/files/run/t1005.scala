@@ -5,12 +5,12 @@ object Test {
 
   object FromMono {
     def mainer(args: Array[String]) =
-      (new Foo[AnyRef](Array[AnyRef]("Halp!"))).bar
+      (new Foo[AnyRef](Array[AnyRef]("Help!"))).bar
   }
 
   object FromPoly {
     def mainer(args: Array[String]) =
-      (new Bar[AnyRef](Array[AnyRef]("Halp!"))).bar
+      (new Bar[AnyRef](Array[AnyRef]("Help!"))).bar
   }
 
   def main(args: Array[String]): Unit = {

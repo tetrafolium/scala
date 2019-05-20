@@ -30,7 +30,7 @@ abstract class CommonTokens {
   final val INTLIT = 2
   final val LONGLIT = 3
   final val FLOATLIT = 4
-  final val DOUBLELIT = 5
+  final val DOUBLELIFT = 5
   final val STRINGLIT = 6
 
   /** keywords */

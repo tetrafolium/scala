@@ -723,7 +723,7 @@ trait Parsers extends Scanners with MarkupParsers with ParsersCommon {
     def isDefIntro = isTemplateIntro || isDclIntro
 
     def isNumericLit: Boolean = in.token match {
-      case INTLIT | LONGLIT | FLOATLIT | DOUBLELIT => true
+      case INTLIT | LONGLIT | FLOATLIT | DOUBLELIFT => true
       case _                                       => false
     }
 
@@ -739,7 +739,7 @@ trait Parsers extends Scanners with MarkupParsers with ParsersCommon {
     def isMacro = in.token == IDENTIFIER && in.name == nme.MACROkw
 
     def isLiteralToken(token: Token) = token match {
-      case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIT | STRINGLIT |
+      case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIFT | STRINGLIT |
           INTERPOLATIONID | SYMBOLLIT | TRUE | FALSE | NULL =>
         true
       case _ => false
@@ -1453,7 +1453,7 @@ trait Parsers extends Scanners with MarkupParsers with ParsersCommon {
           case INTLIT                 => in.intVal(isNegated).toInt
           case LONGLIT                => in.intVal(isNegated)
           case FLOATLIT               => in.floatVal(isNegated)
-          case DOUBLELIT              => in.doubleVal(isNegated)
+          case DOUBLELIFT              => in.doubleVal(isNegated)
           case STRINGLIT | STRINGPART => in.strVal.intern()
           case TRUE                   => true
           case FALSE                  => false
@@ -2275,7 +2275,7 @@ trait Parsers extends Scanners with MarkupParsers with ParsersCommon {
           case IDENTIFIER | BACKQUOTED_IDENT | THIS =>
             val t = stableId()
             in.token match {
-              case INTLIT | LONGLIT | FLOATLIT | DOUBLELIT =>
+              case INTLIT | LONGLIT | FLOATLIT | DOUBLELIFT =>
                 t match {
                   case Ident(nme.MINUS) =>
                     return literal(isNegated = true,
@@ -2300,7 +2300,7 @@ trait Parsers extends Scanners with MarkupParsers with ParsersCommon {
           case USCORE =>
             in.nextToken()
             atPos(start, start) { Ident(nme.WILDCARD) }
-          case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIT | STRINGLIT |
+          case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIFT | STRINGLIT |
               INTERPOLATIONID | SYMBOLLIT | TRUE | FALSE | NULL =>
             literal(inPattern = true)
           case LPAREN =>

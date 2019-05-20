@@ -161,7 +161,7 @@ object ScalaCompilerOptionsExporter {
           )
       }
 
-    val categoriezed = extractedSettings.groupBy { option =>
+    val categorized = extractedSettings.groupBy { option =>
       val name = option.option
       if (name.startsWith("-Xfatal-warnings") || name == "-Xlint" || name
             .startsWith("-Ywarn")) {
@@ -190,7 +190,7 @@ object ScalaCompilerOptionsExporter {
     val yamlFactory = new YAMLFactory()
       .disable(YAMLGenerator.Feature.SPLIT_LINES)
     val mapper = new ObjectMapper(yamlFactory)
-    // TODO: implement without Scala dependency. Not available when STARR has a new binary verison.
+    // TODO: implement without Scala dependency. Not available when STARR has a new binary version.
     // .registerModule(DefaultScalaModule)
       .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
 

@@ -961,7 +961,7 @@ trait JavaParsers extends ast.parser.ParsersCommon with JavaScanners {
         case INTLIT    => in.intVal(negate).toInt
         case LONGLIT   => in.intVal(negate)
         case FLOATLIT  => in.floatVal(negate).toFloat
-        case DOUBLELIT => in.floatVal(negate)
+        case DOUBLELIFT => in.floatVal(negate)
         case STRINGLIT => in.name.toString
         case _         => null
       }

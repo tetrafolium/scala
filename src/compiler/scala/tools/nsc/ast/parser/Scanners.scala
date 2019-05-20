@@ -662,7 +662,7 @@ trait Scanners extends ScannersCommon {
 
     /** Can token end a statement? */
     def inLastOfStat(token: Token) = token match {
-      case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIT | STRINGLIT | SYMBOLLIT |
+      case CHARLIT | INTLIT | LONGLIT | FLOATLIT | DOUBLELIFT | STRINGLIT | SYMBOLLIT |
            IDENTIFIER | BACKQUOTED_IDENT | THIS | NULL | TRUE | FALSE | RETURN | USCORE |
            TYPE | XMLSTART | RPAREN | RBRACKET | RBRACE =>
         true
@@ -948,18 +948,18 @@ trait Scanners extends ScannersCommon {
           }
           checkNoTrailingSeparator()
         }
-        token = DOUBLELIT
+        token = DOUBLELIFT
       }
       if (ch == 'd' || ch == 'D') {
         putChar(ch)
         nextChar()
-        token = DOUBLELIT
+        token = DOUBLELIFT
       } else if (ch == 'f' || ch == 'F') {
         putChar(ch)
         nextChar()
         token = FLOATLIT
       } else
-        token = DOUBLELIT
+        token = DOUBLELIFT
       checkNoLetter()
       setStrVal()
     }
@@ -1165,7 +1165,7 @@ trait Scanners extends ScannersCommon {
         "long(" + intVal + ")"
       case FLOATLIT =>
         "float(" + floatVal + ")"
-      case DOUBLELIT =>
+      case DOUBLELIFT =>
         "double(" + floatVal + ")"
       case STRINGLIT =>
         "string(" + strVal + ")"
@@ -1281,7 +1281,7 @@ trait Scanners extends ScannersCommon {
     case INTLIT => "integer literal"
     case LONGLIT => "long literal"
     case FLOATLIT => "float literal"
-    case DOUBLELIT => "double literal"
+    case DOUBLELIFT => "double literal"
     case STRINGLIT | STRINGPART | INTERPOLATIONID => "string literal"
     case SYMBOLLIT => "symbol literal"
     case LPAREN => "'('"

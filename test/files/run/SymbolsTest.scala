@@ -255,7 +255,7 @@ object Test {
 
   def testLazyObjects: Unit = {
     assert(SingletonOfLazyness.lazysym == Symbol("lazySymbol"))
-    assert(SingletonOfLazyness.another == Symbol("ano" + "ther"))
+    assert(SingletonOfLazyness.another == Symbol("ano" + "there"))
     assert((SingletonOfLazyness.lastone).toString == "'lastone")
 
     object nested {

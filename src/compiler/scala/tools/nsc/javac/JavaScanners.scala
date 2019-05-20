@@ -157,7 +157,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
     def token2string(token: Int): String = token match {
       case IDENTIFIER => "identifier"
       case CHARLIT    => "character literal"
-      case DOUBLELIT  => "double literal"
+      case DOUBLELIFT  => "double literal"
       case FLOATLIT   => "float literal"
       case INTLIT     => "integer literal"
       case LONGLIT    => "long literal"
@@ -701,7 +701,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
       *  if one is present.
       */
     protected def getFraction(): Unit = {
-      token = DOUBLELIT
+      token = DOUBLELIFT
       while ('0' <= in.ch && in.ch <= '9') {
         putChar(in.ch)
         in.next()
@@ -724,12 +724,12 @@ trait JavaScanners extends ast.parser.ScannersCommon {
             in.next()
           }
         }
-        token = DOUBLELIT
+        token = DOUBLELIFT
       }
       if (in.ch == 'd' || in.ch == 'D') {
         putChar(in.ch)
         in.next()
-        token = DOUBLELIT
+        token = DOUBLELIFT
       } else if (in.ch == 'f' || in.ch == 'F') {
         putChar(in.ch)
         in.next()
@@ -774,7 +774,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
       */
     def floatVal(negated: Boolean): Double = {
       val limit: Double =
-        if (token == DOUBLELIT) Double.MaxValue else Float.MaxValue
+        if (token == DOUBLELIFT) Double.MaxValue else Float.MaxValue
       try {
         val value: Double =
           java.lang.Double.valueOf(name.toString).doubleValue()
@@ -856,7 +856,7 @@ trait JavaScanners extends ast.parser.ScannersCommon {
         "long(" + intVal + ")"
       case FLOATLIT =>
         "float(" + floatVal + ")"
-      case DOUBLELIT =>
+      case DOUBLELIFT =>
         "double(" + floatVal + ")"
       case STRINGLIT =>
         "string(" + name + ")"
