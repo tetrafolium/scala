@@ -1,4 +1,3 @@
-
 case class AffineImageShape(axes: Seq[Int]) {
   def this(axes: Array[Int]) = this(axes)
 }

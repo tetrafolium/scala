@@ -61,6 +61,7 @@ import scala.annotation.implicitNotFound
 // They are here simply for reference as the "correct", safe implementations.
 @implicitNotFound(msg = "Cannot prove that ${From} <:< ${To}.")
 sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
+
   /** Substitute `To` for `From` and `From` for `To` in the type `F[To, From]`, given that `F` is $contraCo.
     *  Essentially swaps `To` and `From` in `ftf`'s type.
     *
@@ -70,7 +71,7 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
     *
     *  @return `ftf`, $sameDiff
     */
-  def substituteBoth[F[-_, +_]](ftf: F[To, From]): F[From, To]
+  def substituteBoth[F[- _, + _]](ftf: F[To, From]): F[From, To]
   // = substituteCo[({type G[+T] = F[From, T]})#G](substituteContra[({type G[-T] = F[T, From})#G](ftf))
   // = substituteContra[({type G[-T] = F[T, To]})#G](substituteCo[({type G[+T] = F[From, T]})#G](ftf))
   /** Substitute the `From` in the type `F[From]`, where `F` is $coCon, for `To`.
@@ -81,8 +82,8 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
     *
     *  @return `ff`, $sameDiff
     */
-  def substituteCo[F[+_]](ff: F[From]): F[To] = {
-    type G[-_, +T] = F[T]
+  def substituteCo[F[+ _]](ff: F[From]): F[To] = {
+    type G[- _, +T] = F[T]
     substituteBoth[G](ff)
   }
   // = substituteContra[({type G[-T] = F[T] => F[To]})#G](identity)(ff)
@@ -94,8 +95,8 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
     *
     *  @return `ft`, $sameDiff
     */
-  def substituteContra[F[-_]](ft: F[To]): F[From] = {
-    type G[-T, +_] = F[T]
+  def substituteContra[F[- _]](ft: F[To]): F[From] = {
+    type G[-T, + _] = F[T]
     substituteBoth[G](ft)
   }
   // = substituteCo[({type G[+T] = F[T] => F[From]})#G](identity)(ft)
@@ -116,6 +117,7 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
     type G[+T] = C => T
     substituteCo[G](r)
   }
+
   /** If `From <: To` and `C <: From`, then `C <: To` (subtyping is transitive) */
   def compose[C](r: C <:< From): C <:< To = {
     type G[+T] = C <:< T
@@ -125,6 +127,7 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
     type G[-T] = T => C
     substituteContra[G](r)
   }
+
   /** If `From <: To` and `To <: C`, then `From <: C` (subtyping is transitive) */
   def andThen[C](r: To <:< C): From <:< C = {
     type G[-T] = T <:< C
@@ -132,12 +135,13 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
   }
 
   /** Lift this evidence over $coCon `F`. */
-  def liftCo[F[+_]]: F[From] <:< F[To] = {
+  def liftCo[F[+ _]]: F[From] <:< F[To] = {
     type G[+T] = F[From] <:< F[T]
     substituteCo[G](implicitly[G[From]])
   }
+
   /** Lift this evidence over $contraCon `F`. */
-  def liftContra[F[-_]]: F[To] <:< F[From] = {
+  def liftContra[F[- _]]: F[To] <:< F[From] = {
     type G[-T] = F[To] <:< F[T]
     substituteContra[G](implicitly[G[To]])
   }
@@ -145,31 +149,32 @@ sealed abstract class <:<[-From, +To] extends (From => To) with Serializable {
 
 object <:< {
   // the only instance for <:< and =:=, used to avoid overhead
-  private val singleton: =:=[Any, Any] = new =:=[Any,Any] {
+  private val singleton: =:=[Any, Any] = new =:=[Any, Any] {
     override def substituteBoth[F[_, _]](ftf: F[Any, Any]) = ftf
-    override def substituteCo    [F[_]](ff: F[Any]) = ff
+    override def substituteCo[F[_]](ff: F[Any]) = ff
     override def substituteContra[F[_]](ff: F[Any]) = ff
     override def apply(x: Any) = x
     override def flip = this
-    override def compose[C](r: C =>  Any) = r
+    override def compose[C](r: C => Any) = r
     override def compose[C](r: C <:< Any) = r
     override def compose[C](r: C =:= Any) = r
-    override def andThen[C](r: Any =>  C) = r
+    override def andThen[C](r: Any => C) = r
     override def andThen[C](r: Any <:< C) = r
     override def andThen[C](r: Any =:= C) = r
-    override def liftCo    [F[_]] = asInstanceOf[F[Any] =:= F[Any]]
+    override def liftCo[F[_]] = asInstanceOf[F[Any] =:= F[Any]]
     override def liftContra[F[_]] = asInstanceOf[F[Any] =:= F[Any]]
     override def toString = "generalized constraint"
   }
 
   /** `A =:= A` for all `A` (equality is reflexive). This also provides implicit views `A <:< B`
-   *  when `A <: B`, because `(A =:= A) <: (A <:< A) <: (A <:< B)`.
-   */
+    *  when `A <: B`, because `(A =:= A) <: (A <:< A) <: (A <:< B)`.
+    */
   implicit def refl[A]: A =:= A = singleton.asInstanceOf[A =:= A]
   // = new =:=[A, A] { override def substituteBoth[F[_, _]](faa: F[A, A]): F[A, A] = faa }
 
   /** If `A <: B` and `B <: A`, then `A = B` (subtyping is antisymmetric) */
-  def antisymm[A, B](implicit l: A <:< B, r: B <:< A): A =:= B = singleton.asInstanceOf[A =:= B]
+  def antisymm[A, B](implicit l: A <:< B, r: B <:< A): A =:= B =
+    singleton.asInstanceOf[A =:= B]
   // = ??? (I don't think this is possible to implement "safely")
 }
 
@@ -215,7 +220,8 @@ sealed abstract class =:=[From, To] extends (From <:< To) with Serializable {
   }
   // = substituteCo[({type G[T] = F[T] => F[From]})#G](identity)(ft)
 
-  /** @inheritdoc */ override def apply(f: From) = super.apply(f)
+  /** @inheritdoc */
+  override def apply(f: From) = super.apply(f)
 
   /** If `From = To` then `To = From` (equality is symmetric) */
   def flip: To =:= From = {
@@ -228,6 +234,7 @@ sealed abstract class =:=[From, To] extends (From <:< To) with Serializable {
     type G[T] = C =:= T
     substituteCo[G](r)
   }
+
   /** If `From = To` and `To = C`, then `From = C` (equality is transitive) */
   def andThen[C](r: To =:= C): From =:= C = {
     type G[T] = T =:= C
@@ -238,6 +245,7 @@ sealed abstract class =:=[From, To] extends (From <:< To) with Serializable {
     type G[T] = F[T] =:= F[To]
     substituteContra[G](implicitly[G[To]])
   }
+
   /** Lift this evidence over the type constructor `F`, but flipped. */
   override def liftContra[F[_]]: F[To] =:= F[From] = liftCo[F].flip
 }

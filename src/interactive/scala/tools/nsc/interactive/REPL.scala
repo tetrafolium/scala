@@ -19,7 +19,7 @@ import scala.tools.nsc.reporters._
 import scala.tools.nsc.io._
 
 /** Interface of interactive compiler to a client such as an IDE
- */
+  */
 object REPL {
 
   val versionMsg = "Scala compiler " +
@@ -31,7 +31,7 @@ object REPL {
   var reporter: ConsoleReporter = _
 
   private def replError(msg: String): Unit = {
-    reporter.error(/*new Position */FakePos("scalac"),
+    reporter.error( /*new Position */ FakePos("scalac"),
                    msg + "\n  scalac -help  gives more information")
   }
 
@@ -77,18 +77,17 @@ object REPL {
         action(line)
       }
       loop(action)
-    }
-    catch {
+    } catch {
       case _: java.io.EOFException => //nop
     }
   }
 
   /** Commands:
-   *
-   *  reload file1 ... fileN
-   *  typeat file off1 off2?
-   *  complete file off1 off2?
-   */
+    *
+    *  reload file1 ... fileN
+    *  typeat file off1 off2?
+    *  complete file off1 off2?
+    */
   def run(comp: Global): Unit = {
     val reloadResult = new Response[Unit]
     val typeatResult = new Response[comp.Tree]
@@ -112,7 +111,9 @@ object REPL {
     }
 
     def doStructure(file: String): Unit = {
-      comp.askParsedEntered(toSourceFile(file), keepLoaded = false, structureResult)
+      comp.askParsedEntered(toSourceFile(file),
+                            keepLoaded = false,
+                            structureResult)
       show(structureResult)
     }
 
@@ -125,7 +126,9 @@ object REPL {
           comp.askReload(List(toSourceFile(file)), reloadResult)
           Thread.sleep(millis.toLong)
           println("ask type now")
-          comp.askLoadedTyped(toSourceFile(file), keepLoaded = true, typedResult)
+          comp.askLoadedTyped(toSourceFile(file),
+                              keepLoaded = true,
+                              typedResult)
           typedResult.get
         case List("typeat", file, off1, off2) =>
           doTypeAt(makePos(file, off1, off2))
@@ -156,16 +159,17 @@ object REPL {
     }
   }
 
-  def toSourceFile(name: String) = new BatchSourceFile(new PlainFile(new java.io.File(name)))
+  def toSourceFile(name: String) =
+    new BatchSourceFile(new PlainFile(new java.io.File(name)))
 
   def using[T, U](svar: Response[T])(op: T => U): Option[U] = {
     val res = svar.get match {
       case Left(result) => Some(op(result))
-      case Right(exc) => exc.printStackTrace; println("ERROR: "+exc); None
+      case Right(exc)   => exc.printStackTrace; println("ERROR: " + exc); None
     }
     svar.clear()
     res
   }
 
-  def show[T](svar: Response[T]) = using(svar)(res => println("==> "+res))
+  def show[T](svar: Response[T]) = using(svar)(res => println("==> " + res))
 }

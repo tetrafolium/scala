@@ -35,7 +35,7 @@ object DiagramStats {
         print("  " + "=" * title.length)
         print("    count:        " + instances + " items")
         print("    total time:   " + totalTime + " ms")
-        print("    average time: " + (totalTime/instances) + " ms")
+        print("    average time: " + (totalTime / instances) + " ms")
         print("    maximum time: " + maxTime + " ms")
         print("")
       }

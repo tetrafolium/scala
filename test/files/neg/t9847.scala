@@ -7,11 +7,11 @@ trait T {
   def g = (42: Unit)
   def h = {
     1
-  + 1
+    +1
   }
   def hh(): Unit = {
     1
-  + 1
+    +1
   }
   def i(): Unit = {
     val x = 1
@@ -21,5 +21,5 @@ trait T {
   def j(): Unit = x + 1
 
   class C { 42 }
-  class D { 42 ; 17 }
+  class D { 42; 17 }
 }

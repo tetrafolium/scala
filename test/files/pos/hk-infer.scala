@@ -1,7 +1,7 @@
 object Basis {
   final case class X[T](t: T)
-  val x  = Seq(X(32))
-  val y  = Seq(X(true))
+  val x = Seq(X(32))
+  val y = Seq(X(true))
   val x1 = Seq(X("asdf"))
   val x2 = Seq(X('d'))
 }
@@ -34,4 +34,3 @@ object DoesWorkHK {
 
   def f1 = x BOOP y BOOP x1 BOOP x2
 }
-

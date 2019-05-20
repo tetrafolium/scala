@@ -5,11 +5,18 @@ import org.openjdk.jcstress.annotations.Outcome.Outcomes
 import org.openjdk.jcstress.infra.results.I_Result
 
 @JCStressTest
-@Outcomes(Array(
-  new Outcome(id = Array("0"), expect = Expect.ACCEPTABLE, desc = "Read before write"),
-  new Outcome(id = Array("1"), expect = Expect.ACCEPTABLE, desc = "Read after all writes"),
-  new Outcome(id = Array("2"), expect = Expect.FORBIDDEN, desc = "Interleaved read / write")  
-))
+@Outcomes(
+  Array(
+    new Outcome(id = Array("0"),
+                expect = Expect.ACCEPTABLE,
+                desc = "Read before write"),
+    new Outcome(id = Array("1"),
+                expect = Expect.ACCEPTABLE,
+                desc = "Read after all writes"),
+    new Outcome(id = Array("2"),
+                expect = Expect.FORBIDDEN,
+                desc = "Interleaved read / write")
+  ))
 @State
 class ListStressTest {
 
@@ -40,7 +47,7 @@ class ListStressTest {
 
   @Arbiter
   def arbiter(r: I_Result): Unit = {
-    r.r1 = 
+    r.r1 =
       if (elem2 == null && elem2 == null && nil == null) 0
       else if (elem1 == "a" && elem2 == "b" && nil == Nil) 1
       else 2

@@ -1,4 +1,3 @@
-
 object Test extends App {
   def assertEquals(a: Any, b: Any): Unit = { assert(a == b, s"$a != $b") }
 

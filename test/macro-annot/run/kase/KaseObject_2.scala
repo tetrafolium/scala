@@ -52,7 +52,9 @@ class KaseObject {
     @kase object KaseObjectPostLocalPostcomp
     class KaseObjectPostLocalPostcomp
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |KaseObjectPreToplevelNocomp
       |KaseObjectPreToplevelPrecomp
       |KaseObjectPreToplevelPostcomp
@@ -65,7 +67,8 @@ class KaseObject {
       |KaseObjectPostLocalNocomp
       |KaseObjectPostLocalPrecomp
       |KaseObjectPostLocalPostcomp
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 

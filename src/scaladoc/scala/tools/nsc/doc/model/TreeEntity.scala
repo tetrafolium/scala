@@ -16,7 +16,6 @@ package model
 
 import scala.collection._
 
-
 /** A fragment of code. */
 abstract class TreeEntity {
 

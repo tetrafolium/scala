@@ -1,6 +1,7 @@
 import language.dynamics
 
-case class ArtifactGroup(org: String, pre: String, rev: String) extends Dynamic {
+case class ArtifactGroup(org: String, pre: String, rev: String)
+    extends Dynamic {
   def selectDynamic(name: String) = s"$org:$pre-$name:$rev"
 }
 

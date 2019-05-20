@@ -1,8 +1,8 @@
 // scalac: -Yrangepos
 //
 class LazyList[+A](expr: => LazyList.Evaluated[A]) {
-  def #:: [B >: A](elem: => B): LazyList[B] = new LazyList(Some((elem, this)))
-  def ##:: [B >: A](elem: B): LazyList[B] = new LazyList(Some((elem, this)))
+  def #::[B >: A](elem: => B): LazyList[B] = new LazyList(Some((elem, this)))
+  def ##::[B >: A](elem: B): LazyList[B] = new LazyList(Some((elem, this)))
   def force: Unit = expr.foreach(_._2.force)
 }
 
@@ -13,8 +13,8 @@ object LazyList {
 }
 
 object Test extends App {
-  def foo(i: Int) = { println("foo "+i); i }
-  def bar(i: Int) = { println("bar "+i); i }
+  def foo(i: Int) = { println("foo " + i); i }
+  def bar(i: Int) = { println("bar " + i); i }
   println("1. defining")
   val xs1 = foo(1) ##:: foo(2) ##:: foo(3) ##:: LazyList.empty
   val xs2 = bar(1) #:: bar(2) #:: bar(3) #:: LazyList.empty
@@ -40,7 +40,7 @@ object Test extends App {
     class C { def f_:[T](x: => T): () => T = (() => x) }
     val c = new C
     def k = { println("hi"); 1 }
-    val x1 = k f_:[Any] c
+    val x1 = k f_: [Any] c
     println("3. forcing")
     println(x1())
   }
@@ -65,11 +65,11 @@ object Test extends App {
     class C {
       val saved = new collection.mutable.ArrayBuffer[() => String]
       def force: Unit = saved.foreach(_.apply())
-      def :: (x: Int): C = this
-      def :: (x: => String): C = { saved += (() => x); this }
+      def ::(x: Int): C = this
+      def ::(x: => String): C = { saved += (() => x); this }
     }
-    def genI(i: Int): Int = { println("Int "+i); i }
-    def genS(s: String): String = { println("String "+s); s }
+    def genI(i: Int): Int = { println("Int " + i); i }
+    def genS(s: String): String = { println("String " + s); s }
     val c = genI(1) :: genS("2") :: genI(3) :: genS("4") :: (new C)
     println("5. forcing")
     c.force

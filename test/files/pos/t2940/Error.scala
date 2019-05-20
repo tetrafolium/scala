@@ -1,12 +1,10 @@
 abstract class Error {
-	val c: Cycle[_]
+  val c: Cycle[_]
 }
 
 object Test {
   trait Quux[T] extends Cycle[Quux[T]]
-  val x = new Quux[Int] { def doStuff(): Unit = { } }
+  val x = new Quux[Int] { def doStuff(): Unit = {} }
 
-  def main(args: Array[String]): Unit = {
-
-  }
+  def main(args: Array[String]): Unit = {}
 }

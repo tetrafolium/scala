@@ -12,7 +12,6 @@
 
 package scala.collection
 
-
 /** Base trait for sorted collections */
 trait SortedOps[A, +C] {
 
@@ -59,9 +58,9 @@ trait SortedOps[A, +C] {
   final def from(from: A): C = rangeFrom(from)
 
   /** Creates a ranged projection of this collection with no upper-bound.
-   *
-   *  @param from The lower-bound (inclusive) of the ranged projection.
-   */
+    *
+    *  @param from The lower-bound (inclusive) of the ranged projection.
+    */
   def rangeFrom(from: A): C = rangeImpl(Some(from), None)
 
   /** Creates a ranged projection of this collection with no lower-bound.
@@ -72,9 +71,9 @@ trait SortedOps[A, +C] {
   final def until(until: A): C = rangeUntil(until)
 
   /** Creates a ranged projection of this collection with no lower-bound.
-   *
-   *  @param until The upper-bound (exclusive) of the ranged projection.
-   */
+    *
+    *  @param until The upper-bound (exclusive) of the ranged projection.
+    */
   def rangeUntil(until: A): C = rangeImpl(None, Some(until))
 
   /** Create a range projection of this collection with no lower-bound.

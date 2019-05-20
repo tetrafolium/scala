@@ -1,7 +1,8 @@
 // Some iterator grouped/sliding unit tests
 object Test {
   def it = (1 to 10).iterator
-  def assertThat[T](expectedLength: Int, expectedLast: Seq[T])(it: Iterator[Seq[T]]): Unit = {
+  def assertThat[T](expectedLength: Int, expectedLast: Seq[T])(
+      it: Iterator[Seq[T]]): Unit = {
     val xs = it.toList
     def fail(msg: String) = "assertion failed on %s: %s".format(xs, msg)
     assert(xs.size == expectedLength, fail("expected length " + expectedLength))
@@ -13,7 +14,7 @@ object Test {
     for (i <- it) {
       // sum of the groups == sum of the original
       val thisSum = ((it grouped i) map (_.sum)).to(LazyList).sum
-      assert(thisSum == itSum, s"$thisSum != $itSum" )
+      assert(thisSum == itSum, s"$thisSum != $itSum")
     }
 
     // grouped
@@ -39,13 +40,12 @@ object Test {
 
     // make sure it throws past the end
     val thrown = try {
-      val it = List(1,2,3).sliding(2)
+      val it = List(1, 2, 3).sliding(2)
       it.next
       it.next
       it.next
       false
-    }
-    catch {
+    } catch {
       case _: NoSuchElementException => true
     }
     assert(thrown)

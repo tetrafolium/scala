@@ -12,15 +12,19 @@ class BitSetTest {
   // Test for scala/bug#8910
   @Test def capacityExpansionTest(): Unit = {
     val bitSet = BitSet.empty
-    val size   = bitSet.toBitMask.length
+    val size = bitSet.toBitMask.length
     bitSet ^= bitSet
-    assert(bitSet.toBitMask.length == size, "Capacity of bitset changed after ^=")
+    assert(bitSet.toBitMask.length == size,
+           "Capacity of bitset changed after ^=")
     bitSet |= bitSet
-    assert(bitSet.toBitMask.length == size, "Capacity of bitset changed after |=")
+    assert(bitSet.toBitMask.length == size,
+           "Capacity of bitset changed after |=")
     bitSet &= bitSet
-    assert(bitSet.toBitMask.length == size, "Capacity of bitset changed after &=")
+    assert(bitSet.toBitMask.length == size,
+           "Capacity of bitset changed after &=")
     bitSet &~= bitSet
-    assert(bitSet.toBitMask.length == size, "Capacity of bitset changed after &~=")
+    assert(bitSet.toBitMask.length == size,
+           "Capacity of bitset changed after &~=")
   }
 
   @Test def test_SI8917(): Unit = {
@@ -29,19 +33,20 @@ class BitSetTest {
     bigBitSet &= littleBitSet
     assert(!(bigBitSet contains 10000), "&= not applied to the full bitset")
     littleBitSet &= bigBitSet
-    assert(littleBitSet.toBitMask.length < bigBitSet.toBitMask.length, "Needlessly extended the size of bitset on &=")
+    assert(littleBitSet.toBitMask.length < bigBitSet.toBitMask.length,
+           "Needlessly extended the size of bitset on &=")
   }
 
   @Test def test_SI8647(): Unit = {
     val bs = BitSet()
-    bs.map(_ + 1)    // Just needs to compile
+    bs.map(_ + 1) // Just needs to compile
     val xs = bs: SortedSet[Int]
-    xs.map(_ + 1)    // Also should compile (did before)
+    xs.map(_ + 1) // Also should compile (did before)
   }
 
   @Test def t10164(): Unit = {
     val bs = BitSet()
-    val last = (bs ++ (0 to 128)).last  // Just needs not to throw
+    val last = (bs ++ (0 to 128)).last // Just needs not to throw
     assert(last == 128)
   }
 
@@ -58,34 +63,51 @@ class BitSetTest {
     assert(m.map(i => i + 1).isInstanceOf[BitSet])
 
     val im = collection.immutable.BitSet(1)
-    assert(im.map(i=>i.toLong).isInstanceOf[collection.immutable.TreeSet[Long]])
-    assert(im.map(i=>i + 1).isInstanceOf[collection.immutable.BitSet])
+    assert(
+      im.map(i => i.toLong).isInstanceOf[collection.immutable.TreeSet[Long]])
+    assert(im.map(i => i + 1).isInstanceOf[collection.immutable.BitSet])
 
     // SI-10879
     assert(m.flatMap(i => Seq(i.toLong)).isInstanceOf[TreeSet[Long]])
     assert(m.flatMap(i => Seq(i + 1)).isInstanceOf[BitSet])
-    assert(im.flatMap(i => Seq(i.toLong)).isInstanceOf[collection.immutable.TreeSet[Long]])
-    assert(im.flatMap(i => Seq(i + 1)).isInstanceOf[collection.immutable.BitSet])
+    assert(
+      im.flatMap(i => Seq(i.toLong))
+        .isInstanceOf[collection.immutable.TreeSet[Long]])
+    assert(
+      im.flatMap(i => Seq(i + 1)).isInstanceOf[collection.immutable.BitSet])
     assert(m.collect { case i => i.toLong }.isInstanceOf[TreeSet[Long]])
     assert(m.collect { case i => i + 1 }.isInstanceOf[BitSet])
-    assert(im.collect { case i => i.toLong }.isInstanceOf[collection.immutable.TreeSet[Long]])
-    assert(im.collect { case i => i + 1 }.isInstanceOf[collection.immutable.BitSet])
+    assert(
+      im.collect { case i => i.toLong }
+        .isInstanceOf[collection.immutable.TreeSet[Long]])
+    assert(
+      im.collect { case i => i + 1 }.isInstanceOf[collection.immutable.BitSet])
   }
 
   @Test def strawman_507: Unit = {
-    val m = BitSet(1,2,3)
-    assert(m.collect{case i if i%2 == 1 => i.toLong}.isInstanceOf[TreeSet[Long]])
-    assert(m.collect{case i if i%2 == 1 => i.toLong} == TreeSet(1L, 3L))
+    val m = BitSet(1, 2, 3)
+    assert(
+      m.collect { case i if i % 2 == 1 => i.toLong }
+        .isInstanceOf[TreeSet[Long]])
+    assert(m.collect { case i if i % 2 == 1 => i.toLong } == TreeSet(1L, 3L))
 
-    assert(m.collect{case i if i%2 == 1 => i}.isInstanceOf[BitSet])
-    assert(m.collect{case i if i%2 == 1 => i} == BitSet(1, 3))
+    assert(m.collect { case i if i % 2 == 1 => i }.isInstanceOf[BitSet])
+    assert(m.collect { case i if i % 2 == 1 => i } == BitSet(1, 3))
 
-    val im = collection.immutable.BitSet(1,2,3)
-    assert(im.collect{case i if i%2 == 1 => i.toLong}.isInstanceOf[collection.immutable.TreeSet[Long]])
-    assert(im.collect{case i if i%2 == 1 => i.toLong} == collection.immutable.TreeSet(1L, 3L))
+    val im = collection.immutable.BitSet(1, 2, 3)
+    assert(
+      im.collect { case i if i % 2 == 1 => i.toLong }
+        .isInstanceOf[collection.immutable.TreeSet[Long]])
+    assert(
+      im.collect { case i if i % 2 == 1 => i.toLong } == collection.immutable
+        .TreeSet(1L, 3L))
 
-    assert(im.collect{case i if i%2 == 1 => i}.isInstanceOf[collection.immutable.BitSet])
-    assert(im.collect{case i if i%2 == 1 => i} == collection.immutable.BitSet(1, 3))
+    assert(
+      im.collect { case i if i % 2 == 1 => i }
+        .isInstanceOf[collection.immutable.BitSet])
+    assert(
+      im.collect { case i if i % 2 == 1 => i } == collection.immutable
+        .BitSet(1, 3))
   }
 
   @Test def concat(): Unit = {
@@ -121,7 +143,8 @@ class BitSetTest {
 
   @Test def buildFromRange(): Unit = {
     import scala.util.chaining._
-    assert((1 to 1000).to(BitSet) == BitSet().tap(bs => (1 to 1000).foreach(bs.addOne)))
+    assert((1 to 1000).to(BitSet) == BitSet().tap(bs =>
+      (1 to 1000).foreach(bs.addOne)))
 
   }
 }

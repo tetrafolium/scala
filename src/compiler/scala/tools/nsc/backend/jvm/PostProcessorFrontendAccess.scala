@@ -20,9 +20,9 @@ import scala.tools.nsc.backend.jvm.BTypes.InternalName
 import java.util.{Collection => JCollection, Map => JMap}
 
 /**
- * Functionality needed in the post-processor whose implementation depends on the compiler
- * frontend. All methods are synchronized.
- */
+  * Functionality needed in the post-processor whose implementation depends on the compiler
+  * frontend. All methods are synchronized.
+  */
 sealed abstract class PostProcessorFrontendAccess {
   import PostProcessorFrontendAccess._
 
@@ -38,8 +38,8 @@ sealed abstract class PostProcessorFrontendAccess {
   def directBackendReporting: BackendReporting
 
   /**
-   * Statistics are not thread-safe, they can only be used if `compilerSettings.backendThreads == 1`
-   */
+    * Statistics are not thread-safe, they can only be used if `compilerSettings.backendThreads == 1`
+    */
   def unsafeStatistics: Statistics with BackendStats
 
   def backendClassPath: BackendClassPath
@@ -50,7 +50,7 @@ sealed abstract class PostProcessorFrontendAccess {
 
   def recordPerRunCache[T <: Clearable](cache: T): T
 
-  def recordPerRunJavaMapCache[T <: JMap[_,_]](cache: T): T
+  def recordPerRunJavaMapCache[T <: JMap[_, _]](cache: T): T
 
   def recordPerRunJavaCache[T <: JCollection[_]](cache: T): T
 }
@@ -113,7 +113,8 @@ object PostProcessorFrontendAccess {
     private var bufferedReports = List.empty[Report]
 
     def inlinerWarning(pos: Position, message: String): Unit =
-      this.synchronized(bufferedReports ::= new ReportInlinerWarning(pos, message))
+      this.synchronized(
+        bufferedReports ::= new ReportInlinerWarning(pos, message))
 
     def error(pos: Position, message: String): Unit =
       this.synchronized(bufferedReports ::= new ReportError(pos, message))
@@ -138,7 +139,8 @@ object PostProcessorFrontendAccess {
       def relay(backendReporting: BackendReporting): Unit
     }
 
-    private class ReportInlinerWarning(pos: Position, message: String) extends Report {
+    private class ReportInlinerWarning(pos: Position, message: String)
+        extends Report {
       override def relay(reporting: BackendReporting): Unit =
         reporting.inlinerWarning(pos, message)
     }
@@ -168,70 +170,80 @@ object PostProcessorFrontendAccess {
     def findClassFile(className: String): Option[AbstractFile]
   }
 
-  class PostProcessorFrontendAccessImpl(val global: Global) extends PostProcessorFrontendAccess with PerRunInit {
+  class PostProcessorFrontendAccessImpl(val global: Global)
+      extends PostProcessorFrontendAccess
+      with PerRunInit {
     import global._
     import genBCode.bTypes.{LazyVar, perRunLazy}
 
-    private[this] lazy val _compilerSettings: LazyVar[CompilerSettings] = perRunLazy(this)(buildCompilerSettings())
+    private[this] lazy val _compilerSettings: LazyVar[CompilerSettings] =
+      perRunLazy(this)(buildCompilerSettings())
 
     def compilerSettings: CompilerSettings = _compilerSettings.get
 
-    private def buildCompilerSettings(): CompilerSettings = new CompilerSettings {
-      import global.{settings => s}
+    private def buildCompilerSettings(): CompilerSettings =
+      new CompilerSettings {
+        import global.{settings => s}
 
-      val debug: Boolean = s.debug
+        val debug: Boolean = s.debug
 
-      val target: String = s.target.value
+        val target: String = s.target.value
 
-      private val singleOutDir = s.outputDirs.getSingleOutput
-      // the call to `outputDirFor` should be frontendSynch'd, but we assume that the setting is not mutated during the backend
-      def outputDirectory(source: AbstractFile): AbstractFile = singleOutDir.getOrElse(s.outputDirs.outputDirFor(source))
+        private val singleOutDir = s.outputDirs.getSingleOutput
+        // the call to `outputDirFor` should be frontendSynch'd, but we assume that the setting is not mutated during the backend
+        def outputDirectory(source: AbstractFile): AbstractFile =
+          singleOutDir.getOrElse(s.outputDirs.outputDirFor(source))
 
-      val optAddToBytecodeRepository: Boolean = s.optAddToBytecodeRepository
-      val optBuildCallGraph: Boolean = s.optBuildCallGraph
-      val optUseAnalyzerCache: Boolean = s.optUseAnalyzerCache
+        val optAddToBytecodeRepository: Boolean = s.optAddToBytecodeRepository
+        val optBuildCallGraph: Boolean = s.optBuildCallGraph
+        val optUseAnalyzerCache: Boolean = s.optUseAnalyzerCache
 
-      val optNone: Boolean = s.optNone
-      val optLClasspath: Boolean = s.optLClasspath
-      val optLProject: Boolean = s.optLProject
+        val optNone: Boolean = s.optNone
+        val optLClasspath: Boolean = s.optLClasspath
+        val optLProject: Boolean = s.optLProject
 
-      val optUnreachableCode: Boolean = s.optUnreachableCode
-      val optNullnessTracking: Boolean = s.optNullnessTracking
-      val optBoxUnbox: Boolean = s.optBoxUnbox
-      val optCopyPropagation: Boolean = s.optCopyPropagation
-      val optRedundantCasts: Boolean = s.optRedundantCasts
-      val optSimplifyJumps: Boolean = s.optSimplifyJumps
-      val optCompactLocals: Boolean = s.optCompactLocals
-      val optClosureInvocations: Boolean = s.optClosureInvocations
-      val optAllowSkipCoreModuleInit: Boolean = s.optAllowSkipCoreModuleInit
-      val optAssumeModulesNonNull: Boolean = s.optAssumeModulesNonNull
-      val optAllowSkipClassLoading: Boolean = s.optAllowSkipClassLoading
+        val optUnreachableCode: Boolean = s.optUnreachableCode
+        val optNullnessTracking: Boolean = s.optNullnessTracking
+        val optBoxUnbox: Boolean = s.optBoxUnbox
+        val optCopyPropagation: Boolean = s.optCopyPropagation
+        val optRedundantCasts: Boolean = s.optRedundantCasts
+        val optSimplifyJumps: Boolean = s.optSimplifyJumps
+        val optCompactLocals: Boolean = s.optCompactLocals
+        val optClosureInvocations: Boolean = s.optClosureInvocations
+        val optAllowSkipCoreModuleInit: Boolean = s.optAllowSkipCoreModuleInit
+        val optAssumeModulesNonNull: Boolean = s.optAssumeModulesNonNull
+        val optAllowSkipClassLoading: Boolean = s.optAllowSkipClassLoading
 
-      val optInlinerEnabled: Boolean = s.optInlinerEnabled
-      val optInlineFrom: List[String] = s.optInlineFrom.value
-      val optInlineHeuristics: String = s.YoptInlineHeuristics.value
+        val optInlinerEnabled: Boolean = s.optInlinerEnabled
+        val optInlineFrom: List[String] = s.optInlineFrom.value
+        val optInlineHeuristics: String = s.YoptInlineHeuristics.value
 
-      val optWarningNoInlineMixed: Boolean = s.optWarningNoInlineMixed
-      val optWarningNoInlineMissingBytecode: Boolean = s.optWarningNoInlineMissingBytecode
-      val optWarningNoInlineMissingScalaInlineInfoAttr: Boolean = s.optWarningNoInlineMissingScalaInlineInfoAttr
-      val optWarningEmitAtInlineFailed: Boolean = s.optWarningEmitAtInlineFailed
-      val optWarningEmitAnyInlineFailed: Boolean = {
-        val z = s // `s` is a def, but need a stable path, the argument type of `contains` is path-dependent
-        z.optWarnings.contains(z.optWarningsChoices.anyInlineFailed)
+        val optWarningNoInlineMixed: Boolean = s.optWarningNoInlineMixed
+        val optWarningNoInlineMissingBytecode: Boolean =
+          s.optWarningNoInlineMissingBytecode
+        val optWarningNoInlineMissingScalaInlineInfoAttr: Boolean =
+          s.optWarningNoInlineMissingScalaInlineInfoAttr
+        val optWarningEmitAtInlineFailed: Boolean =
+          s.optWarningEmitAtInlineFailed
+        val optWarningEmitAnyInlineFailed: Boolean = {
+          val z = s // `s` is a def, but need a stable path, the argument type of `contains` is path-dependent
+          z.optWarnings.contains(z.optWarningsChoices.anyInlineFailed)
+        }
+
+        val optLogInline: Option[String] = s.YoptLogInline.valueSetByUser
+        val optTrace: Option[String] = s.YoptTrace.valueSetByUser
       }
 
-      val optLogInline: Option[String] = s.YoptLogInline.valueSetByUser
-      val optTrace: Option[String] = s.YoptTrace.valueSetByUser
-    }
+    private lazy val localReporter =
+      perRunLazy(this)(new ThreadLocal[BackendReporting])
 
-    private lazy val localReporter = perRunLazy(this)(new ThreadLocal[BackendReporting])
-
-    override def withThreadLocalReporter[T](reporter: BackendReporting)(fn: => T): T = {
+    override def withThreadLocalReporter[T](reporter: BackendReporting)(
+        fn: => T): T = {
       val threadLocal = localReporter.get
       val old = threadLocal.get()
       threadLocal.set(reporter)
-      try fn finally
-        if (old eq null) threadLocal.remove() else threadLocal.set(old)
+      try fn
+      finally if (old eq null) threadLocal.remove() else threadLocal.set(old)
     }
 
     override def backendReporting: BackendReporting = {
@@ -262,23 +274,25 @@ object PostProcessorFrontendAccess {
     }
     def unsafeStatistics: Statistics with BackendStats = global.statistics
 
-    private lazy val cp = perRunLazy(this)(frontendSynch(optimizerClassPath(classPath)))
+    private lazy val cp =
+      perRunLazy(this)(frontendSynch(optimizerClassPath(classPath)))
     object backendClassPath extends BackendClassPath {
-      def findClassFile(className: String): Option[AbstractFile] = cp.get.findClassFile(className)
+      def findClassFile(className: String): Option[AbstractFile] =
+        cp.get.findClassFile(className)
     }
 
     def getEntryPoints: List[String] = frontendSynch(cleanup.getEntryPoints)
 
     def javaDefinedClasses: Set[InternalName] = frontendSynch {
-      currentRun.symSource.keys.iterator.collect{
+      currentRun.symSource.keys.iterator.collect {
         case sym if sym.isJavaDefined => sym.javaBinaryNameString
       }.toSet
     }
 
+    def recordPerRunCache[T <: Clearable](cache: T): T =
+      frontendSynch(perRunCaches.recordCache(cache))
 
-    def recordPerRunCache[T <: Clearable](cache: T): T = frontendSynch(perRunCaches.recordCache(cache))
-
-    def recordPerRunJavaMapCache[T <: JMap[_,_]](cache: T): T = {
+    def recordPerRunJavaMapCache[T <: JMap[_, _]](cache: T): T = {
       recordPerRunCache(JavaClearable.forMap(cache))
       cache
     }

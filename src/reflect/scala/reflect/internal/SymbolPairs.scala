@@ -19,66 +19,71 @@ import util.HashSet
 import scala.annotation.tailrec
 
 /** An abstraction for considering symbol pairs.
- *  One of the greatest sources of compiler bugs is that symbols can
- *  trivially lose their prefixes and turn into some completely different
- *  type with the smallest of errors. It is the exception not the rule
- *  that type comparisons are done correctly.
- *
- *  This offers a small step toward coherence with two abstractions
- *  which come up over and over again:
- *
- *    RelativeTo: operations relative to a prefix
- *    SymbolPair: two symbols being related somehow, plus the class
- *       in which the relation is being performed
- *
- *  This is only a start, but it is a start.
- */
+  *  One of the greatest sources of compiler bugs is that symbols can
+  *  trivially lose their prefixes and turn into some completely different
+  *  type with the smallest of errors. It is the exception not the rule
+  *  that type comparisons are done correctly.
+  *
+  *  This offers a small step toward coherence with two abstractions
+  *  which come up over and over again:
+  *
+  *    RelativeTo: operations relative to a prefix
+  *    SymbolPair: two symbols being related somehow, plus the class
+  *       in which the relation is being performed
+  *
+  *  This is only a start, but it is a start.
+  */
 abstract class SymbolPairs {
   val global: SymbolTable
   import global._
 
   /** Are types tp1 and tp2 equivalent seen from the perspective
-   *  of `baseClass`? For instance List[Int] and Seq[Int] are =:=
-   *  when viewed from IterableClass.
-   */
+    *  of `baseClass`? For instance List[Int] and Seq[Int] are =:=
+    *  when viewed from IterableClass.
+    */
   def sameInBaseClass(baseClass: Symbol)(tp1: Type, tp2: Type) =
     tp1.baseType(baseClass).typeSymbol == tp2.baseType(baseClass).typeSymbol
 
   final case class SymbolPair(base: Symbol, low: Symbol, high: Symbol) {
-    private[this] val self  = base.thisType
+    private[this] val self = base.thisType
 
-    def pos                 = if (low.owner == base) low.pos else if (high.owner == base) high.pos else base.pos
-    def rootType: Type      = self
+    def pos =
+      if (low.owner == base) low.pos
+      else if (high.owner == base) high.pos
+      else base.pos
+    def rootType: Type = self
 
-    def lowType: Type       = self memberType low
-    def lowErased: Type     = erasure.specialErasure(base)(low.tpe)
+    def lowType: Type = self memberType low
+    def lowErased: Type = erasure.specialErasure(base)(low.tpe)
     def lowClassBound: Type = classBoundAsSeen(low.tpe.typeSymbol)
 
-    def highType: Type       = self memberType high
-    def highInfo: Type       = self memberInfo high
-    def highErased: Type     = erasure.specialErasure(base)(high.tpe)
+    def highType: Type = self memberType high
+    def highInfo: Type = self memberInfo high
+    def highErased: Type = erasure.specialErasure(base)(high.tpe)
     def highClassBound: Type = classBoundAsSeen(high.tpe.typeSymbol)
 
     def isErroneous = low.tpe.isErroneous || high.tpe.isErroneous
-    def sameKind    = sameLength(low.typeParams, high.typeParams)
+    def sameKind = sameLength(low.typeParams, high.typeParams)
 
     private def classBoundAsSeen(tsym: Symbol) =
       tsym.classBound.asSeenFrom(rootType, tsym.owner)
 
     private def memberDefString(sym: Symbol, where: Boolean) = {
-      val def_s = (
-        if (sym.isConstructor) s"$sym: ${self memberType sym}"
-        else sym defStringSeenAs (self memberType sym)
-      )
+      val def_s =
+        (
+          if (sym.isConstructor) s"$sym: ${self memberType sym}"
+          else sym defStringSeenAs (self memberType sym)
+        )
       def_s + whereString(sym)
     }
+
     /** A string like ' at line 55' if the symbol is defined in the class
-     *  under consideration, or ' in trait Foo' if defined elsewhere.
-     */
+      *  under consideration, or ' in trait Foo' if defined elsewhere.
+      */
     private def whereString(sym: Symbol) =
       if (sym.owner == base) " at line " + sym.pos.line else sym.locationString
 
-    def lowString  = memberDefString(low, where = true)
+    def lowString = memberDefString(low, where = true)
     def highString = memberDefString(high, where = true)
 
     override def toString = sm"""
@@ -93,67 +98,68 @@ abstract class SymbolPairs {
   }
 
   /** The cursor class
-   *  @param base   the base class containing the participating symbols
-   */
+    *  @param base   the base class containing the participating symbols
+    */
   abstract class Cursor(val base: Symbol) {
     cursor =>
 
-      final val self  = base.thisType   // The type relative to which symbols are seen.
-    private[this] val decls = newScope        // all the symbols which can take part in a pair.
-    private[this] val size  = bases.length
+    final val self = base.thisType // The type relative to which symbols are seen.
+    private[this] val decls = newScope // all the symbols which can take part in a pair.
+    private[this] val size = bases.length
 
     /** A symbol for which exclude returns true will not appear as
-     *  either end of a pair.
-     */
+      *  either end of a pair.
+      */
     protected def exclude(sym: Symbol): Boolean
 
     /** Does `this.low` match `high` such that (low, high) should be
-     *  considered as a pair? Types always match. Term symbols
-     *  match if their member types relative to `self` match.
-     */
+      *  considered as a pair? Types always match. Term symbols
+      *  match if their member types relative to `self` match.
+      */
     protected def matches(high: Symbol): Boolean
 
     /** The parents and base classes of `base`.  Can be refined in subclasses.
-     */
+      */
     protected def parents: List[Type] = base.info.parents
     protected def bases: List[Symbol] = base.info.baseClasses
 
     /** An implementation of BitSets as arrays (maybe consider collection.BitSet
-     *  for that?) The main purpose of this is to implement
-     *  intersectionContainsElement efficiently.
-     */
+      *  for that?) The main purpose of this is to implement
+      *  intersectionContainsElement efficiently.
+      */
     private type BitSet = Array[Int]
 
     /** A mapping from all base class indices to a bitset
-     *  which indicates whether parents are subclasses.
-     *
-     *   i \in subParents(j)   iff
-     *   exists p \in parents, b \in baseClasses:
-     *     i = index(p)
-     *     j = index(b)
-     *     p isSubClass b
-     *     p.baseType(b).typeSymbol == self.baseType(b).typeSymbol
-     */
+      *  which indicates whether parents are subclasses.
+      *
+      *   i \in subParents(j)   iff
+      *   exists p \in parents, b \in baseClasses:
+      *     i = index(p)
+      *     j = index(b)
+      *     p isSubClass b
+      *     p.baseType(b).typeSymbol == self.baseType(b).typeSymbol
+      */
     private[this] val subParents = new Array[BitSet](size)
 
     /** A map from baseclasses of <base> to ints, with smaller ints meaning lower in
-     *  linearization order. Symbols that are not baseclasses map to -1.
-     */
-    private[this] val index = new mutable.HashMap[Symbol, Int]().withDefaultValue(-1)
+      *  linearization order. Symbols that are not baseclasses map to -1.
+      */
+    private[this] val index =
+      new mutable.HashMap[Symbol, Int]().withDefaultValue(-1)
 
     /** The scope entries that have already been visited as highSymbol
-     *  (but may have been excluded via hasCommonParentAsSubclass.)
-     *  These will not appear as lowSymbol.
-     */
+      *  (but may have been excluded via hasCommonParentAsSubclass.)
+      *  These will not appear as lowSymbol.
+      */
     private[this] val visited = HashSet[ScopeEntry]("visited", 64)
 
     /** Initialization has to run now so decls is populated before
-     *  the declaration of curEntry.
-     */
+      *  the declaration of curEntry.
+      */
     init()
 
     // The current low and high symbols; the high may be null.
-    private[this] var lowSymbol: Symbol  = _
+    private[this] var lowSymbol: Symbol = _
     private[this] var highSymbol: Symbol = _
     def lowMemberType: Type = {
       if (lowSymbol ne lowMemberTypeCacheSym) {
@@ -167,7 +173,7 @@ abstract class SymbolPairs {
     private[this] var lowMemberTypeCacheSym: Symbol = _
 
     // The current entry candidates for low and high symbol.
-    private[this] var curEntry  = decls.elems
+    private[this] var curEntry = decls.elems
     private[this] var nextEntry = curEntry
 
     // These fields are initially populated with a call to next().
@@ -196,7 +202,7 @@ abstract class SymbolPairs {
       for (p <- parents) {
         val pIndex = index(p.typeSymbol)
         if (pIndex >= 0)
-          for (bc <- p.baseClasses ; if sameInBaseClass(bc)(p, self)) {
+          for (bc <- p.baseClasses; if sameInBaseClass(bc)(p, self)) {
             val bcIndex = index(bc)
             if (bcIndex >= 0)
               include(subParents(bcIndex), pIndex)
@@ -210,13 +216,15 @@ abstract class SymbolPairs {
 
     private def include(bs: BitSet, n: Int): Unit = {
       val nshifted = n >> 5
-      val nmask    = 1 << (n & 31)
+      val nmask = 1 << (n & 31)
       bs(nshifted) |= nmask
     }
 
     /** Implements `bs1 * bs2 * {0..n} != 0`.
-     *  Used in hasCommonParentAsSubclass */
-    private def intersectionContainsElementLeq(bs1: BitSet, bs2: BitSet, n: Int): Boolean = {
+      *  Used in hasCommonParentAsSubclass */
+    private def intersectionContainsElementLeq(bs1: BitSet,
+                                               bs2: BitSet,
+                                               n: Int): Boolean = {
       val nshifted = n >> 5
       val nmask = 1 << (n & 31)
       var i = 0
@@ -228,15 +236,16 @@ abstract class SymbolPairs {
     }
 
     /** Do `sym1` and `sym2` have a common subclass in `parents`?
-     *  In that case we do not follow their pairs.
-     */
+      *  In that case we do not follow their pairs.
+      */
     private def hasCommonParentAsSubclass(sym1: Symbol, sym2: Symbol) = {
       val index1 = index(sym1.owner)
       (index1 >= 0) && {
         val index2 = index(sym2.owner)
         (index2 >= 0) && {
-          intersectionContainsElementLeq(
-            subParents(index1), subParents(index2), index1 min index2)
+          intersectionContainsElementLeq(subParents(index1),
+                                         subParents(index2),
+                                         index1 min index2)
         }
       }
     }
@@ -245,8 +254,8 @@ abstract class SymbolPairs {
       if (nextEntry ne null) {
         nextEntry = decls lookupNextEntry nextEntry
         if (nextEntry ne null) {
-          val high    = nextEntry.sym
-          val isMatch = matches(high) && { visited addEntry nextEntry ; true } // side-effect visited on all matches
+          val high = nextEntry.sym
+          val isMatch = matches(high) && { visited addEntry nextEntry; true } // side-effect visited on all matches
 
           // skip nextEntry if a class in `parents` is a subclass of the
           // owners of both low and high.
@@ -270,24 +279,27 @@ abstract class SymbolPairs {
     }
 
     /** The `low` and `high` symbol.  In the context of overriding pairs,
-     *  low == overriding and high == overridden.
-     */
-    def low  = lowSymbol
+      *  low == overriding and high == overridden.
+      */
+    def low = lowSymbol
     def high = highSymbol
 
-    def hasNext     = curEntry ne null
+    def hasNext = curEntry ne null
     def currentPair = new SymbolPair(base, low, high)
-    def iterator: Iterator[SymbolPair] = new collection.AbstractIterator[SymbolPair] {
-      def hasNext = cursor.hasNext
-      def next()  = try cursor.currentPair finally cursor.next()
-    }
+    def iterator: Iterator[SymbolPair] =
+      new collection.AbstractIterator[SymbolPair] {
+        def hasNext = cursor.hasNext
+        def next() =
+          try cursor.currentPair
+          finally cursor.next()
+      }
 
     // Note that next is called once during object initialization to
     // populate the fields tracking the current symbol pair.
     def next(): Unit = {
       if (curEntry ne null) {
         lowSymbol = curEntry.sym
-        advanceNextEntry()        // sets highSymbol
+        advanceNextEntry() // sets highSymbol
         if (nextEntry eq null) {
           advanceCurEntry()
           next()

@@ -1,4 +1,3 @@
-
 // When faced with ambiguities between imports,
 // an attempt is made to see if the imports intend
 // identical types.
@@ -22,7 +21,7 @@ object X2 {
   def f = {
     def x = ???
     import X2.{x => x2}
-    x2           // OK, rename makes it obvious there were some poor naming choices
+    x2 // OK, rename makes it obvious there were some poor naming choices
   }
 }
 
@@ -31,9 +30,9 @@ object Y {
 
   object Z {
     def z = 17
-    def f = z     // OK, definition shadows import
+    def f = z // OK, definition shadows import
   }
   object Other {
-    def g = z     // the casually scoped import is useful
+    def g = z // the casually scoped import is useful
   }
 }

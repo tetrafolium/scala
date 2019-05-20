@@ -12,7 +12,6 @@
 
 package scala.tools.scalap
 
-
 object Classfiles {
   final val JAVA_MAGIC = 0xCAFEBABE
   final val JAVA_MAJOR_VERSION = 45
@@ -52,4 +51,3 @@ object Classfiles {
     CONSTANT_INVDYNAMIC -> "InvokeDynamic"
   )
 }
-

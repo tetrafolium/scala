@@ -20,7 +20,7 @@ class MurmurHash3Test {
   }
 
   @Test
-  def testRangeConsistency: Unit = for(size <- Seq(0, 1, 2, 3, 4, 10, 100)) {
+  def testRangeConsistency: Unit = for (size <- Seq(0, 1, 2, 3, 4, 10, 100)) {
     val range = (1 to size)
     val ordered = Array.iterate(1, size)(_ + 1)
     assertEquals(range, ArraySeq.unsafeWrapArray(ordered))
@@ -28,13 +28,13 @@ class MurmurHash3Test {
   }
 
   @Test
-  def testNonRangeConsistency: Unit = for(size <- Seq(2, 3, 4, 10, 100)) {
+  def testNonRangeConsistency: Unit = for (size <- Seq(2, 3, 4, 10, 100)) {
     val range = (1 to size)
     val ordered = Array.iterate(1, size)(_ + 1)
     val mixed1 = Array.copyOf(ordered, ordered.length)
     val mixed2 = Array.copyOf(ordered, ordered.length)
     swap(mixed1, 0, 1)
-    swap(mixed2, mixed2.length-1, mixed2.length-2)
+    swap(mixed2, mixed2.length - 1, mixed2.length - 2)
     check(ArraySeq.unsafeWrapArray(mixed1).hashCode, mixed1)
     check(ArraySeq.unsafeWrapArray(mixed2).hashCode, mixed2)
   }

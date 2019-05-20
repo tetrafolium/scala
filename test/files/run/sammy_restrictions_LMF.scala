@@ -3,10 +3,10 @@ trait TInt extends T[Int]
 
 trait TWithVal { val x: Any = 1; def apply(x: Int): String }
 
-trait TImpure { def apply(x: Int): String ; println(1) }
+trait TImpure { def apply(x: Int): String; println(1) }
 
 trait Println { println(1) }
-trait TImpureSuper extends Println { def apply(x: Int): String  }
+trait TImpureSuper extends Println { def apply(x: Int): String }
 
 class C
 trait A extends C

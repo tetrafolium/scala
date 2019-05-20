@@ -29,9 +29,11 @@ import scala.collection.immutable.List
   *  @define orderDependent
   *  @define orderDependentFold
   */
-@deprecated("Use an immutable.ListMap assigned to a var instead of mutable.ListMap", "2.13.0")
+@deprecated(
+  "Use an immutable.ListMap assigned to a var instead of mutable.ListMap",
+  "2.13.0")
 class ListMap[K, V]
-  extends AbstractMap[K, V]
+    extends AbstractMap[K, V]
     with MapOps[K, V, ListMap, ListMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, ListMap[K, V]]
     with StrictOptimizedMapOps[K, V, ListMap, ListMap[K, V]]
@@ -51,13 +53,18 @@ class ListMap[K, V]
     siz += 1; this
   }
 
-  final override def subtractOne(key: K) = { elems = remove(key, elems, List())._1; this }
+  final override def subtractOne(key: K) = {
+    elems = remove(key, elems, List())._1; this
+  }
 
   @tailrec
-  private def remove(key: K, elems: List[(K, V)], acc: List[(K, V)]): (List[(K, V)], K) = {
+  private def remove(key: K,
+                     elems: List[(K, V)],
+                     acc: List[(K, V)]): (List[(K, V)], K) = {
     if (elems.isEmpty) (acc, key)
-    else if (elems.head._1 == key) { siz -= 1; (acc ::: elems.tail, elems.head._1) }
-    else remove(key, elems.tail, elems.head :: acc)
+    else if (elems.head._1 == key) {
+      siz -= 1; (acc ::: elems.tail, elems.head._1)
+    } else remove(key, elems.tail, elems.head :: acc)
   }
 
   final override def clear(): Unit = { elems = List(); siz = 0 }
@@ -73,9 +80,13 @@ class ListMap[K, V]
   *  @define coll mutable list map
   */
 @SerialVersionUID(3L)
-@deprecated("Use an immutable.ListMap assigned to a var instead of mutable.ListMap", "2.13.0")
+@deprecated(
+  "Use an immutable.ListMap assigned to a var instead of mutable.ListMap",
+  "2.13.0")
 object ListMap extends MapFactory[ListMap] {
   def empty[K, V]: ListMap[K, V] = new ListMap[K, V]
-  def from[K, V](it: IterableOnce[(K, V)]): ListMap[K,V] = Growable.from(empty[K, V], it)
-  def newBuilder[K, V]: Builder[(K, V), ListMap[K,V]] = new GrowableBuilder(empty[K, V])
+  def from[K, V](it: IterableOnce[(K, V)]): ListMap[K, V] =
+    Growable.from(empty[K, V], it)
+  def newBuilder[K, V]: Builder[(K, V), ListMap[K, V]] =
+    new GrowableBuilder(empty[K, V])
 }

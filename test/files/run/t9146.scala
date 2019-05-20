@@ -17,7 +17,7 @@ object Test {
 
     def method = as match {
       case List(C("one"), _) => 1
-      case _ => 42
+      case _                 => 42
     }
   }
   def main(args: Array[String]): Unit = {

@@ -14,7 +14,7 @@ object Test {
 
     def getOrThrow[T](resp: Response[T]) = resp.get match {
       case Left(res) => res
-      case Right(t) => throw t
+      case Right(t)  => throw t
     }
 
     def load(sourceFile: BatchSourceFile) = {
@@ -23,7 +23,8 @@ object Test {
       getOrThrow(resp)
     }
 
-    val prestestSrc = new BatchSourceFile("Prestest.scala",
+    val prestestSrc = new BatchSourceFile(
+      "Prestest.scala",
       """
         |package prestest
         |
@@ -38,7 +39,8 @@ object Test {
 
     load(prestestSrc)
 
-    val opsSrc = new BatchSourceFile("ops.scala",
+    val opsSrc = new BatchSourceFile(
+      "ops.scala",
       """
         |package com.whatever
         |
@@ -53,11 +55,12 @@ object Test {
         |  }
         |
         |}
-      """.stripMargin)
+      """.stripMargin
+    )
 
     load(opsSrc)
 
-    if(reporter.hasErrors) {
+    if (reporter.hasErrors) {
       throw new Exception("There were errors")
     }
   }

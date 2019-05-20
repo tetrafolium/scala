@@ -48,13 +48,14 @@ class Jar(file: File) extends AbstractIterable[JarEntry] {
 
   lazy val manifest = withJarInput(s => Option(s.getManifest))
 
-  def mainClass     = manifest map (f => f(Name.MAIN_CLASS))
+  def mainClass = manifest map (f => f(Name.MAIN_CLASS))
+
   /** The manifest-defined classpath String if available. */
   def classPathString: Option[String] =
-    for (m <- manifest ; cp <- m.attrs get Name.CLASS_PATH) yield cp
+    for (m <- manifest; cp <- m.attrs get Name.CLASS_PATH) yield cp
   def classPathElements: List[String] = classPathString match {
-    case Some(s)  => s split "\\s+" toList
-    case _        => Nil
+    case Some(s) => s split "\\s+" toList
+    case _       => Nil
   }
 
   /** Invoke f with input for named jar entry (or None). */
@@ -62,13 +63,14 @@ class Jar(file: File) extends AbstractIterable[JarEntry] {
     val jarFile = new JarFile(file.jfile)
     def apply() =
       jarFile getEntry name match {
-        case null   => f(None)
-        case entry  =>
+        case null => f(None)
+        case entry =>
           val in = Some(jarFile getInputStream entry)
           try f(in)
           finally in map (_.close())
       }
-    try apply() finally jarFile.close()
+    try apply()
+    finally jarFile.close()
   }
 
   def withJarInput[T](f: JarInputStream => T): T = {
@@ -92,9 +94,9 @@ class JarWriter(val file: File, val manifest: Manifest) {
   private lazy val out = new JarOutputStream(file.outputStream(), manifest)
 
   /** Adds a jar entry for the given path and returns an output
-   *  stream to which the data should immediately be written.
-   *  This unusual interface exists to work with fjbg.
-   */
+    *  stream to which the data should immediately be written.
+    *  This unusual interface exists to work with fjbg.
+    */
   def newOutputStream(path: String): DataOutputStream = {
     val entry = new JarEntry(path)
     out putNextEntry entry
@@ -126,7 +128,7 @@ class JarWriter(val file: File, val manifest: Manifest) {
     val buf = new Array[Byte](10240)
     def loop(): Unit = in.read(buf, 0, buf.length) match {
       case -1 => in.close()
-      case n  => out.write(buf, 0, n) ; loop()
+      case n  => out.write(buf, 0, n); loop()
     }
     loop()
   }
@@ -152,23 +154,28 @@ object Jar {
       this(k) = v
 
     def underlying = manifest
-    def attrs = manifest.getMainAttributes().asInstanceOf[AttributeMap].asScala withDefaultValue null
+    def attrs =
+      manifest
+        .getMainAttributes()
+        .asInstanceOf[AttributeMap]
+        .asScala withDefaultValue null
     def initialMainAttrs: Map[Attributes.Name, String] = {
       import scala.util.Properties._
       Map(
         Name.MANIFEST_VERSION -> "1.0",
-        ScalaCompilerVersion  -> versionNumberString
+        ScalaCompilerVersion -> versionNumberString
       )
     }
 
-    def apply(name: Attributes.Name): String        = attrs(name)
+    def apply(name: Attributes.Name): String = attrs(name)
     def update(key: Attributes.Name, value: String) = attrs.put(key, value)
   }
 
   // See https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.html
   // for some ideas.
   private val ZipMagicNumber = List[Byte](80, 75, 3, 4)
-  private def magicNumberIsZip(f: Path) = f.isFile && (f.toFile.bytes().take(4).toList == ZipMagicNumber)
+  private def magicNumberIsZip(f: Path) =
+    f.isFile && (f.toFile.bytes().take(4).toList == ZipMagicNumber)
 
   def isJarOrZip(f: Path): Boolean = isJarOrZip(f, examineFile = true)
   def isJarOrZip(f: Path, examineFile: Boolean): Boolean =

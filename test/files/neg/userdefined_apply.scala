@@ -1,11 +1,12 @@
 object ClashOverloadNoSig {
   // error: overloaded method apply needs result type
-  private def apply(x: Int) = if (x > 0) new ClashOverloadNoSig(x) else apply("")
+  private def apply(x: Int) =
+    if (x > 0) new ClashOverloadNoSig(x) else apply("")
 
   def apply(x: String): ClashOverloadNoSig = ???
 }
 
-case class ClashOverloadNoSig private(x: Int)
+case class ClashOverloadNoSig private (x: Int)
 
 object ClashRecNoSig {
   // TODO: status quo is that the error refers to an overloaded method, which is actually recursive
@@ -14,14 +15,14 @@ object ClashRecNoSig {
   private def apply(x: Int) = if (x > 0) ClashRecNoSig(1) else ???
 }
 
-case class ClashRecNoSig private(x: Int)
+case class ClashRecNoSig private (x: Int)
 
 object NoClashNoSig {
   // error: overloaded method apply needs result type
   private def apply(x: Boolean) = if (x) NoClashNoSig(1) else ???
 }
 
-case class NoClashNoSig private(x: Int)
+case class NoClashNoSig private (x: Int)
 
 object NoClashOverload {
   // error: overloaded method apply needs result type
@@ -30,8 +31,7 @@ object NoClashOverload {
   def apply(x: String): NoClashOverload = ???
 }
 
-case class NoClashOverload private(x: Int)
-
+case class NoClashOverload private (x: Int)
 
 class BaseNCNSP[T] {
   // TODO: suppress the following error
@@ -42,8 +42,7 @@ class BaseNCNSP[T] {
 object NoClashNoSigPoly extends BaseNCNSP[Boolean]
 // TODO: position error at definition of apply in superclass instead of on case clss
 // error: recursive method apply needs result type
-case class NoClashNoSigPoly private(x: Int)
-
+case class NoClashNoSigPoly private (x: Int)
 
 class BaseCNSP[T] {
   // TODO: suppress the following error
@@ -54,4 +53,4 @@ class BaseCNSP[T] {
 object ClashNoSigPoly extends BaseCNSP[Int]
 // TODO: position error at definition of apply in superclass instead of on case clss
 // error: recursive method apply needs result type
-case class ClashNoSigPoly private(x: Int)
+case class ClashNoSigPoly private (x: Int)

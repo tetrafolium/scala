@@ -1,4 +1,3 @@
-
 class C(a: Int, b: Int)
 
 trait T {
@@ -19,7 +18,18 @@ trait X {
   def f1(i: Int) = 42
   def f2(i: Int, j: Int) = 42
   def f6(i: Int, j: Int, k: Int, l: Int, m: Int, n: Int) = 42
-  def f12(i: Int, j: Int, k: Int, l: Int, m: Int, n: Int, o: Int, p: Int, q: Int, r: Int, s: Int, t: Int) = 42
+  def f12(i: Int,
+          j: Int,
+          k: Int,
+          l: Int,
+          m: Int,
+          n: Int,
+          o: Int,
+          p: Int,
+          q: Int,
+          r: Int,
+          s: Int,
+          t: Int) = 42
 
   def g() = {
     f0(1)

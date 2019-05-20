@@ -15,6 +15,7 @@
 // for process debugging output.
 //
 package scala.sys {
+
   /** This package handles the execution of external processes.  The contents of
     * this package can be divided in three groups, according to their
     * responsibilities:
@@ -205,10 +206,13 @@ package scala.sys {
     *   associated with it.
     */
   package object process extends ProcessImplicits {
+
     /** The input stream of this process */
-    def stdin  = java.lang.System.in
+    def stdin = java.lang.System.in
+
     /** The output stream of this process */
     def stdout = java.lang.System.out
+
     /** The error stream of this process */
     def stderr = java.lang.System.err
   }
@@ -223,17 +227,17 @@ package scala.sys {
       final val processDebug = props contains "scala.process.debug"
       dbg("Initializing process package.")
 
-      type =?>[-A, +B]            = PartialFunction[A, B]
-      type Closeable              = java.io.Closeable
-      type File                   = java.io.File
-      type IOException            = java.io.IOException
+      type =?>[-A, +B] = PartialFunction[A, B]
+      type Closeable = java.io.Closeable
+      type File = java.io.File
+      type IOException = java.io.IOException
       type InterruptedIOException = java.io.InterruptedIOException
-      type InputStream            = java.io.InputStream
-      type JProcess               = java.lang.Process
-      type JProcessBuilder        = java.lang.ProcessBuilder
-      type OutputStream           = java.io.OutputStream
-      type SyncVar[T]             = scala.concurrent.SyncVar[T]
-      type URL                    = java.net.URL
+      type InputStream = java.io.InputStream
+      type JProcess = java.lang.Process
+      type JProcessBuilder = java.lang.ProcessBuilder
+      type OutputStream = java.io.OutputStream
+      type SyncVar[T] = scala.concurrent.SyncVar[T]
+      type URL = java.net.URL
 
       def onError[T](handler: Throwable => T): Throwable =?> T = {
         case e @ _ => handler(e)

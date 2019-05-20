@@ -28,7 +28,9 @@ object t3 {
 
 object t4 {
   trait T1 { def f = 1 }
-  trait T2 { self: T1 => override def f = 2 }
+  trait T2 { self: T1 =>
+    override def f = 2
+  }
   trait U extends T1 with T2
   class C extends U {
     def t1 = super.f
@@ -62,7 +64,9 @@ object t6 {
 
 object t7 {
   trait T1 { def f = 1 }
-  trait T2 { _: T1 => override def f = 2 }
+  trait T2 { _: T1 =>
+    override def f = 2
+  }
   trait U extends T1 with T2
   trait V extends U with T2
   class C extends V {

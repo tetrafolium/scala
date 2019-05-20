@@ -1,4 +1,3 @@
-
 package q {
   object `package` {
     type CC = qq.CC

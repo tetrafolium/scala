@@ -1,5 +1,3 @@
-
-
 // scalac: -Xsource:2.13
 import scala.language.higherKinds
 
@@ -37,9 +35,10 @@ object Inject {
       def inj[A](fa: F[A]): Coproduct[F, G, A] = Coproduct(Left(fa))
     }
 
-  implicit def injectRight[F[_], G[_], H[_]](implicit I: Inject[F, H]): Inject[F, (G :++: H)#Out] =
+  implicit def injectRight[F[_], G[_], H[_]](
+      implicit I: Inject[F, H]): Inject[F, (G :++: H)#Out] =
     new Inject[F, (G :++: H)#Out] {
-      def inj[A](fa: F[A]): Coproduct[G, H , A] = Coproduct(Right(I.inj(fa)))
+      def inj[A](fa: F[A]): Coproduct[G, H, A] = Coproduct(Right(I.inj(fa)))
     }
 }
 
@@ -52,5 +51,11 @@ object Test1 {
 
   implicitly[Inject[Baz, (Foo :+: Bar :++: Baz)#Out]]
 
-  implicitly[Inject[Baz, ({ type Out[A] = Coproduct[Foo, ({ type Out1[a] = Coproduct[Bar, Baz, a] })#Out1, A] })#Out]]
+  implicitly[
+    Inject[
+      Baz,
+      ({
+        type Out[A] =
+          Coproduct[Foo, ({ type Out1[a] = Coproduct[Bar, Baz, a] })#Out1, A]
+      })#Out]]
 }

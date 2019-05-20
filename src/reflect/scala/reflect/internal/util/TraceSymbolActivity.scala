@@ -24,10 +24,10 @@ trait TraceSymbolActivity {
   if (enabled && global.isCompilerUniverse)
     Runtime.getRuntime.addShutdownHook(new Thread(() => showAllSymbols()))
 
-  val allSymbols  = mutable.Map[Int, Symbol]()
+  val allSymbols = mutable.Map[Int, Symbol]()
   val allChildren = mutable.Map[Int, List[Int]]() withDefaultValue Nil
-  val prevOwners  = mutable.Map[Int, List[(Int, Phase)]]() withDefaultValue Nil
-  val allTrees    = mutable.Set[Tree]()
+  val prevOwners = mutable.Map[Int, List[(Int, Phase)]]() withDefaultValue Nil
+  val allTrees = mutable.Set[Tree]()
 
   def recordSymbolsInTree(tree: Tree): Unit = {
     if (enabled)
@@ -53,7 +53,8 @@ trait TraceSymbolActivity {
   }
 
   private lazy val erasurePhase = findPhaseWithName("erasure")
-  private def signature(id: Int) = enteringPhase(erasurePhase)(allSymbols(id).defString)
+  private def signature(id: Int) =
+    enteringPhase(erasurePhase)(allSymbols(id).defString)
 
   private def dashes(s: Any): String = ("" + s) map (_ => '-')
   private def show(s1: Any, ss: Any*): Unit = {
@@ -65,7 +66,8 @@ trait TraceSymbolActivity {
   }
   private def showSym(sym: Symbol): Unit = {
     def prefix = ("  " * (sym.ownerChain.length - 1)) + sym.id
-    try println("%s#%s %s".format(prefix, sym.accurateKindString, sym.name.decode))
+    try println(
+      "%s#%s %s".format(prefix, sym.accurateKindString, sym.name.decode))
     catch {
       case x: Throwable => println(prefix + " failed: " + x)
     }
@@ -75,7 +77,8 @@ trait TraceSymbolActivity {
     allSymbols remove id foreach showSym
   }
   private def symbolStr(id: Int): String = {
-    if (id == 1) "NoSymbol" else {
+    if (id == 1) "NoSymbol"
+    else {
       val sym = allSymbols(id)
       sym.accurateKindString + " " + sym.name.decode
     }
@@ -85,16 +88,20 @@ trait TraceSymbolActivity {
     sym.name.decode + "#" + sym.id
   }
 
-  private def freq[T, U](xs: collection.Iterable[T])(fn: T => U): List[(U, Int)] =
+  private def freq[T, U](xs: collection.Iterable[T])(
+      fn: T => U): List[(U, Int)] =
     xs.groupMapReduce(fn)(_ => 1)(_ + _).toList.sortBy(-_._2)
 
-  private def showMapFreq[T](xs: collection.Map[T, Iterable[_]])(showFn: T => String): Unit = {
-    xs.view.mapValues(_.size).toList.sortBy(-_._2) take 100 foreach { case (k, size) =>
-      show(size, showFn(k))
+  private def showMapFreq[T](xs: collection.Map[T, Iterable[_]])(
+      showFn: T => String): Unit = {
+    xs.view.mapValues(_.size).toList.sortBy(-_._2) take 100 foreach {
+      case (k, size) =>
+        show(size, showFn(k))
     }
     println("\n")
   }
-  private def showFreq[T, U](xs: Iterable[T])(groupFn: T => U, showFn: U => String) = {
+  private def showFreq[T, U](xs: Iterable[T])(groupFn: T => U,
+                                              showFn: U => String) = {
     showMapFreq(xs.toList groupBy groupFn)(showFn)
   }
 
@@ -117,7 +124,8 @@ trait TraceSymbolActivity {
       showMapFreq(prevOwners) { k =>
         val owners = (((allSymbols(k).owner.id, NoPhase)) :: prevOwners(k)) map {
           case (oid, NoPhase) => "-> owned by " + ownerStr(oid)
-          case (oid, ph)      => "-> owned by %s (until %s)".format(ownerStr(oid), ph)
+          case (oid, ph) =>
+            "-> owned by %s (until %s)".format(ownerStr(oid), ph)
         }
         signature(k) :: owners mkString "\n                "
       }
@@ -126,14 +134,19 @@ trait TraceSymbolActivity {
     val nameFreq = allSymbols.values.toList groupBy (_.name)
     showHeader("frequency", "%-15s".format("name"), "owners")
     showMapFreq(nameFreq) { name =>
-      "%-15s %s".format(name.decode, {
-        val owners = freq(nameFreq(name))(_.owner)
+      "%-15s %s".format(
+        name.decode, {
+          val owners = freq(nameFreq(name))(_.owner)
 
-        "%4s owners (%s)".format(
-          owners.size,
-          owners.take(3).map({ case (k, v) => s"${v}/${k}" }).mkString(", ") + ", ..."
-        )
-      })
+          "%4s owners (%s)".format(
+            owners.size,
+            owners
+              .take(3)
+              .map({ case (k, v) => s"${v}/${k}" })
+              .mkString(", ") + ", ..."
+          )
+        }
+      )
     }
 
     allSymbols.keys.toList.sorted foreach showIdAndRemove

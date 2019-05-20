@@ -1,6 +1,9 @@
 class C { // C is not serializable
   def foo: () => Any = {
-    { () => class UseOuterInConstructor { C.this.toString }; new UseOuterInConstructor : Any}
+    { () =>
+      class UseOuterInConstructor { C.this.toString };
+      new UseOuterInConstructor: Any
+    }
   }
 }
 object Test {

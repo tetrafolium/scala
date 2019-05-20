@@ -18,10 +18,10 @@ object IndexOfSliceTest extends Properties("indexOfSlice") {
       Arbitrary.arbitrary[collection.mutable.WrappedArray[Int]]
     )
 
-  property("indexOfSlice(Nil) == 0") =
-    forAll(genDifferentSeqs) { seq: Seq[Int] =>
+  property("indexOfSlice(Nil) == 0") = forAll(genDifferentSeqs) {
+    seq: Seq[Int] =>
       seq.indexOfSlice(Nil) == 0 && seq.indexOfSlice(LazyList.empty) == 0
-    }
+  }
 
   property("indexOfSlice(Nil, from = size + 1) == -1") =
     forAll(genDifferentSeqs) { seq: Seq[Int] =>

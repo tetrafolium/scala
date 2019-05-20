@@ -29,12 +29,16 @@ object Test extends App {
   assert(r1.i == 13)
 
   // These worked because they are not case literals (and the argument types are known for overload resolution):
-  assert(m.map1({ case (k, v) => k - 1 }: PartialFunction[(Int, String), Int]).i == 10)
-  assert(m.map2({ case (k, v) => k - 1 }: PartialFunction[(Int, String), Int]).i == 20)
+  assert(
+    m.map1({ case (k, v) => k - 1 }: PartialFunction[(Int, String), Int])
+      .i == 10)
+  assert(
+    m.map2({ case (k, v) => k - 1 }: PartialFunction[(Int, String), Int])
+      .i == 20)
 
   // These ones did not work before, now always picks tupled version over Function2 version:
   assert(m.map1 { case (k, v) => k }.i == 10)
-  val r2 = m.map1 { case (k, v) => (k, k*10) }
+  val r2 = m.map1 { case (k, v) => (k, k * 10) }
   val r2t: MyMap[Int, Int] = r2
   assert(r2.i == 13)
   val r3 = m.foo { case (k, v) => k - 1 }
@@ -46,30 +50,40 @@ object Test extends App {
   assert(h { case (a: Double, b: Double) => 42: Int } == 2)
 
   val xs = new SortedMap
-  assert(xs.collectF { kv => 1 } == 0)
+  assert(xs.collectF { kv =>
+    1
+  } == 0)
   assert(xs.collectF { case (k, v) => 1 } == 0)
   assert(xs.collectF { case (k, v) => (1, 1) } == 2)
-  assert(xs.collect { case (k, v) => 1 } == 0)
-  assert(xs.collect { case (k, v) => (1, 1) } == 1)
+  assert(xs.collect { case (k, v)  => 1 } == 0)
+  assert(xs.collect { case (k, v)  => (1, 1) } == 1)
 
   val ys = new SortedMapMixed
-  assert(ys.collect { kv => 1 } == 0)
-  assert(ys.collect { kv => (1, 1) } == 0)
+  assert(ys.collect { kv =>
+    1
+  } == 0)
+  assert(ys.collect { kv =>
+    (1, 1)
+  } == 0)
   assert(ys.collect { case (k, v) => 1 } == 1) // could be 0 with the extra work in https://github.com/scala/scala/pull/5975/commits/3c95dac0dcbb0c8eb4686264026ad9c86b2022de
   assert(ys.collect { case (k, v) => (1, 1) } == 2)
 }
 
 class SortedMap {
   def collect[B](pf: PartialFunction[(String, Int), B]): Int = 0
-  def collect[K2 : Ordering, V2](pf: PartialFunction[(String, Int), (K2, V2)]): Int = 1
-  def collectF[B](pf: Function1[(String, Int), B]): Int = if(pf.isInstanceOf[PartialFunction[_, _]]) 1 else 0
-  def collectF[K2 : Ordering, V2](pf: Function1[(String, Int), (K2, V2)]): Int = if(pf.isInstanceOf[PartialFunction[_, _]]) 3 else 2
+  def collect[K2: Ordering, V2](
+      pf: PartialFunction[(String, Int), (K2, V2)]): Int = 1
+  def collectF[B](pf: Function1[(String, Int), B]): Int =
+    if (pf.isInstanceOf[PartialFunction[_, _]]) 1 else 0
+  def collectF[K2: Ordering, V2](pf: Function1[(String, Int), (K2, V2)]): Int =
+    if (pf.isInstanceOf[PartialFunction[_, _]]) 3 else 2
 }
 
 class SortedMapMixed {
   type PF[-A, +B] = PartialFunction[A, B]
-  def collect[B](pf: Function1[(String, Int), B]): Int = if(pf.isInstanceOf[PartialFunction[_, _]]) 1 else 0
-  def collect[K2 : Ordering, V2](pf: PF[(String, Int), (K2, V2)]): Int = 2
+  def collect[B](pf: Function1[(String, Int), B]): Int =
+    if (pf.isInstanceOf[PartialFunction[_, _]]) 1 else 0
+  def collect[K2: Ordering, V2](pf: PF[(String, Int), (K2, V2)]): Int = 2
 }
 
 // Test case for https://github.com/scala/bug/issues/10608:
@@ -84,7 +98,7 @@ class C[BT <: BTypes](val bt: BT) {
   val im1: IM[String] = new IM[String]
   val im2: IM[Foo] = new IM[Foo]
 
-  im1.map { case x => "" } // OK
-  im2.map { case x => "" } // Did not compile
+  im1.map { case x  => "" } // OK
+  im2.map { case x  => "" } // Did not compile
   im2.map2 { case x => "" } // OK
 }

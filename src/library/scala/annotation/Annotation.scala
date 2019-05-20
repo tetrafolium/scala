@@ -13,17 +13,17 @@
 package scala.annotation
 
 /**
- * A base class for annotations.
- *
- * Annotations extending this class directly are not preserved in the classfile. To enable storing
- * annotations in the classfile's Scala signature and make it available to Scala reflection and
- * other tools, the annotation needs to inherit from [[scala.annotation.StaticAnnotation]].
- *
- * Annotation classes defined in Scala are not stored in classfiles in a Java-compatible manner
- * and therefore not visible in Java reflection. In order to achieve this, the annotation has to
- * be written in Java.
- *
- *  @author  Martin Odersky
- *  @since 2.4
- */
+  * A base class for annotations.
+  *
+  * Annotations extending this class directly are not preserved in the classfile. To enable storing
+  * annotations in the classfile's Scala signature and make it available to Scala reflection and
+  * other tools, the annotation needs to inherit from [[scala.annotation.StaticAnnotation]].
+  *
+  * Annotation classes defined in Scala are not stored in classfiles in a Java-compatible manner
+  * and therefore not visible in Java reflection. In order to achieve this, the annotation has to
+  * be written in Java.
+  *
+  *  @author  Martin Odersky
+  *  @since 2.4
+  */
 abstract class Annotation

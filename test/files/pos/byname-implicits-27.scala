@@ -14,8 +14,10 @@ object Test {
     implicit val fooInt: Foo[Int] = ???
     implicit val fooString: Foo[String] = ???
     implicit val fooBoolean: Foo[Boolean] = ???
-    implicit def fooPair[T, U](implicit fooT: Foo[T], fooU: Foo[U]): Foo[(T, U)] = ???
-    implicit def fooGen[T, R](implicit gen: Generic.Aux[T, R], fr: Foo[R]): Foo[T] = ???
+    implicit def fooPair[T, U](implicit fooT: Foo[T],
+                               fooU: Foo[U]): Foo[(T, U)] = ???
+    implicit def fooGen[T, R](implicit gen: Generic.Aux[T, R],
+                              fr: Foo[R]): Foo[T] = ???
   }
 
   case class A(b: B, i: Int)
@@ -25,12 +27,14 @@ object Test {
 
   case class B(c: C, i: Int, b: Boolean)
   object B {
-    implicit val genB: Generic[B] { type Repr = (C, (Int, (Boolean, Unit))) } = ???
+    implicit val genB: Generic[B] { type Repr = (C, (Int, (Boolean, Unit))) } =
+      ???
   }
 
   case class C(i: Int, s: String, b: Boolean)
   object C {
-    implicit val genC: Generic[C] { type Repr = (Int, (String, (Boolean, Unit))) } = ???
+    implicit val genC
+      : Generic[C] { type Repr = (Int, (String, (Boolean, Unit))) } = ???
   }
 
   implicitly[Foo[A]]

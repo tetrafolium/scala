@@ -20,7 +20,7 @@ import scala.language.higherKinds
   * Trait that overrides operations to take advantage of strict builders.
   */
 trait StrictOptimizedSeqOps[+A, +CC[_], +C]
-  extends Any
+    extends Any
     with SeqOps[A, CC, C]
     with collection.StrictOptimizedSeqOps[A, CC, C]
     with StrictOptimizedIterableOps[A, CC, C] {
@@ -41,7 +41,10 @@ trait StrictOptimizedSeqOps[+A, +CC[_], +C]
   }
 
   override def updated[B >: A](index: Int, elem: B): CC[B] = {
-    if (index < 0) throw new IndexOutOfBoundsException(s"$index is out of bounds (min 0, max ${if (knownSize>=0) knownSize else "unknown"})")
+    if (index < 0)
+      throw new IndexOutOfBoundsException(
+        s"$index is out of bounds (min 0, max ${if (knownSize >= 0) knownSize
+        else "unknown"})")
     val b = iterableFactory.newBuilder[B]
     if (knownSize >= 0) {
       b.sizeHint(size)
@@ -52,14 +55,18 @@ trait StrictOptimizedSeqOps[+A, +CC[_], +C]
       b += it.next()
       i += 1
     }
-    if (!it.hasNext) throw new IndexOutOfBoundsException(s"$index is out of bounds (min 0, max ${i-1})")
+    if (!it.hasNext)
+      throw new IndexOutOfBoundsException(
+        s"$index is out of bounds (min 0, max ${i - 1})")
     b += elem
     it.next()
     while (it.hasNext) b += it.next()
     b.result()
   }
 
-  override def patch[B >: A](from: Int, other: IterableOnce[B], replaced: Int): CC[B] = {
+  override def patch[B >: A](from: Int,
+                             other: IterableOnce[B],
+                             replaced: Int): CC[B] = {
     val b = iterableFactory.newBuilder[B]
     var i = 0
     val it = iterator

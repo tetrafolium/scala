@@ -13,7 +13,9 @@ object Test {
     }
 
     0 until chars.length foreach { i =>
-      println("sub(%s, %s) == '%s'".format(i, chars.length, chars.subSequence(i, chars.length)))
+      println(
+        "sub(%s, %s) == '%s'"
+          .format(i, chars.length, chars.subSequence(i, chars.length)))
       println("sub(%s, %s) == '%s'".format(0, i, chars.subSequence(0, i)))
     }
     if (chars.length >= 2)

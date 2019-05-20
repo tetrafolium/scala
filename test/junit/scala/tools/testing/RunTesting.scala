@@ -9,9 +9,14 @@ trait RunTesting extends ClearAfterClass {
 }
 
 class Runner(val toolBox: ToolBox[universe.type]) {
-  def run[T](code: String): T = toolBox.eval(toolBox.parse(code)).asInstanceOf[T]
+  def run[T](code: String): T =
+    toolBox.eval(toolBox.parse(code)).asInstanceOf[T]
 }
 
 object Runner {
-  def make(compilerArgs: String) = new Runner(universe.runtimeMirror(getClass.getClassLoader).mkToolBox(options = compilerArgs))
+  def make(compilerArgs: String) =
+    new Runner(
+      universe
+        .runtimeMirror(getClass.getClassLoader)
+        .mkToolBox(options = compilerArgs))
 }

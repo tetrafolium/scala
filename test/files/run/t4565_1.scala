@@ -8,7 +8,7 @@ trait T {
 
 object Test {
   def main(args: Array[String]): Unit = {
-    val t = new T{}
+    val t = new T {}
     println(t.foo)
   }
 }

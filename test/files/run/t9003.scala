@@ -43,7 +43,7 @@ object Test {
     }
 
     Sequence match {
-      case Sequence(i, _ @ _*) =>
+      case Sequence(i, _ @_*) =>
         Sequence.i = 1
         assertZero(i) // okay
     }

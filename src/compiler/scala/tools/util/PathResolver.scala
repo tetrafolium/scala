@@ -33,10 +33,13 @@ object PathResolver {
 
   implicit class MkLines(val t: IterableOnce[_]) extends AnyVal {
     def mkLines: String = t.iterator.mkString("", EOL, EOL)
-    def mkLines(header: String, indented: Boolean = false, embraced: Boolean = false): String = {
+    def mkLines(header: String,
+                indented: Boolean = false,
+                embraced: Boolean = false): String = {
       val space = "\u0020"
       val sep = if (indented) EOL + space * 2 else EOL
-      val (lbrace, rbrace) = if (embraced) (space + "{", EOL + "}") else ("", "")
+      val (lbrace, rbrace) =
+        if (embraced) (space + "{", EOL + "}") else ("", "")
       t.iterator.mkString(header + lbrace + sep, sep, rbrace + EOL)
     }
   }
@@ -47,13 +50,13 @@ object PathResolver {
 
   /** pretty print class path */
   def ppcp(s: String) = ClassPath.split(s) match {
-    case Nil      => ""
-    case Seq(x)   => x
-    case xs       => xs.mkString(EOL, EOL, "")
+    case Nil    => ""
+    case Seq(x) => x
+    case xs     => xs.mkString(EOL, EOL, "")
   }
 
   /** Values found solely by inspecting environment or property variables.
-   */
+    */
   object Environment {
     import scala.collection.JavaConverters._
 
@@ -64,22 +67,25 @@ object PathResolver {
       // mutation of the System property map. stringPropertyNames internally uses the Enumeration interface,
       // rather than Iterator, and this disables the fail-fast ConcurrentModificationException.
       val propNames = props.stringPropertyNames()
-      propNames.asScala collectFirst { case k if k endsWith ".boot.class.path" => props.getProperty(k) } getOrElse ""
+      propNames.asScala collectFirst {
+        case k if k endsWith ".boot.class.path" => props.getProperty(k)
+      } getOrElse ""
     }
 
     /** Environment variables which java pays attention to so it
-     *  seems we do as well.
-     */
-    def sourcePathEnv       = envOrElse("SOURCEPATH", "")
+      *  seems we do as well.
+      */
+    def sourcePathEnv = envOrElse("SOURCEPATH", "")
 
-    def javaBootClassPath   = propOrElse("sun.boot.class.path", searchForBootClasspath)
-    def javaExtDirs         = propOrEmpty("java.ext.dirs")
-    def scalaHome           = propOrEmpty("scala.home")
-    def scalaExtDirs        = propOrEmpty("scala.ext.dirs")
+    def javaBootClassPath =
+      propOrElse("sun.boot.class.path", searchForBootClasspath)
+    def javaExtDirs = propOrEmpty("java.ext.dirs")
+    def scalaHome = propOrEmpty("scala.home")
+    def scalaExtDirs = propOrEmpty("scala.ext.dirs")
 
     /** The java classpath and whether to use it. */
-    def javaUserClassPath   = propOrElse("java.class.path", "")
-    def useJavaClassPath    = propOrFalse("scala.usejavacp")
+    def javaUserClassPath = propOrElse("java.class.path", "")
+    def useJavaClassPath = propOrFalse("scala.usejavacp")
 
     override def toString = s"""
       |object Environment {
@@ -92,22 +98,22 @@ object PathResolver {
   }
 
   /** Default values based on those in Environment as interpreted according
-   *  to the path resolution specification.
-   */
+    *  to the path resolution specification.
+    */
   object Defaults {
-    def scalaSourcePath   = Environment.sourcePathEnv
+    def scalaSourcePath = Environment.sourcePathEnv
     def javaBootClassPath = Environment.javaBootClassPath
     def javaUserClassPath = Environment.javaUserClassPath
-    def javaExtDirs       = Environment.javaExtDirs
-    def useJavaClassPath  = Environment.useJavaClassPath
+    def javaExtDirs = Environment.javaExtDirs
+    def useJavaClassPath = Environment.useJavaClassPath
 
-    def scalaHome         = Environment.scalaHome
-    def scalaHomeDir      = Directory(scalaHome)
-    def scalaLibDir       = Directory(scalaHomeDir / "lib")
-    def scalaClassesDir   = Directory(scalaHomeDir / "classes")
+    def scalaHome = Environment.scalaHome
+    def scalaHomeDir = Directory(scalaHome)
+    def scalaLibDir = Directory(scalaHomeDir / "lib")
+    def scalaClassesDir = Directory(scalaHomeDir / "classes")
 
-    def scalaLibAsJar     = File(scalaLibDir / "scala-library.jar")
-    def scalaLibAsDir     = Directory(scalaClassesDir / "library")
+    def scalaLibAsJar = File(scalaLibDir / "scala-library.jar")
+    def scalaLibAsDir = Directory(scalaClassesDir / "library")
 
     def scalaLibDirFound: Option[Directory] =
       if (scalaLibAsJar.isFile) Some(scalaLibDir)
@@ -124,9 +130,10 @@ object PathResolver {
     // the scala jars to end up on the classpath twice: one on the boot
     // classpath as set up by the runner (or regular classpath under -nobootcp)
     // and then again here.
-    def scalaBootClassPath  = ""
+    def scalaBootClassPath = ""
     def scalaExtDirs = Environment.scalaExtDirs
-    def scalaPluginPath = (scalaHomeDir / "misc" / "scala-devel" / "plugins").path
+    def scalaPluginPath =
+      (scalaHomeDir / "misc" / "scala-devel" / "plugins").path
 
     override def toString = s"""
       |object Defaults {
@@ -140,20 +147,20 @@ object PathResolver {
   }
 
   /** Locations discovered by supplemental heuristics.
-   */
+    */
   object SupplementalLocations {
 
     /** The platform-specific support jar.
-     *
-     *  Usually this is `tools.jar` in the jdk/lib directory of the platform distribution.
-     *
-     *  The file location is determined by probing the lib directory under JDK_HOME or JAVA_HOME,
-     *  if one of those environment variables is set, then the lib directory under java.home,
-     *  and finally the lib directory under the parent of java.home. Or, as a last resort,
-     *  search deeply under those locations (except for the parent of java.home, on the notion
-     *  that if this is not a canonical installation, then that search would have little
-     *  chance of succeeding).
-     */
+      *
+      *  Usually this is `tools.jar` in the jdk/lib directory of the platform distribution.
+      *
+      *  The file location is determined by probing the lib directory under JDK_HOME or JAVA_HOME,
+      *  if one of those environment variables is set, then the lib directory under java.home,
+      *  and finally the lib directory under the parent of java.home. Or, as a last resort,
+      *  search deeply under those locations (except for the parent of java.home, on the notion
+      *  that if this is not a canonical installation, then that search would have little
+      *  chance of succeeding).
+      */
     def platformTools: Option[File] = {
       val jarName = "tools.jar"
       def jarPath(path: Path) = (path / "lib" / jarName).toFile
@@ -167,7 +174,8 @@ object PathResolver {
       }
       def deeply(dir: Directory) = dir.deepFiles find (_.name == jarName)
 
-      val home    = envOrSome("JDK_HOME", envOrNone("JAVA_HOME")) map (p => Path(p))
+      val home = envOrSome("JDK_HOME", envOrNone("JAVA_HOME")) map (p =>
+        Path(p))
       val install = Some(Path(javaHome))
 
       (home flatMap jarAt) orElse (install flatMap jarAt) orElse (install map (_.parent) flatMap jarAt) orElse
@@ -180,9 +188,9 @@ object PathResolver {
   }
 
   /** With no arguments, show the interesting values in Environment and Defaults.
-   *  If there are arguments, show those in Calculated as if those options had been
-   *  given to a scala runner.
-   */
+    *  If there are arguments, show those in Calculated as if those options had been
+    *  given to a scala runner.
+    */
   def main(args: Array[String]): Unit =
     if (args.isEmpty) {
       println(Environment)
@@ -198,7 +206,8 @@ object PathResolver {
 
         pr.result match {
           case cp: AggregateClassPath =>
-            println(s"ClassPath has ${cp.aggregates.size} entries and results in:\n${cp.asClassPathStrings}")
+            println(
+              s"ClassPath has ${cp.aggregates.size} entries and results in:\n${cp.asClassPathStrings}")
         }
       } finally {
         registry.close()
@@ -206,10 +215,12 @@ object PathResolver {
     }
 }
 
-final class PathResolver(settings: Settings, closeableRegistry: CloseableRegistry) {
-  private val classPathFactory = new ClassPathFactory(settings, closeableRegistry)
+final class PathResolver(settings: Settings,
+                         closeableRegistry: CloseableRegistry) {
+  private val classPathFactory =
+    new ClassPathFactory(settings, closeableRegistry)
 
-  import PathResolver.{ AsLines, Defaults, ppcp }
+  import PathResolver.{AsLines, Defaults, ppcp}
 
   private def cmdLineOrElse(name: String, alt: String) = {
     (commandLineFor(name) match {
@@ -219,55 +230,63 @@ final class PathResolver(settings: Settings, closeableRegistry: CloseableRegistr
   }
 
   private def commandLineFor(s: String): Option[String] = condOpt(s) {
-    case "javabootclasspath"  => settings.javabootclasspath.value
-    case "javaextdirs"        => settings.javaextdirs.value
-    case "bootclasspath"      => settings.bootclasspath.value
-    case "extdirs"            => settings.extdirs.value
-    case "classpath" | "cp"   => settings.classpath.value
-    case "sourcepath"         => settings.sourcepath.value
+    case "javabootclasspath" => settings.javabootclasspath.value
+    case "javaextdirs"       => settings.javaextdirs.value
+    case "bootclasspath"     => settings.bootclasspath.value
+    case "extdirs"           => settings.extdirs.value
+    case "classpath" | "cp"  => settings.classpath.value
+    case "sourcepath"        => settings.sourcepath.value
   }
 
   /** Calculated values based on any given command line options, falling back on
-   *  those in Defaults.
-   */
+    *  those in Defaults.
+    */
   object Calculated {
-    def scalaHome           = Defaults.scalaHome
-    def useJavaClassPath    = settings.usejavacp.value || Defaults.useJavaClassPath
-    def useManifestClassPath= settings.usemanifestcp.value
-    def javaBootClassPath   = cmdLineOrElse("javabootclasspath", Defaults.javaBootClassPath)
-    def javaExtDirs         = cmdLineOrElse("javaextdirs", Defaults.javaExtDirs)
-    def javaUserClassPath   = if (useJavaClassPath) Defaults.javaUserClassPath else ""
-    def scalaBootClassPath  = cmdLineOrElse("bootclasspath", Defaults.scalaBootClassPath)
-    def scalaExtDirs        = cmdLineOrElse("extdirs", Defaults.scalaExtDirs)
+    def scalaHome = Defaults.scalaHome
+    def useJavaClassPath = settings.usejavacp.value || Defaults.useJavaClassPath
+    def useManifestClassPath = settings.usemanifestcp.value
+    def javaBootClassPath =
+      cmdLineOrElse("javabootclasspath", Defaults.javaBootClassPath)
+    def javaExtDirs = cmdLineOrElse("javaextdirs", Defaults.javaExtDirs)
+    def javaUserClassPath =
+      if (useJavaClassPath) Defaults.javaUserClassPath else ""
+    def scalaBootClassPath =
+      cmdLineOrElse("bootclasspath", Defaults.scalaBootClassPath)
+    def scalaExtDirs = cmdLineOrElse("extdirs", Defaults.scalaExtDirs)
 
     /** Scaladoc doesn't need any bootstrapping, otherwise will create errors such as:
-     * [scaladoc] ../scala-trunk/src/reflect/scala/reflect/macros/Reifiers.scala:89: error: object api is not a member of package reflect
-     * [scaladoc] case class ReificationException(val pos: reflect.api.PositionApi, val msg: String) extends Throwable(msg)
-     * [scaladoc]                                              ^
-     * because the bootstrapping will look at the sourcepath and create package "reflect" in "<root>"
-     * and then when typing relative names, instead of picking <root>.scala.relect, typedIdentifier will pick up the
-     * <root>.reflect package created by the bootstrapping. Thus, no bootstrapping for scaladoc!
-     * TODO: we should refactor this as a separate -bootstrap option to have a clean implementation, no? */
-    def sourcePath          = if (!settings.isScaladoc) cmdLineOrElse("sourcepath", Defaults.scalaSourcePath) else ""
+      * [scaladoc] ../scala-trunk/src/reflect/scala/reflect/macros/Reifiers.scala:89: error: object api is not a member of package reflect
+      * [scaladoc] case class ReificationException(val pos: reflect.api.PositionApi, val msg: String) extends Throwable(msg)
+      * [scaladoc]                                              ^
+      * because the bootstrapping will look at the sourcepath and create package "reflect" in "<root>"
+      * and then when typing relative names, instead of picking <root>.scala.relect, typedIdentifier will pick up the
+      * <root>.reflect package created by the bootstrapping. Thus, no bootstrapping for scaladoc!
+      * TODO: we should refactor this as a separate -bootstrap option to have a clean implementation, no? */
+    def sourcePath =
+      if (!settings.isScaladoc)
+        cmdLineOrElse("sourcepath", Defaults.scalaSourcePath)
+      else ""
 
-    def userClassPath = settings.classpath.value  // default is specified by settings and can be overridden there
+    def userClassPath =
+      settings.classpath.value // default is specified by settings and can be overridden there
 
     import classPathFactory._
 
     // Assemble the elements!
     def basis = List[Iterable[ClassPath]](
-      jrt,                                          // 0. The Java 9+ classpath (backed by the ct.sym or jrt:/ virtual system, if available)
-      classesInPath(javaBootClassPath),             // 1. The Java bootstrap class path.
-      contentsOfDirsInPath(javaExtDirs),            // 2. The Java extension class path.
-      classesInExpandedPath(javaUserClassPath),     // 3. The Java application class path.
-      classesInPath(scalaBootClassPath),            // 4. The Scala boot class path.
-      contentsOfDirsInPath(scalaExtDirs),           // 5. The Scala extension class path.
-      classesInExpandedPath(userClassPath),         // 6. The Scala application class path.
-      classesInManifest(useManifestClassPath),      // 8. The Manifest class path.
-      sourcesInPath(sourcePath)                     // 7. The Scala source path.
+      jrt, // 0. The Java 9+ classpath (backed by the ct.sym or jrt:/ virtual system, if available)
+      classesInPath(javaBootClassPath), // 1. The Java bootstrap class path.
+      contentsOfDirsInPath(javaExtDirs), // 2. The Java extension class path.
+      classesInExpandedPath(javaUserClassPath), // 3. The Java application class path.
+      classesInPath(scalaBootClassPath), // 4. The Scala boot class path.
+      contentsOfDirsInPath(scalaExtDirs), // 5. The Scala extension class path.
+      classesInExpandedPath(userClassPath), // 6. The Scala application class path.
+      classesInManifest(useManifestClassPath), // 8. The Manifest class path.
+      sourcesInPath(sourcePath) // 7. The Scala source path.
     )
 
-    private def jrt: Option[ClassPath] = JrtClassPath.apply(settings.releaseValue, closeableRegistry)
+    private def jrt: Option[ClassPath] =
+      JrtClassPath.apply(settings.releaseValue, closeableRegistry)
 
     lazy val containers = basis.flatten.distinct
 
@@ -297,7 +316,8 @@ final class PathResolver(settings: Settings, closeableRegistry: CloseableRegistr
       Console print s"Calculated: $Calculated"
 
       val xs = (Calculated.basis drop 2).flatten.distinct
-      Console print (xs mkLines (s"After java boot/extdirs classpath has ${xs.size} entries:", indented = true))
+      Console print (xs mkLines (s"After java boot/extdirs classpath has ${xs.size} entries:", indented =
+        true))
     }
     cp
   }
@@ -307,6 +327,6 @@ final class PathResolver(settings: Settings, closeableRegistry: CloseableRegistr
   @deprecated("Use resultAsURLs instead of this one", "2.11.5")
   def asURLs: List[URL] = resultAsURLs.toList
 
-  private def computeResult(): ClassPath = AggregateClassPath(containers.toIndexedSeq)
+  private def computeResult(): ClassPath =
+    AggregateClassPath(containers.toIndexedSeq)
 }
-

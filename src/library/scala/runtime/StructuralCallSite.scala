@@ -17,7 +17,8 @@ import java.lang.ref.SoftReference
 import java.lang.reflect.Method
 
 final class StructuralCallSite private (callType: MethodType) {
-  private var cache: SoftReference[MethodCache] =  new SoftReference(new EmptyMethodCache)
+  private var cache: SoftReference[MethodCache] = new SoftReference(
+    new EmptyMethodCache)
 
   val parameterTypes: Array[Class[_]] = callType.parameterArray
 
@@ -39,8 +40,12 @@ final class StructuralCallSite private (callType: MethodType) {
 }
 
 object StructuralCallSite {
-  def bootstrap(lookup: MethodHandles.Lookup, invokedName: String, invokedType: MethodType, reflectiveCallType: MethodType): CallSite = {
+  def bootstrap(lookup: MethodHandles.Lookup,
+                invokedName: String,
+                invokedType: MethodType,
+                reflectiveCallType: MethodType): CallSite = {
     val structuralCallSite = new StructuralCallSite(reflectiveCallType)
-    new ConstantCallSite(MethodHandles.constant(classOf[StructuralCallSite], structuralCallSite))
+    new ConstantCallSite(
+      MethodHandles.constant(classOf[StructuralCallSite], structuralCallSite))
   }
 }

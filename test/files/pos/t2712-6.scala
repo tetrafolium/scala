@@ -1,7 +1,7 @@
 package test
 
 object Tags {
-  type Tagged[A, T] = {type Tag = T; type Self = A}
+  type Tagged[A, T] = { type Tag = T; type Self = A }
 
   type @@[T, Tag] = Tagged[T, Tag]
 

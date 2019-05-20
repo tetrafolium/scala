@@ -13,6 +13,7 @@ object Test {
     val stream = LazyList(1, 2, 3, 4, 5)
     assert(stream.scanLeft(0)(_ + _) == LazyList(0, 1, 3, 6, 10, 15))
 
-    assert(LazyList.from(1).scanLeft(0)(_ + _).take(5) == LazyList(0, 1, 3, 6, 10))
+    assert(
+      LazyList.from(1).scanLeft(0)(_ + _).take(5) == LazyList(0, 1, 3, 6, 10))
   }
 }

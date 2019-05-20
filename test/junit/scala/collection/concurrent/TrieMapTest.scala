@@ -8,7 +8,8 @@ import scala.tools.testing.AssertUtil.assertThrows
 
 class TrieMapTest {
 
-  private def check[T](result2: List[Any])(f: TrieMap[String, String] => TraversableOnce[Any]) = {
+  private def check[T](result2: List[Any])(
+      f: TrieMap[String, String] => TraversableOnce[Any]) = {
     val m = TrieMap[String, String]()
     val values = f(m)
     m.put("k", "v")
@@ -83,9 +84,14 @@ class TrieMapTest {
 
   @Test
   def nullValuesUpdate: Unit = {
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(tm: TrieMap[String, String], key: String, beforeValue: Option[String], afterValue: String, resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
       beforeValue match {
         case Some(b) =>
           assertEquals(b, tm(key))
@@ -121,40 +127,92 @@ class TrieMapTest {
       12. update new null key with null
      */
 
-
     // 1.
-    check(newTrieMap, "c", Some("c"), "d", Set("a" -> null, (null,  "b"), "c" -> "d"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "d"))
     // 2.
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> null))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> null))
     // 3.
-    check(newTrieMap, "a", Some(null), "a2", Set("a" -> "a2", (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "a2",
+          Set("a" -> "a2", (null, "b"), "c" -> "c"))
     // 4.
-    check(newTrieMap, "a", Some(null), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b2", Set("a" -> null, (null,  "b2"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b2",
+          Set("a" -> null, (null, "b2"), "c" -> "c"))
     // 6.
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), "new value", Set("a" -> null, (null, "new value"), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "dd", Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> "dd"))
+    check(newTrieMap,
+          "d",
+          None,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> "dd"))
     // 10.
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> null))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> null))
     // 11.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, (null,  "new value"), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 12.
-    check(newTrieMap - null, null, None, null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
   }
 
   @Test
   def nullValuesPut: Unit = {
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(tm: TrieMap[String, String], key: String, beforeValue: Option[String], afterValue: String, resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
       beforeValue match {
         case Some(b) =>
           assertEquals(b, tm(key))
@@ -190,39 +248,91 @@ class TrieMapTest {
       12. update new null key with null
      */
 
-
     // 1.
-    check(newTrieMap, "c", Some("c"), "d", Set("a" -> null, (null,  "b"), "c" -> "d"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "d"))
     // 2.
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> null))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> null))
     // 3.
-    check(newTrieMap, "a", Some(null), "a2", Set("a" -> "a2", (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "a2",
+          Set("a" -> "a2", (null, "b"), "c" -> "c"))
     // 4.
-    check(newTrieMap, "a", Some(null), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b2", Set("a" -> null, (null,  "b2"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b2",
+          Set("a" -> null, (null, "b2"), "c" -> "c"))
     // 6.
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), "new value", Set("a" -> null, (null, "new value"), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "dd", Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> "dd"))
+    check(newTrieMap,
+          "d",
+          None,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> "dd"))
     // 10.
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> null))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> null))
     // 11.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, (null,  "new value"), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 12.
-    check(newTrieMap - null, null, None, null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
   }
   @Test
   def nullValuesPutIfAbsent: Unit = {
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(tm: TrieMap[String, String], key: String, beforeValue: Option[String], afterValue: String, resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
       beforeValue match {
         case Some(b) =>
           assertEquals(b, tm(key))
@@ -260,39 +370,92 @@ class TrieMapTest {
      */
 
     // 1.
-    check(newTrieMap, "c", Some("c"), "d", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 2.
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 3.
-    check(newTrieMap, "a", Some(null), "a2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "a2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 4.
-    check(newTrieMap, "a", Some(null), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 6.
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), "new value", Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "new value",
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "dd", Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> "dd"))
+    check(newTrieMap,
+          "d",
+          None,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> "dd"))
     // 10.
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> null))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> null))
     // 11.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, (null,  "new value"), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 12.
-    check(newTrieMap - null, null, None, null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
   }
 
   @Test
   def nullValuesGetOrElseUpdate: Unit = {
 
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(tm: TrieMap[String, String], key: String, beforeValue: Option[String], afterValue: String, resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
       beforeValue match {
         case Some(b) =>
           assertEquals(b, tm(key))
@@ -331,39 +494,92 @@ class TrieMapTest {
      */
 
     // 1.
-    check(newTrieMap, "c", Some("c"), "d", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 2.
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 3.
-    check(newTrieMap, "a", Some(null), "a2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "a2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 4.
-    check(newTrieMap, "a", Some(null), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 6.
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), "new value", Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "new value",
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "dd", Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> "dd"))
+    check(newTrieMap,
+          "d",
+          None,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> "dd"))
     // 10.
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c", "d" -> null))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c", "d" -> null))
     // 11.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, (null,  "new value"), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 12.
-    check(newTrieMap - null, null, None, null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
   }
 
   @Test
   def nullValuesReplaceKeyValue = {
 
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(tm: TrieMap[String, String], key: String, beforeValue: Option[String], afterValue: String, resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
       beforeValue match {
         case Some(b) =>
           assertEquals(b, tm(key))
@@ -403,29 +619,73 @@ class TrieMapTest {
      */
 
     // 1.
-    check(newTrieMap, "c", Some("c"), "d", Set("a" -> null, (null,  "b"), "c" -> "d"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "d"))
     // 2.
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> null))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> null))
     // 3.
-    check(newTrieMap, "a", Some(null), "a2", Set("a" -> "a2", (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "a2",
+          Set("a" -> "a2", (null, "b"), "c" -> "c"))
     // 4.
-    check(newTrieMap, "a", Some(null), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b2", Set("a" -> null, (null,  "b2"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b2",
+          Set("a" -> null, (null, "b2"), "c" -> "c"))
     // 6.
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), "new value", Set("a" -> null, (null, "new value"), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "dd", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 10.
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
     // 11.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, "c" -> "c"))
     // 12.
     check(newTrieMap - null, null, None, null, Set("a" -> null, "c" -> "c"))
   }
@@ -433,15 +693,15 @@ class TrieMapTest {
   @Test
   def nullValuesReplaceKeyOldVlueNewValue = {
 
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(
-      tm: TrieMap[String, String],
-      key: String,
-      beforeValue: Option[String],
-      conditionalOldValue: String,
-      afterValue: String,
-      resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              conditionalOldValue: String,
+              afterValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
 
       beforeValue match {
         case Some(b) if b == conditionalOldValue =>
@@ -505,74 +765,214 @@ class TrieMapTest {
      */
 
     // 1.
-    check(newTrieMap, "c", Some("c"), "c", "d", Set("a" -> null, (null,  "b"), "c" -> "d"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "c",
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "d"))
 
-    check(newTrieMap, "c", Some("c"), null, "d", Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "c", Some("c"), "not c", "d", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "not c",
+          "d",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 2.
-    check(newTrieMap, "c", Some("c"), "c", null, Set("a" -> null, (null,  "b"), "c" -> null))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "c",
+          null,
+          Set("a" -> null, (null, "b"), "c" -> null))
 
-    check(newTrieMap, "c", Some("c"), "not c", null, Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "c", Some("c"), null, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "not c",
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 3.
-    check(newTrieMap, "a", Some(null), null, "a2", Set("a" -> "a2", (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          "a2",
+          Set("a" -> "a2", (null, "b"), "c" -> "c"))
 
-    check(newTrieMap, "a", Some(null), "not null", "a2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "not null",
+          "a2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 4.
-    check(newTrieMap, "a", Some(null), null, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "a", Some(null), "not null", null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          null,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "not null",
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, null, Some("b"), "b", "b2", Set("a" -> null, (null,  "b2"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b",
+          "b2",
+          Set("a" -> null, (null, "b2"), "c" -> "c"))
 
-    check(newTrieMap, null, Some("b"), "not b", "b2", Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, null, Some("b"), null, "b2", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "not b",
+          "b2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          "b2",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 6.
-    check(newTrieMap, null, Some("b"), "b", null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "b",
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
-    check(newTrieMap, null, Some("b"), "not b", null, Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, null, Some("b"), null, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "not b",
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 7.
-    check(newTrieMap + ((null, null)), null, Some(null), null, "new value", Set("a" -> null, (null, "new value"), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          "new value",
+          Set("a" -> null, (null, "new value"), "c" -> "c"))
 
-    check(newTrieMap + ((null, null)), null, Some(null), "not null", "new value", Set("a" -> null, (null, null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "not null",
+          "new value",
+          Set("a" -> null, (null, null), "c" -> "c"))
     // 8.
-    check(newTrieMap + ((null, null)), null, Some(null), null, null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
-    check(newTrieMap + ((null, null)), null, Some(null), "not null", null, Set("a" -> null, (null,  null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "not null",
+          null,
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 9.
-    check(newTrieMap, "d", None, "not null","dd", Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "d", None, null,"dd", Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          "not null",
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          "dd",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 10.
-    check(newTrieMap, "d", None, "not null", null, Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "d", None, null, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          "not null",
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 11.
-    check(newTrieMap - null, null, None, "not null","new value", Set("a" -> null, "c" -> "c"))
-    check(newTrieMap - null, null, None, null,"new value", Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "not null",
+          "new value",
+          Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          "new value",
+          Set("a" -> null, "c" -> "c"))
 
     // 12.
-    check(newTrieMap - null, null, None, "not null",null, Set("a" -> null, "c" -> "c"))
-    check(newTrieMap - null, null, None, null,null, Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "not null",
+          null,
+          Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          null,
+          null,
+          Set("a" -> null, "c" -> "c"))
   }
 
   @Test
   def nullValuesRemove = {
-    def newTrieMap = TrieMap[String, String]("a" -> null, (null,  "b"), "c" -> "c")
+    def newTrieMap =
+      TrieMap[String, String]("a" -> null, (null, "b"), "c" -> "c")
 
-    def check(
-      tm: TrieMap[String, String],
-      key: String,
-      beforeValue: Option[String],
-      conditionalOldValue: String,
-      resultingSet: Set[(String, String)]): Unit = {
+    def check(tm: TrieMap[String, String],
+              key: String,
+              beforeValue: Option[String],
+              conditionalOldValue: String,
+              resultingSet: Set[(String, String)]): Unit = {
 
       beforeValue match {
         case Some(b) if b == conditionalOldValue =>
@@ -614,29 +1014,69 @@ class TrieMapTest {
      */
 
     // 1.
-    check(newTrieMap, "c", Some("c"), "c", Set("a" -> null, (null,  "b")))
-    check(newTrieMap, "c", Some("c"), "not c", Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "c", Some("c"), null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap, "c", Some("c"), "c", Set("a" -> null, (null, "b")))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          "not c",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "c",
+          Some("c"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 2.
-    check(newTrieMap, "a", Some(null), null, Set((null,  "b"), "c" -> "c"))
-    check(newTrieMap, "a", Some(null), "not null", Set("a" -> null,(null,  "b"), "c" -> "c"))
+    check(newTrieMap, "a", Some(null), null, Set((null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "a",
+          Some(null),
+          "not null",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 3.
     check(newTrieMap, null, Some("b"), "b", Set("a" -> null, "c" -> "c"))
-    check(newTrieMap, null, Some("b"), "not b", Set("a" -> null, (null, "b"), "c" -> "c"))
-    check(newTrieMap, null, Some("b"), null, Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          "not b",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          null,
+          Some("b"),
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 4.
-    check(newTrieMap + ((null, null)), null, Some(null), null, Set("a" -> null, "c" -> "c"))
-    check(newTrieMap + ((null, null)), null, Some(null), "not null", Set("a" -> null, (null, null), "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          null,
+          Set("a" -> null, "c" -> "c"))
+    check(newTrieMap + ((null, null)),
+          null,
+          Some(null),
+          "not null",
+          Set("a" -> null, (null, null), "c" -> "c"))
 
     // 5.
-    check(newTrieMap, "d", None, "does not exists", Set("a" -> null, (null,  "b"), "c" -> "c"))
-    check(newTrieMap, "d", None, null, Set("a" -> null, (null,  "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          "does not exists",
+          Set("a" -> null, (null, "b"), "c" -> "c"))
+    check(newTrieMap,
+          "d",
+          None,
+          null,
+          Set("a" -> null, (null, "b"), "c" -> "c"))
 
     // 6.
-    check(newTrieMap - null, null, None, "new value", Set("a" -> null, "c" -> "c"))
+    check(newTrieMap - null,
+          null,
+          None,
+          "new value",
+          Set("a" -> null, "c" -> "c"))
     check(newTrieMap - null, null, None, null, Set("a" -> null, "c" -> "c"))
   }
 

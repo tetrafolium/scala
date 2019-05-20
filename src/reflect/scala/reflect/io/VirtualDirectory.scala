@@ -17,18 +17,19 @@ package io
 import scala.collection.mutable
 
 /**
- * An in-memory directory.
- *
- * @author Lex Spoon
- *
- * ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
- */
-class VirtualDirectory(val name: String, maybeContainer: Option[VirtualDirectory])
-extends AbstractFile {
+  * An in-memory directory.
+  *
+  * @author Lex Spoon
+  *
+  * ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
+  */
+class VirtualDirectory(val name: String,
+                       maybeContainer: Option[VirtualDirectory])
+    extends AbstractFile {
   def path: String =
     maybeContainer match {
-      case None => name
-      case Some(parent) => parent.path+'/'+ name
+      case None         => name
+      case Some(parent) => parent.path + '/' + name
     }
 
   def absolute = this
@@ -39,8 +40,10 @@ extends AbstractFile {
   val lastModified: Long = System.currentTimeMillis
 
   override def file = null
-  override def input = throw new IllegalStateException("directories cannot be read")
-  override def output = throw new IllegalStateException("directories cannot be written")
+  override def input =
+    throw new IllegalStateException("directories cannot be read")
+  override def output =
+    throw new IllegalStateException("directories cannot be written")
 
   /** Does this abstract file denote an existing file? */
   def create(): Unit = { unsupported() }
@@ -49,9 +52,10 @@ extends AbstractFile {
   def delete(): Unit = { unsupported() }
 
   /** Returns an abstract file with the given name. It does not
-   *  check that it exists.
-   */
-  def lookupNameUnchecked(name: String, directory: Boolean): AbstractFile = unsupported()
+    *  check that it exists.
+    */
+  def lookupNameUnchecked(name: String, directory: Boolean): AbstractFile =
+    unsupported()
 
   private[this] val files = mutable.Map.empty[String, AbstractFile]
 
@@ -64,7 +68,7 @@ extends AbstractFile {
 
   override def fileNamed(name: String): AbstractFile =
     Option(lookupName(name, directory = false)) getOrElse {
-      val newFile = new VirtualFile(name, path+'/'+name)
+      val newFile = new VirtualFile(name, path + '/' + name)
       files(name) = newFile
       newFile
     }

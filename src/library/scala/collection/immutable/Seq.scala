@@ -16,9 +16,10 @@ package immutable
 
 import scala.language.higherKinds
 
-trait Seq[+A] extends Iterable[A]
-                 with collection.Seq[A]
-                 with SeqOps[A, Seq, Seq[A]] {
+trait Seq[+A]
+    extends Iterable[A]
+    with collection.Seq[A]
+    with SeqOps[A, Seq, Seq[A]] {
 
   override final def toSeq: this.type = this
 
@@ -40,22 +41,23 @@ trait SeqOps[+A, +CC[_], +C] extends Any with collection.SeqOps[A, CC, C]
 object Seq extends SeqFactory.Delegate[Seq](List) {
   override def from[E](it: IterableOnce[E]): Seq[E] = it match {
     case s: Seq[E] => s
-    case _ => super.from(it)
+    case _         => super.from(it)
   }
 }
 
 /** Base trait for immutable indexed sequences that have efficient `apply` and `length` */
-trait IndexedSeq[+A] extends Seq[A]
-                        with collection.IndexedSeq[A]
-                        with IndexedSeqOps[A, IndexedSeq, IndexedSeq[A]] {
+trait IndexedSeq[+A]
+    extends Seq[A]
+    with collection.IndexedSeq[A]
+    with IndexedSeqOps[A, IndexedSeq, IndexedSeq[A]] {
 
   final override def toIndexedSeq: IndexedSeq[A] = this
 
   override def canEqual(that: Any): Boolean = that match {
-    case otherIndexedSeq: IndexedSeq[_] => length == otherIndexedSeq.length && super.canEqual(that)
-    case _ => super.canEqual (that)
+    case otherIndexedSeq: IndexedSeq[_] =>
+      length == otherIndexedSeq.length && super.canEqual(that)
+    case _ => super.canEqual(that)
   }
-
 
   override def sameElements[B >: A](o: IterableOnce[B]): Boolean = o match {
     case that: IndexedSeq[_] =>
@@ -69,11 +71,13 @@ trait IndexedSeq[+A] extends Seq[A]
           // but if apply is more efficient than Iterators then we can use the apply for all the comparison
           // we default to the minimum preferred length
           val maxApplyCompare = {
-            val preferredLength = Math.min(applyPreferredMaxLength, that.applyPreferredMaxLength)
-            if (length > (preferredLength.toLong << 1)) preferredLength else length
+            val preferredLength =
+              Math.min(applyPreferredMaxLength, that.applyPreferredMaxLength)
+            if (length > (preferredLength.toLong << 1)) preferredLength
+            else length
           }
           while (index < maxApplyCompare && equal) {
-            equal = this (index) == that(index)
+            equal = this(index) == that(index)
             index += 1
           }
           if ((index < length) && equal) {
@@ -94,15 +98,19 @@ trait IndexedSeq[+A] extends Seq[A]
     * [[iterator]] is preferred for scans above this range
     * @return a hint about when to use [[apply]] or [[iterator]]
     */
-  protected def applyPreferredMaxLength: Int = IndexedSeqDefaults.defaultApplyPreferredMaxLength
+  protected def applyPreferredMaxLength: Int =
+    IndexedSeqDefaults.defaultApplyPreferredMaxLength
 
   override def iterableFactory: SeqFactory[IterableCC] = IndexedSeq
 }
 
 object IndexedSeqDefaults {
   val defaultApplyPreferredMaxLength: Int =
-    try System.getProperty(
-      "scala.collection.immutable.IndexedSeq.defaultApplyPreferredMaxLength", "64").toInt
+    try System
+      .getProperty(
+        "scala.collection.immutable.IndexedSeq.defaultApplyPreferredMaxLength",
+        "64")
+      .toInt
     catch {
       case _: SecurityException => 64
     }
@@ -112,13 +120,13 @@ object IndexedSeqDefaults {
 object IndexedSeq extends SeqFactory.Delegate[IndexedSeq](Vector) {
   override def from[E](it: IterableOnce[E]): IndexedSeq[E] = it match {
     case is: IndexedSeq[E] => is
-    case _ => super.from(it)
+    case _                 => super.from(it)
   }
 }
 
 /** Base trait for immutable indexed Seq operations */
 trait IndexedSeqOps[+A, +CC[_], +C]
-  extends SeqOps[A, CC, C]
+    extends SeqOps[A, CC, C]
     with collection.IndexedSeqOps[A, CC, C] {
 
   override def slice(from: Int, until: Int): C = {
@@ -131,7 +139,7 @@ trait IndexedSeqOps[+A, +CC[_], +C]
 
 /** Base trait for immutable linear sequences that have efficient `head` and `tail` */
 trait LinearSeq[+A]
-  extends Seq[A]
+    extends Seq[A]
     with collection.LinearSeq[A]
     with LinearSeqOps[A, LinearSeq, LinearSeq[A]] {
 
@@ -142,14 +150,18 @@ trait LinearSeq[+A]
 object LinearSeq extends SeqFactory.Delegate[LinearSeq](List) {
   override def from[E](it: IterableOnce[E]): LinearSeq[E] = it match {
     case ls: LinearSeq[E] => ls
-    case _ => super.from(it)
+    case _                => super.from(it)
   }
 }
 
-trait LinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeqOps[A, CC, C]]
-  extends Any with SeqOps[A, CC, C]
+trait LinearSeqOps[
+    +A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeqOps[A, CC, C]]
+    extends Any
+    with SeqOps[A, CC, C]
     with collection.LinearSeqOps[A, CC, C]
 
 /** Explicit instantiation of the `Seq` trait to reduce class file size in subclasses. */
 @SerialVersionUID(3L)
-abstract class AbstractSeq[+A] extends scala.collection.AbstractSeq[A] with Seq[A]
+abstract class AbstractSeq[+A]
+    extends scala.collection.AbstractSeq[A]
+    with Seq[A]

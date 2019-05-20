@@ -52,29 +52,29 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
    *   - `jumpDest` , `cleanups` , `labelDefsAtOrUnder`
    */
   abstract class PlainSkelBuilder(cunit: CompilationUnit)
-    extends BCClassGen
-    with    BCAnnotGen
-    with    BCInnerClassGen
-    with    JAndroidBuilder
-    with    BCForwardersGen
-    with    BCPickles
-    with    BCJGenSigGen {
+      extends BCClassGen
+      with BCAnnotGen
+      with BCInnerClassGen
+      with JAndroidBuilder
+      with BCForwardersGen
+      with BCPickles
+      with BCJGenSigGen {
 
     // Strangely I can't find this in the asm code 255, but reserving 1 for "this"
     final val MaximumJvmParameters = 254
 
     // current class
-    var cnode: asm.tree.ClassNode  = null
-    var thisBType: ClassBType      = null
+    var cnode: asm.tree.ClassNode = null
+    var thisBType: ClassBType = null
 
-    var claszSymbol: Symbol        = null
-    var isCZParcelable             = false
-    var isCZStaticModule           = false
+    var claszSymbol: Symbol = null
+    var isCZParcelable = false
+    var isCZStaticModule = false
 
     /* ---------------- idiomatic way to ask questions to typer ---------------- */
 
     def paramTKs(app: Apply): List[BType] = {
-      val Apply(fun, _)  = app
+      val Apply(fun, _) = app
       val funSym = fun.symbol
       funSym.info.paramTypes map typeToBType
     }
@@ -83,20 +83,24 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
     def tpeTK(tree: Tree): BType = typeToBType(tree.tpe)
 
-
     private def canAssignModuleInClinit(cd: ClassDef, sym: Symbol): Boolean = {
       import global.definitions._
-      val parentsArePure = claszSymbol.parentSymbols.forall(sym => sym == ObjectClass || isFunctionSymbol(sym) || isAbstractFunctionSymbol(sym) || sym == definitions.SerializableClass)
+      val parentsArePure = claszSymbol.parentSymbols.forall(sym =>
+        sym == ObjectClass || isFunctionSymbol(sym) || isAbstractFunctionSymbol(
+          sym) || sym == definitions.SerializableClass)
       def isPureConstructor(dd: DefDef): Boolean = {
         dd.rhs match {
           case Block(stats, _) => treeInfo.isSuperConstrCall(stats.last)
-          case _ => false
+          case _               => false
         }
       }
-      def constructorsArePure = cd.impl.body.iterator.collect {
-        case dd: DefDef if dd.symbol.isConstructor => dd
-      }.forall(isPureConstructor)
-      parentsArePure && constructorsArePure 
+      def constructorsArePure =
+        cd.impl.body.iterator
+          .collect {
+            case dd: DefDef if dd.symbol.isConstructor => dd
+          }
+          .forall(isPureConstructor)
+      parentsArePure && constructorsArePure
     }
 
     /* ---------------- helper utils for generating classes and fields ---------------- */
@@ -104,10 +108,10 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
     def genPlainClass(cd0: ClassDef): Unit = {
       assert(cnode == null, "GenBCode detected nested methods.")
 
-      claszSymbol       = cd0.symbol
-      isCZParcelable    = isAndroidParcelableClass(claszSymbol)
-      isCZStaticModule  = isStaticModuleClass(claszSymbol)
-      thisBType         = classBTypeFromSymbol(claszSymbol)
+      claszSymbol = cd0.symbol
+      isCZParcelable = isAndroidParcelableClass(claszSymbol)
+      isCZStaticModule = isStaticModuleClass(claszSymbol)
+      thisBType = classBTypeFromSymbol(claszSymbol)
 
       cnode = new ClassNode1()
 
@@ -124,24 +128,46 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
         for (f <- fieldSymbols(claszSymbol)) {
           f.setFlag(Flags.STATIC)
         }
-        val constructorDefDef = treeInfo.firstConstructor(cd0.impl.body).asInstanceOf[DefDef]
-        val (uptoSuperStats, remainingConstrStats) = treeInfo.splitAtSuper(constructorDefDef.rhs.asInstanceOf[Block].stats, classOnly = true)
-        val clInitSymbol = claszSymbol.newMethod(nme.CLASS_CONSTRUCTOR, claszSymbol.pos, Flags.STATIC).setInfo(NullaryMethodType(definitions.UnitTpe))
+        val constructorDefDef =
+          treeInfo.firstConstructor(cd0.impl.body).asInstanceOf[DefDef]
+        val (uptoSuperStats, remainingConstrStats) = treeInfo.splitAtSuper(
+          constructorDefDef.rhs.asInstanceOf[Block].stats,
+          classOnly = true)
+        val clInitSymbol = claszSymbol
+          .newMethod(nme.CLASS_CONSTRUCTOR, claszSymbol.pos, Flags.STATIC)
+          .setInfo(NullaryMethodType(definitions.UnitTpe))
 
         // We don't need to enter this field into the decls of claszSymbol.info as this is added manually to the generated class
         // in addModuleInstanceField. TODO: try adding it to the decls and making the usual field generation do the right thing.
-        val moduleField = claszSymbol.newValue(nme.MODULE_INSTANCE_FIELD, claszSymbol.pos, Flags.STATIC | Flags.PRIVATE).setInfo(claszSymbol.tpeHK)
+        val moduleField = claszSymbol
+          .newValue(nme.MODULE_INSTANCE_FIELD,
+                    claszSymbol.pos,
+                    Flags.STATIC | Flags.PRIVATE)
+          .setInfo(claszSymbol.tpeHK)
 
-        val callConstructor = NewFromConstructor(claszSymbol.primaryConstructor).setType(claszSymbol.tpeHK)
-        val assignModuleField = Assign(global.gen.mkAttributedRef(moduleField).setType(claszSymbol.tpeHK), callConstructor).setType(definitions.UnitTpe)
-        val remainingConstrStatsSubst = remainingConstrStats.map(_.substituteThis(claszSymbol, global.gen.mkAttributedRef(claszSymbol.sourceModule)).changeOwner(claszSymbol.primaryConstructor -> clInitSymbol))
-        val clinit = DefDef(clInitSymbol, Block(assignModuleField :: remainingConstrStatsSubst, Literal(Constant(())).setType(definitions.UnitTpe)).setType(definitions.UnitTpe))
-        deriveClassDef(cd0)(tmpl => deriveTemplate(tmpl)(body =>
-          clinit :: body.map {
-            case `constructorDefDef` => copyDefDef(constructorDefDef)(rhs = Block(uptoSuperStats, constructorDefDef.rhs.asInstanceOf[Block].expr))
-            case tree => tree
-          }
-        ))
+        val callConstructor = NewFromConstructor(claszSymbol.primaryConstructor)
+          .setType(claszSymbol.tpeHK)
+        val assignModuleField = Assign(
+          global.gen.mkAttributedRef(moduleField).setType(claszSymbol.tpeHK),
+          callConstructor).setType(definitions.UnitTpe)
+        val remainingConstrStatsSubst = remainingConstrStats.map(
+          _.substituteThis(claszSymbol,
+                           global.gen.mkAttributedRef(claszSymbol.sourceModule))
+            .changeOwner(claszSymbol.primaryConstructor -> clInitSymbol))
+        val clinit = DefDef(
+          clInitSymbol,
+          Block(assignModuleField :: remainingConstrStatsSubst,
+                Literal(Constant(())).setType(definitions.UnitTpe))
+            .setType(definitions.UnitTpe))
+        deriveClassDef(cd0)(tmpl =>
+          deriveTemplate(tmpl)(body =>
+            clinit :: body.map {
+              case `constructorDefDef` =>
+                copyDefDef(constructorDefDef)(
+                  rhs = Block(uptoSuperStats,
+                              constructorDefDef.rhs.asInstanceOf[Block].expr))
+              case tree => tree
+          }))
       } else cd0
 
       val hasStaticCtor = methodSymbols(cd) exists (_.isStaticConstructor)
@@ -160,10 +186,12 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
       cnode.visitAttribute(thisBType.inlineInfoAttribute.get)
 
-      if (AsmUtils.traceClassEnabled && cnode.name.contains(AsmUtils.traceClassPattern))
+      if (AsmUtils.traceClassEnabled && cnode.name.contains(
+            AsmUtils.traceClassPattern))
         AsmUtils.traceClass(cnode)
 
-      assert(cd.symbol == claszSymbol, "Someone messed up BCodePhase.claszSymbol during genPlainClass().")
+      assert(cd.symbol == claszSymbol,
+             "Someone messed up BCodePhase.claszSymbol during genPlainClass().")
     } // end of method genPlainClass()
 
     /*
@@ -172,28 +200,37 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
     private def initJClass(jclass: asm.ClassVisitor): Unit = {
 
       val bType = classBTypeFromSymbol(claszSymbol)
-      val superClass = bType.info.get.superClass.getOrElse(ObjectRef).internalName
+      val superClass =
+        bType.info.get.superClass.getOrElse(ObjectRef).internalName
       val interfaceNames = bType.info.get.interfaces.map(_.internalName)
 
       val flags = javaFlags(claszSymbol)
 
       val thisSignature = getGenericSignature(claszSymbol, claszSymbol.owner)
-      cnode.visit(backendUtils.classfileVersion.get, flags,
-                  thisBType.internalName, thisSignature,
-                  superClass, interfaceNames.toArray)
+      cnode.visit(backendUtils.classfileVersion.get,
+                  flags,
+                  thisBType.internalName,
+                  thisSignature,
+                  superClass,
+                  interfaceNames.toArray)
 
       if (emitSource) {
-        cnode.visitSource(cunit.source.toString, null /* SourceDebugExtension */)
+        cnode.visitSource(cunit.source.toString,
+                          null /* SourceDebugExtension */ )
       }
 
-      enclosingMethodAttribute(claszSymbol, internalName, methodBTypeFromSymbol(_).descriptor) match {
-        case Some(EnclosingMethodEntry(className, methodName, methodDescriptor)) =>
+      enclosingMethodAttribute(claszSymbol,
+                               internalName,
+                               methodBTypeFromSymbol(_).descriptor) match {
+        case Some(
+            EnclosingMethodEntry(className, methodName, methodDescriptor)) =>
           cnode.visitOuterClass(className, methodName, methodDescriptor)
         case _ => ()
       }
 
       val ssa = getAnnotPickle(thisBType.internalName, claszSymbol)
-      cnode.visitAttribute(if (ssa.isDefined) pickleMarkerLocal else pickleMarkerForeign)
+      cnode.visitAttribute(
+        if (ssa.isDefined) pickleMarkerLocal else pickleMarkerForeign)
       emitAnnotations(cnode, claszSymbol.annotations ++ ssa)
 
       if (isCZStaticModule || isCZParcelable) {
@@ -208,10 +245,13 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
           if (lmoc != NoSymbol) {
             // it must be a top level class (name contains no $s)
             val isCandidateForForwarders = {
-              exitingPickler { !(lmoc.name.toString contains '$') && lmoc.hasModuleFlag && !lmoc.isNestedClass }
+              exitingPickler {
+                !(lmoc.name.toString contains '$') && lmoc.hasModuleFlag && !lmoc.isNestedClass
+              }
             }
             if (isCandidateForForwarders) {
-              log(s"Adding static forwarders from '$claszSymbol' to implementations in '$lmoc'")
+              log(
+                s"Adding static forwarders from '$claszSymbol' to implementations in '$lmoc'")
               addForwarders(cnode, thisBType.internalName, lmoc.moduleClass)
             }
           }
@@ -234,14 +274,17 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
                          strMODULE_INSTANCE_FIELD,
                          thisBType.descriptor,
                          null, // no java-generic-signature
-                         null  // no initial value
+                         null // no initial value
         )
 
       fv.visitEnd()
     }
 
     protected def assignModuleInstanceField(meth: asm.MethodVisitor): Unit = {
-      meth.visitFieldInsn(asm.Opcodes.PUTSTATIC, thisBType.internalName, strMODULE_INSTANCE_FIELD, thisBType.descriptor)
+      meth.visitFieldInsn(asm.Opcodes.PUTSTATIC,
+                          thisBType.internalName,
+                          strMODULE_INSTANCE_FIELD,
+                          thisBType.descriptor)
     }
     /*
      * must-single-thread
@@ -253,11 +296,13 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
         CLASS_CONSTRUCTOR_NAME,
         "()V",
         null, // no java-generic-signature
-        null  // no throwable exceptions
+        null // no throwable exceptions
       )
       clinit.visitCode()
 
-      if (isCZParcelable) { legacyAddCreatorCode(clinit, cnode, thisBType.internalName) }
+      if (isCZParcelable) {
+        legacyAddCreatorCode(clinit, cnode, thisBType.internalName)
+      }
 
       clinit.visitInsn(asm.Opcodes.RETURN)
       clinit.visitMaxs(0, 0) // just to follow protocol, dummy arguments
@@ -284,17 +329,17 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
     // current method
     var mnode: asm.tree.MethodNode = null
-    var jMethodName: String        = null
-    var isMethSymStaticCtor        = false
-    var returnType: BType          = null
-    var methSymbol: Symbol         = null
+    var jMethodName: String = null
+    var isMethSymStaticCtor = false
+    var returnType: BType = null
+    var methSymbol: Symbol = null
     // in GenASM this is local to genCode(), ie should get false whenever a new method is emitted (including fabricated ones eg addStaticInit())
-    var isModuleInitialized        = false
+    var isModuleInitialized = false
     // used by genLoadTry() and genSynchronized()
-    var earlyReturnVar: Symbol     = null
-    var shouldEmitCleanup          = false
+    var earlyReturnVar: Symbol = null
+    var shouldEmitCleanup = false
     // line numbers
-    var lastEmittedLineNr          = -1
+    var lastEmittedLineNr = -1
 
     object bc extends JCodeMethodN {
       override def jmethod = PlainSkelBuilder.this.mnode
@@ -311,9 +356,11 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
      *  A related map is `labelDef`: it has the same keys as `jumpDest` but its values are LabelDef nodes not asm.Labels.
      *
      */
-    var jumpDest: immutable.Map[ /* LabelDef */ Symbol, asm.Label ] = null
+    var jumpDest: immutable.Map[ /* LabelDef */ Symbol, asm.Label] = null
     def programPoint(labelSym: Symbol): asm.Label = {
-      assert(labelSym.isLabel, s"trying to map a non-label symbol to an asm.Label, at: ${labelSym.pos}")
+      assert(
+        labelSym.isLabel,
+        s"trying to map a non-label symbol to an asm.Label, at: ${labelSym.pos}")
       jumpDest.getOrElse(labelSym, {
         val pp = new asm.Label
         jumpDest += (labelSym -> pp)
@@ -356,8 +403,9 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
     }
     def unregisterCleanup(finCleanup: asm.Label): Unit = {
       if (finCleanup != null) {
-        assert(cleanups.head eq finCleanup,
-               s"Bad nesting of cleanup operations: $cleanups trying to unregister: $finCleanup")
+        assert(
+          cleanups.head eq finCleanup,
+          s"Bad nesting of cleanup operations: $cleanups trying to unregister: $finCleanup")
         cleanups = cleanups.tail
       }
     }
@@ -395,7 +443,9 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
        * The invoker must make sure inner classes are tracked for the sym's tpe.
        */
       def makeLocal(tk: BType, name: String): Symbol = {
-        val locSym = methSymbol.newVariable(cunit.freshTermName(name), NoPosition, Flags.SYNTHETIC) // setInfo tpe
+        val locSym = methSymbol.newVariable(cunit.freshTermName(name),
+                                            NoPosition,
+                                            Flags.SYNTHETIC) // setInfo tpe
         makeLocal(locSym, tk)
         locSym
       }
@@ -411,7 +461,8 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
       private def makeLocal(sym: Symbol, tk: BType): Local = {
         assert(nxtIdx != -1, "not a valid start index")
-        val loc = Local(tk, sym.javaSimpleName.toString, nxtIdx, sym.isSynthetic)
+        val loc =
+          Local(tk, sym.javaSimpleName.toString, nxtIdx, sym.isSynthetic)
         val existing = slots.put(sym, loc)
         if (existing.isDefined)
           globalError(sym.pos, "attempt to create duplicate local var.")
@@ -457,10 +508,12 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
      *  Details in `emitFinalizer()`, which is invoked from `genLoadTry()` and `genSynchronized()`.
      */
     var labelDefsAtOrUnder: scala.collection.Map[Tree, List[LabelDef]] = null
-    var labelDef: scala.collection.Map[Symbol, LabelDef] = null// (LabelDef-sym -> LabelDef)
+    var labelDef
+      : scala.collection.Map[Symbol, LabelDef] = null // (LabelDef-sym -> LabelDef)
 
     // bookkeeping the scopes of non-synthetic local vars, to emit debug info (`emitVars`).
-    var varsInScope: List[Tuple2[Symbol, asm.Label]] = null // (local-var-sym -> start-of-scope)
+    var varsInScope
+      : List[Tuple2[Symbol, asm.Label]] = null // (local-var-sym -> start-of-scope)
 
     // helpers around program-points.
     def lastInsn: asm.tree.AbstractInsnNode = mnode.instructions.getLast
@@ -478,7 +531,10 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
       if (!skip) { mnode visitLabel lbl }
     }
     def isAtProgramPoint(lbl: asm.Label): Boolean = {
-      (lastInsn match { case labnode: asm.tree.LabelNode => (labnode.getLabel == lbl); case _ => false } )
+      (lastInsn match {
+        case labnode: asm.tree.LabelNode => (labnode.getLabel == lbl);
+        case _                           => false
+      })
     }
     def lineNumber(tree: Tree): Unit = {
       if (!emitLines || !tree.pos.isDefined) return
@@ -498,19 +554,22 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
     // on entering a method
     def resetMethodBookkeeping(dd: DefDef): Unit = {
       locals.reset(isStaticMethod = methSymbol.isStaticMember)
-      jumpDest = immutable.Map.empty[ /* LabelDef */ Symbol, asm.Label ]
+      jumpDest = immutable.Map.empty[ /* LabelDef */ Symbol, asm.Label]
       // populate labelDefsAtOrUnder
       val ldf = new LabelDefsFinder(dd.rhs)
       ldf(dd.rhs)
       labelDefsAtOrUnder = ldf.result
       labelDef = ldf.directResult.map(ld => (ld.symbol -> ld)).toMap
       // check previous invocation of genDefDef exited as many varsInScope as it entered.
-      assert(varsInScope == null, "Unbalanced entering/exiting of GenBCode's genBlock().")
+      assert(varsInScope == null,
+             "Unbalanced entering/exiting of GenBCode's genBlock().")
       // check previous invocation of genDefDef unregistered as many cleanups as it registered.
-      assert(cleanups == Nil, "Previous invocation of genDefDef didn't unregister as many cleanups as it registered.")
+      assert(
+        cleanups == Nil,
+        "Previous invocation of genDefDef didn't unregister as many cleanups as it registered.")
       isModuleInitialized = false
-      earlyReturnVar      = null
-      shouldEmitCleanup   = false
+      earlyReturnVar = null
+      shouldEmitCleanup = false
 
       lastEmittedLineNr = -1
     }
@@ -521,11 +580,13 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
       tree match {
         case EmptyTree => ()
 
-        case _: ModuleDef => abort(s"Modules should have been eliminated by refchecks: $tree")
+        case _: ModuleDef =>
+          abort(s"Modules should have been eliminated by refchecks: $tree")
 
-        case ValDef(mods, name, tpt, rhs) => () // fields are added in `genPlainClass()`, via `addClassFields()`
+        case ValDef(mods, name, tpt, rhs) =>
+          () // fields are added in `genPlainClass()`, via `addClassFields()`
 
-        case dd : DefDef =>
+        case dd: DefDef =>
           val sym = dd.symbol
           if (needsStaticImplMethod(sym)) {
             if (sym.isMixinConstructor) {
@@ -533,14 +594,20 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
               genDefDef(statified)
             } else {
               val forwarderDefDef = {
-                val dd1 = global.gen.mkStatic(deriveDefDef(dd)(_ => EmptyTree), traitSuperAccessorName(sym), _.cloneSymbol.withoutAnnotations)
+                val dd1 = global.gen.mkStatic(deriveDefDef(dd)(_ => EmptyTree),
+                                              traitSuperAccessorName(sym),
+                                              _.cloneSymbol.withoutAnnotations)
                 dd1.symbol.setFlag(Flags.ARTIFACT).resetFlag(Flags.OVERRIDE)
                 val selfParam :: realParams = dd1.vparamss.head.map(_.symbol)
-                deriveDefDef(dd1)(_ =>
-                  atPos(dd1.pos)(
-                    Apply(Select(global.gen.mkAttributedIdent(selfParam).setType(sym.owner.typeConstructor), dd.symbol),
-                    realParams.map(global.gen.mkAttributedIdent)).updateAttachment(UseInvokeSpecial))
-                )
+                deriveDefDef(dd1)(
+                  _ =>
+                    atPos(dd1.pos)(
+                      Apply(Select(global.gen
+                                     .mkAttributedIdent(selfParam)
+                                     .setType(sym.owner.typeConstructor),
+                                   dd.symbol),
+                            realParams.map(global.gen.mkAttributedIdent))
+                        .updateAttachment(UseInvokeSpecial)))
               }
               genDefDef(forwarderDefDef)
               genDefDef(dd)
@@ -568,13 +635,15 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
         else jMethodName
 
       val mdesc = methodBTypeFromSymbol(methSymbol).descriptor
-      mnode = cnode.visitMethod(
-        flags,
-        bytecodeName,
-        mdesc,
-        jgensig,
-        mkArray(thrownExceptions)
-      ).asInstanceOf[asm.tree.MethodNode]
+      mnode = cnode
+        .visitMethod(
+          flags,
+          bytecodeName,
+          mdesc,
+          jgensig,
+          mkArray(thrownExceptions)
+        )
+        .asInstanceOf[asm.tree.MethodNode]
 
       emitParamNames(mnode, params)
       emitAnnotations(mnode, others)
@@ -582,40 +651,41 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
     } // end of method initJMethod
 
-
     def genDefDef(dd: DefDef): Unit = {
       // the only method whose implementation is not emitted: getClass()
       if (definitions.isGetClass(dd.symbol)) { return }
       assert(mnode == null, "GenBCode detected nested method.")
 
-      methSymbol  = dd.symbol
+      methSymbol = dd.symbol
       jMethodName = methSymbol.javaSimpleName.toString
-      returnType  = methodBTypeFromSymbol(dd.symbol).returnType
+      returnType = methodBTypeFromSymbol(dd.symbol).returnType
       isMethSymStaticCtor = methSymbol.isStaticConstructor
 
       resetMethodBookkeeping(dd)
 
       // add method-local vars for params
       val DefDef(_, _, _, vparamss, _, rhs) = dd
-      assert(vparamss.isEmpty || vparamss.tail.isEmpty, s"Malformed parameter list: $vparamss")
+      assert(vparamss.isEmpty || vparamss.tail.isEmpty,
+             s"Malformed parameter list: $vparamss")
       val params = if (vparamss.isEmpty) Nil else vparamss.head
       for (p <- params) { locals.makeLocal(p.symbol) }
       // debug assert((params.map(p => locals(p.symbol).tk)) == asmMethodType(methSymbol).getArgumentTypes.toList, "debug")
 
       if (params.size > MaximumJvmParameters) {
         // scala/bug#7324
-        reporter.error(methSymbol.pos, s"Platform restriction: a parameter list's length cannot exceed $MaximumJvmParameters.")
+        reporter.error(
+          methSymbol.pos,
+          s"Platform restriction: a parameter list's length cannot exceed $MaximumJvmParameters.")
         return
       }
 
-      val isNative         = methSymbol.hasAnnotation(definitions.NativeAttr)
+      val isNative = methSymbol.hasAnnotation(definitions.NativeAttr)
       val isAbstractMethod = rhs == EmptyTree
       val flags =
         javaFlags(methSymbol) |
-        (if (isAbstractMethod)        asm.Opcodes.ACC_ABSTRACT   else 0) |
-        (if (methSymbol.isStrictFP)   asm.Opcodes.ACC_STRICT     else 0) |
-        (if (isNative)                asm.Opcodes.ACC_NATIVE     else 0)  // native methods of objects are generated in mirror classes
-
+          (if (isAbstractMethod) asm.Opcodes.ACC_ABSTRACT else 0) |
+          (if (methSymbol.isStrictFP) asm.Opcodes.ACC_STRICT else 0) |
+          (if (isNative) asm.Opcodes.ACC_NATIVE else 0) // native methods of objects are generated in mirror classes
 
       initJMethod(flags, params.map(_.symbol))
 
@@ -630,7 +700,8 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
        * but the same vars (given by the LabelDef's params) can be reused,
        * because no LabelDef ends up nested within itself after such duplication.
        */
-      for(ld <- labelDefsAtOrUnder.getOrElse(dd.rhs, Nil); ldp <- ld.params; if !locals.contains(ldp.symbol)) {
+      for (ld <- labelDefsAtOrUnder.getOrElse(dd.rhs, Nil); ldp <- ld.params;
+           if !locals.contains(ldp.symbol)) {
         // the tail-calls xform results in symbols shared btw method-params and labelDef-params, thus the guard above.
         locals.makeLocal(ldp.symbol)
       }
@@ -642,11 +713,16 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
           genLoad(rhs, returnType)
 
           rhs match {
-            case Return(_) | Block(_, Return(_)) | Throw(_) | Block(_, Throw(_)) => ()
+            case Return(_) | Block(_, Return(_)) | Throw(_) |
+                Block(_, Throw(_)) =>
+              ()
             case EmptyTree =>
-              globalError("Concrete method has no definition: " + dd + (
-                if (settings.debug) "(found: " + methSymbol.owner.info.decls.toList.mkString(", ") + ")"
-                else ""))
+              globalError(
+                "Concrete method has no definition: " + dd + (if (settings.debug)
+                                                                "(found: " + methSymbol.owner.info.decls.toList
+                                                                  .mkString(
+                                                                    ", ") + ")"
+                                                              else ""))
             case _ =>
               bc emitRETURN returnType
           }
@@ -664,7 +740,12 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
                 0
               )
             }
-            for (p <- params) { emitLocalVarScope(p.symbol, veryFirstProgramPoint, onePastLastProgramPoint, force = true) }
+            for (p <- params) {
+              emitLocalVarScope(p.symbol,
+                                veryFirstProgramPoint,
+                                onePastLastProgramPoint,
+                                force = true)
+            }
           }
 
           if (isMethSymStaticCtor) { appendToStaticCtor(dd) }
@@ -677,7 +758,8 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
         // The only non-instruction nodes to be found are LabelNode and LineNumberNode.
       }
 
-      if (AsmUtils.traceMethodEnabled && mnode.name.contains(AsmUtils.traceMethodPattern))
+      if (AsmUtils.traceMethodEnabled && mnode.name.contains(
+            AsmUtils.traceMethodPattern))
         AsmUtils.traceMethod(mnode)
 
       mnode = null
@@ -690,10 +772,9 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
      */
     private def appendToStaticCtor(dd: DefDef): Unit = {
 
-      def insertBefore(
-            location: asm.tree.AbstractInsnNode,
-            i0: asm.tree.AbstractInsnNode,
-            i1: asm.tree.AbstractInsnNode): Unit = {
+      def insertBefore(location: asm.tree.AbstractInsnNode,
+                       i0: asm.tree.AbstractInsnNode,
+                       i1: asm.tree.AbstractInsnNode): Unit = {
         if (i0 != null) {
           mnode.instructions.insertBefore(location, i0.clone(null))
           mnode.instructions.insertBefore(location, i1.clone(null))
@@ -702,7 +783,9 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
 
       // collect all return instructions
       var rets: List[asm.tree.AbstractInsnNode] = Nil
-      mnode foreachInsn { i => if (i.getOpcode() == asm.Opcodes.RETURN) { rets ::= i  } }
+      mnode foreachInsn { i =>
+        if (i.getOpcode() == asm.Opcodes.RETURN) { rets ::= i }
+      }
       if (rets.isEmpty) { return }
 
       var insnModA: asm.tree.AbstractInsnNode = null
@@ -711,13 +794,17 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
       if (isCZStaticModule) {
         // NEW `moduleName`
         val className = internalName(methSymbol.enclClass)
-        insnModA      = new asm.tree.TypeInsnNode(asm.Opcodes.NEW, className)
+        insnModA = new asm.tree.TypeInsnNode(asm.Opcodes.NEW, className)
         // INVOKESPECIAL <init>
         val callee = methSymbol.enclClass.primaryConstructor
-        val jname  = callee.javaSimpleName.toString
+        val jname = callee.javaSimpleName.toString
         val jowner = internalName(callee.owner)
-        val jtype  = methodBTypeFromSymbol(callee).descriptor
-        insnModB   = new asm.tree.MethodInsnNode(asm.Opcodes.INVOKESPECIAL, jowner, jname, jtype, false)
+        val jtype = methodBTypeFromSymbol(callee).descriptor
+        insnModB = new asm.tree.MethodInsnNode(asm.Opcodes.INVOKESPECIAL,
+                                               jowner,
+                                               jname,
+                                               jtype,
+                                               false)
       }
 
       var insnParcA: asm.tree.AbstractInsnNode = null
@@ -734,24 +821,35 @@ abstract class BCodeSkelBuilder extends BCodeHelpers {
           null
         )
         // INVOKESTATIC CREATOR(): android.os.Parcelable$Creator; -- TODO where does this Android method come from?
-        val callee = definitions.getMember(claszSymbol.companionModule, androidFieldName)
+        val callee =
+          definitions.getMember(claszSymbol.companionModule, androidFieldName)
         val jowner = internalName(callee.owner)
-        val jname  = callee.javaSimpleName.toString
-        val jtype  = methodBTypeFromSymbol(callee).descriptor
-        insnParcA  = new asm.tree.MethodInsnNode(asm.Opcodes.INVOKESTATIC, jowner, jname, jtype, false)
+        val jname = callee.javaSimpleName.toString
+        val jtype = methodBTypeFromSymbol(callee).descriptor
+        insnParcA = new asm.tree.MethodInsnNode(asm.Opcodes.INVOKESTATIC,
+                                                jowner,
+                                                jname,
+                                                jtype,
+                                                false)
         // PUTSTATIC `thisBType.internalName`.CREATOR;
-        insnParcB  = new asm.tree.FieldInsnNode(asm.Opcodes.PUTSTATIC, thisBType.internalName, "CREATOR", andrFieldDescr)
+        insnParcB = new asm.tree.FieldInsnNode(asm.Opcodes.PUTSTATIC,
+                                               thisBType.internalName,
+                                               "CREATOR",
+                                               andrFieldDescr)
       }
 
       // insert a few instructions for initialization before each return instruction
-      for(r <- rets) {
-        insertBefore(r, insnModA,  insnModB)
+      for (r <- rets) {
+        insertBefore(r, insnModA, insnModB)
         insertBefore(r, insnParcA, insnParcB)
       }
 
     }
 
-    def emitLocalVarScope(sym: Symbol, start: asm.Label, end: asm.Label, force: Boolean = false): Unit = {
+    def emitLocalVarScope(sym: Symbol,
+                          start: asm.Label,
+                          end: asm.Label,
+                          force: Boolean = false): Unit = {
       val Local(tk, name, idx, isSynth) = locals(sym)
       if (force || !isSynth) {
         mnode.visitLocalVariable(name, tk.descriptor, null, start, end, idx)

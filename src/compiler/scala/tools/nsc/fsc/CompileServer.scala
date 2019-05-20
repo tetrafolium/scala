@@ -22,13 +22,13 @@ import scala.tools.nsc.reporters.{ConsoleReporter, Reporter}
 import scala.util.Properties
 
 /**
- *  The server part of the fsc offline compiler.  It awaits compilation
- *  commands and executes them.  It caches a compiler instance so
- *  that it can respond more quickly.
- *
- *  @author Martin Odersky
- *  @version 1.0
- */
+  *  The server part of the fsc offline compiler.  It awaits compilation
+  *  commands and executes them.  It caches a compiler instance so
+  *  that it can respond more quickly.
+  *
+  *  @author Martin Odersky
+  *  @version 1.0
+  */
 class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
   lazy val compileSocket: CompileSocket = CompileSocket
 
@@ -51,8 +51,9 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
 
   def printMemoryStats(): Unit = {
     def mb(bytes: Long) = "%10.2fMB".format(bytes / 1048576.0)
-    info("New session: total memory = %s, max memory = %s, free memory = %s".format(
-      mb(totalMemory), mb(maxMemory), mb(freeMemory)))
+    info(
+      "New session: total memory = %s, max memory = %s, free memory = %s"
+        .format(mb(totalMemory), mb(maxMemory), mb(freeMemory)))
   }
 
   def isMemoryFullEnough() = {
@@ -61,16 +62,17 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
   }
 
   /** Problematically, Settings are only considered equal if every setting
-   *  is exactly equal.  In fsc this immediately breaks down because the randomly
-   *  chosen temporary outdirs differ between client and server.  Among other
-   *  things.  Long term we could use a meaningful equality; short term I'm just
-   *  ignoring options which I can see causing a new compiler instance every time
-   *  and which do not interestingly influence compilation products.
-   */
+    *  is exactly equal.  In fsc this immediately breaks down because the randomly
+    *  chosen temporary outdirs differ between client and server.  Among other
+    *  things.  Long term we could use a meaningful equality; short term I'm just
+    *  ignoring options which I can see causing a new compiler instance every time
+    *  and which do not interestingly influence compilation products.
+    */
   def unequalSettings(s1: Settings, s2: Settings): Set[Settings#Setting] = {
     val ignoreSettings = Set("-d", "-encoding", "-currentDir")
-    def trim (s: Settings): Set[Settings#Setting] = (
-      s.userSetSettings.toSet[Settings#Setting] filterNot (ss => ignoreSettings.exists(ss respondsTo _))
+    def trim(s: Settings): Set[Settings#Setting] = (
+      s.userSetSettings.toSet[Settings#Setting] filterNot (ss =>
+        ignoreSettings.exists(ss respondsTo _))
     )
     val ss1 = trim(s1)
     val ss2 = trim(s2)
@@ -79,9 +81,9 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
   }
 
   def session(): Unit = {
-    val password        = compileSocket getPassword port
+    val password = compileSocket getPassword port
     val guessedPassword = in.readLine()
-    val input           = in.readLine()
+    val input = in.readLine()
 
     def fscError(msg: String): Unit = out println (
       "" + FakePos("fsc") + msg + "\n  fsc -help  gives more information"
@@ -89,13 +91,15 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
     if (input == null || password != guessedPassword)
       return
 
-    val args        = input.split("\u0000", -1).toList
+    val args = input.split("\u0000", -1).toList
     val newSettings = new FscSettings(fscError)
-    val command     = new OfflineCompilerCommand(args, newSettings)
-    this.verbose    = newSettings.verbose.value
+    val command = new OfflineCompilerCommand(args, newSettings)
+    this.verbose = newSettings.verbose.value
 
     info("Settings after normalizing paths: " + newSettings)
-    if (!command.files.isEmpty) info("Input files after normalizing paths: " + (command.files mkString ","))
+    if (!command.files.isEmpty)
+      info(
+        "Input files after normalizing paths: " + (command.files mkString ","))
     printMemoryStats()
 
     // Update the idle timeout if given
@@ -129,13 +133,16 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
       }
       val unequal = unequalSettings(newSettings, compiler.settings)
       if (unequal.nonEmpty) {
-        info("[Replacing compiler with new instance because settings are unequal.]")
+        info(
+          "[Replacing compiler with new instance because settings are unequal.]")
         info("[Asymmetric settings: " + unequal.mkString(", ") + "]")
       }
       unequal.isEmpty
     }
+
     /** Create a new compiler instance */
-    def newGlobal(settings: Settings, reporter: Reporter) = Global(settings, reporter)
+    def newGlobal(settings: Settings, reporter: Reporter) =
+      Global(settings, reporter)
 
     if (command.shouldStopWithInfo)
       reporter.echo(command.getInfoMessage(newGlobal(newSettings, reporter)))
@@ -146,8 +153,7 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
         info("[Reusing existing Global instance.]")
         compiler.currentSettings = newSettings
         compiler.reporter = reporter
-      }
-      else {
+      } else {
         compiler = newGlobal(newSettings, reporter)
       }
       val c = compiler
@@ -158,7 +164,9 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
           clearCompiler()
         case ex: Throwable =>
           warn("Compile server encountered fatal condition: " + ex)
-          reporter.error(null, "Compile server encountered fatal condition: " + ex.getMessage)
+          reporter.error(
+            null,
+            "Compile server encountered fatal condition: " + ex.getMessage)
           shutdown = true
           throw ex
       }
@@ -173,6 +181,7 @@ class StandardCompileServer(fixPort: Int = 0) extends SocketServer(fixPort) {
 }
 
 object CompileServer {
+
   /** A directory holding redirected output */
   //private lazy val redirectDir = (compileSocket.tmpDir / "output-redirects").createDirectory()
 
@@ -191,7 +200,7 @@ object CompileServer {
     * until the callback is finished. Callbacks should be kept simple and clients should not try to
     * interact with the server while the callback is processing.
     */
-  def execute(startupCallback : () => Unit, args: Array[String]): Unit = {
+  def execute(startupCallback: () => Unit, args: Array[String]): Unit = {
     val debug = args contains "-v"
     var port = 0
 
@@ -211,8 +220,10 @@ object CompileServer {
     }
 
     Console.withErr(createRedirect(redirectDir, "scala-compile-server-err.log")) {
-      Console.withOut(createRedirect(redirectDir, "scala-compile-server-out.log")) {
-        Console.err.println("...starting server on socket "+server.port+"...")
+      Console.withOut(
+        createRedirect(redirectDir, "scala-compile-server-out.log")) {
+        Console.err.println(
+          "...starting server on socket " + server.port + "...")
         Console.err.flush()
         server.compileSocket setPort server.port
         startupCallback()

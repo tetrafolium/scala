@@ -35,20 +35,22 @@ class ChampMapSmokeTest {
   val v5h5 = mkValue(5, 5)
 
   val v32769 = mkValue(32769, 32769)
-  val v32769a = mkValue(32769*10+1, 32769)
-  val v32769b = mkValue(32769*10+2, 32769)
+  val v32769a = mkValue(32769 * 10 + 1, 32769)
+  val v32769b = mkValue(32769 * 10 + 2, 32769)
 
   @Test def testCheckPrefixConstruction(): Unit = {
     val map: HashMap[Int, Int] = emptyMap
 
-    val res1 = map + mkTuple(63) + mkTuple(64) + mkTuple(32768) + mkTuple(2147483647) + mkTuple(65536)
+    val res1 = map + mkTuple(63) + mkTuple(64) + mkTuple(32768) + mkTuple(
+      2147483647) + mkTuple(65536)
     assert(res1.contains(63))
     assert(res1.contains(64))
     assert(res1.contains(32768))
     assert(res1.contains(65536))
     assert(res1.contains(2147483647))
 
-    val res2 = map + mkTuple(2147483647) + mkTuple(32768) + mkTuple(63) + mkTuple(64) + mkTuple(65536)
+    val res2 = map + mkTuple(2147483647) + mkTuple(32768) + mkTuple(63) + mkTuple(
+      64) + mkTuple(65536)
     assert(res2.contains(63))
     assert(res2.contains(64))
     assert(res2.contains(32768))
@@ -72,7 +74,8 @@ class ChampMapSmokeTest {
     assert(!(res1 == res2))
   }
 
-  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode1(): Unit = {
+  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode1()
+    : Unit = {
     val map: HashMap[CustomHashInt, CustomHashInt] = emptyMap
 
     val res1 = map + mkTuple(v11h1) + mkTuple(v12h1)
@@ -93,7 +96,8 @@ class ChampMapSmokeTest {
     assert(!(res1 == resX))
   }
 
-  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode2(): Unit = {
+  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode2()
+    : Unit = {
     val map: HashMap[CustomHashInt, CustomHashInt] = emptyMap
 
     val res1 = map + mkTuple(v32769a) + mkTuple(v32769b)
@@ -111,12 +115,14 @@ class ChampMapSmokeTest {
     assertEquals(2, res3.size)
     assertTrue(res3.contains(v1h1))
     assertTrue(res3.contains(v32769a))
-    println(scala.runtime.ScalaRunTime.getClass.getProtectionDomain.getCodeSource)
+    println(
+      scala.runtime.ScalaRunTime.getClass.getProtectionDomain.getCodeSource)
     val expected = mapOf(mkTuple(v1h1), mkTuple(v32769a))
     assertEquals(expected, res3)
   }
 
-  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode3(): Unit = {
+  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode3()
+    : Unit = {
     val map: HashMap[CustomHashInt, CustomHashInt] = emptyMap
     val res1 = map + mkTuple(v32769a) + mkTuple(v32769b)
     assertEquals(2, res1.size)
@@ -136,7 +142,8 @@ class ChampMapSmokeTest {
     assertEquals(res1, res3)
   }
 
-  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode4(): Unit = {
+  @Test def testCheckCompactionFromBeginUponDelete_HashCollisionNode4()
+    : Unit = {
     val map: HashMap[CustomHashInt, CustomHashInt] = emptyMap
     val res1 = map + mkTuple(v32769a) + mkTuple(v32769b)
     assertEquals(2, res1.size)
@@ -170,14 +177,18 @@ class ChampMapSmokeTest {
     assertEquals(emptyMap, res)
   }
 
-  object O1 { override def hashCode = 1 ; override def toString = "O1"}
-  class C(val i: Int) { override def hashCode = i % 4 ; override def toString = s"C($i)" }
+  object O1 { override def hashCode = 1; override def toString = "O1" }
+  class C(val i: Int) {
+    override def hashCode = i % 4; override def toString = s"C($i)"
+  }
   val cs = Array.tabulate(4096)(new C(_))
 
-  private def assertSameEqHash(expected: HashMap[Any, Any], actual: HashMap[Any, Any]) = {
+  private def assertSameEqHash(expected: HashMap[Any, Any],
+                               actual: HashMap[Any, Any]) = {
     assertEquals(List.from(actual).size, actual.size)
     assertEquals(expected.size, actual.size)
-    assertEquals(expected.rootNode.cachedJavaKeySetHashCode, actual.rootNode.cachedJavaKeySetHashCode)
+    assertEquals(expected.rootNode.cachedJavaKeySetHashCode,
+                 actual.rootNode.cachedJavaKeySetHashCode)
     assertEquals(expected.hashCode(), actual.hashCode())
   }
 
@@ -198,7 +209,8 @@ class ChampMapSmokeTest {
     var map1 = map
     for (c <- cs) {
       map1 = map1.updated(c, value(c.i))
-      assertEquals(map.rootNode.cachedJavaKeySetHashCode, map1.rootNode.cachedJavaKeySetHashCode)
+      assertEquals(map.rootNode.cachedJavaKeySetHashCode,
+                   map1.rootNode.cachedJavaKeySetHashCode)
       if (c.i % 41 == 0)
         assertEquals(map, map1)
     }
@@ -206,7 +218,7 @@ class ChampMapSmokeTest {
     assertSameEqHash(map1, map)
 
     var map2 = map + mkTuple(O1, "O1_V2")
-    map2 = map2 +  mkTuple(O1, "O1_V2")
+    map2 = map2 + mkTuple(O1, "O1_V2")
     assertSameEqHash(map1 + mkTuple(O1, "O1_V2"), map2)
   }
 
@@ -215,7 +227,7 @@ class ChampMapSmokeTest {
     val key = "k"
     var map = emptyMap[Any, Any].updated(key, s1).updated(key, s2)
     Assert.assertSame(s2, map.apply(key))
-    class collision() { override def hashCode = key.hashCode}
+    class collision() { override def hashCode = key.hashCode }
     for (i <- (0 to 1024)) map = map.updated(new collision(), "")
     Assert.assertSame(s1, map.updated(key, s1).apply(key))
   }

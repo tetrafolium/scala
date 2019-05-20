@@ -22,7 +22,8 @@ object TrapExit {
   def apply[A](action: () => A): Either[(Int, Throwable), A] = {
     val saved = System.getSecurityManager
     System.setSecurityManager(new DelegatingSecurityManager(saved) {
-      override def checkExit(status: Int): Unit = throw new TrapExitThrowable(status)
+      override def checkExit(status: Int): Unit =
+        throw new TrapExitThrowable(status)
     })
     try {
       Right(action())

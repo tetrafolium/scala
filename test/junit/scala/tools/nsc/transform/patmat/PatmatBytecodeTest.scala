@@ -12,7 +12,9 @@ import scala.tools.testing.BytecodeTesting._
 
 @RunWith(classOf[JUnit4])
 class PatmatBytecodeTest extends BytecodeTesting {
-  val optCompiler = cached("optCompiler", () => newCompiler(extraArgs = "-opt:l:inline -opt-inline-from:**"))
+  val optCompiler = cached(
+    "optCompiler",
+    () => newCompiler(extraArgs = "-opt:l:inline -opt-inline-from:**"))
 
   import compiler._
 
@@ -39,8 +41,10 @@ class PatmatBytecodeTest extends BytecodeTesting {
       """.stripMargin
 
     val c = compileClass(code)
-    assert(getInstructions(c, "s1").count(_.opcode == TABLESWITCH) == 1, textify(c))
-    assert(getInstructions(c, "s2").count(_.opcode == TABLESWITCH) == 1, textify(c))
+    assert(getInstructions(c, "s1").count(_.opcode == TABLESWITCH) == 1,
+           textify(c))
+    assert(getInstructions(c, "s2").count(_.opcode == TABLESWITCH) == 1,
+           textify(c))
   }
 
   @Test
@@ -67,8 +71,10 @@ class PatmatBytecodeTest extends BytecodeTesting {
       """.stripMargin
 
     val c = compileClass(code)
-    assert(getInstructions(c, "s1").count(_.opcode == TABLESWITCH) == 1, textify(c))
-    assert(getInstructions(c, "s2").count(_.opcode == TABLESWITCH) == 1, textify(c))
+    assert(getInstructions(c, "s1").count(_.opcode == TABLESWITCH) == 1,
+           textify(c))
+    assert(getInstructions(c, "s2").count(_.opcode == TABLESWITCH) == 1,
+           textify(c))
   }
 
   @Test
@@ -83,9 +89,8 @@ class PatmatBytecodeTest extends BytecodeTesting {
       """.stripMargin
     val c :: _ = optCompiler.compileClasses(code)
 
-    assertSameSummary(getMethod(c, "a"), List(
-      NEW, DUP, ICONST_1, LDC, "<init>",
-      "y", ARETURN))
+    assertSameSummary(getMethod(c, "a"),
+                      List(NEW, DUP, ICONST_1, LDC, "<init>", "y", ARETURN))
   }
 
   @Test
@@ -99,7 +104,9 @@ class PatmatBytecodeTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c :: _ = optCompiler.compileClasses(code)
-    assert(!getInstructions(c, "a").exists(i => i.opcode == IFNULL || i.opcode == IFNONNULL), textify(getAsmMethod(c, "a")))
+    assert(!getInstructions(c, "a").exists(i =>
+             i.opcode == IFNULL || i.opcode == IFNONNULL),
+           textify(getAsmMethod(c, "a")))
   }
 
   @Test
@@ -113,12 +120,33 @@ class PatmatBytecodeTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c :: _ = optCompiler.compileClasses(code)
-    assertSameSummary(getMethod(c, "a"), List(
-      NEW, DUP, ICONST_1, "valueOf", LDC, "<init>", ASTORE /*1*/,
-      ALOAD /*1*/, "y", ASTORE /*2*/,
-      ALOAD /*1*/, "x", INSTANCEOF, IFNE /*R*/,
-      NEW, DUP, ALOAD /*1*/, "<init>", ATHROW,
-      /*R*/ -1, ALOAD /*2*/, ARETURN))
+    assertSameSummary(
+      getMethod(c, "a"),
+      List(
+        NEW,
+        DUP,
+        ICONST_1,
+        "valueOf",
+        LDC,
+        "<init>",
+        ASTORE /*1*/,
+        ALOAD /*1*/,
+        "y",
+        ASTORE /*2*/,
+        ALOAD /*1*/,
+        "x",
+        INSTANCEOF,
+        IFNE /*R*/,
+        NEW,
+        DUP,
+        ALOAD /*1*/,
+        "<init>",
+        ATHROW,
+        /*R*/ -1,
+        ALOAD /*2*/,
+        ARETURN
+      )
+    )
   }
 
   @Test
@@ -133,14 +161,30 @@ class PatmatBytecodeTest extends BytecodeTesting {
         |  }
         |}
       """.stripMargin
-    val c = optCompiler.compileClass(code, allowMessage = _.msg.contains("may not be exhaustive"))
+    val c = optCompiler.compileClass(code,
+                                     allowMessage =
+                                       _.msg.contains("may not be exhaustive"))
 
     val expected = List(
-      ALOAD /*1*/ , INSTANCEOF /*::*/ , IFEQ /*A*/ ,
-      ALOAD, CHECKCAST /*::*/ , "head", "unboxToInt",
-      ISTORE, GOTO /*B*/ ,
-      -1 /*A*/ , NEW /*MatchError*/ , DUP, ALOAD /*1*/ , "<init>", ATHROW,
-      -1 /*B*/ , ILOAD, IRETURN)
+      ALOAD /*1*/,
+      INSTANCEOF /*::*/,
+      IFEQ /*A*/,
+      ALOAD,
+      CHECKCAST /*::*/,
+      "head",
+      "unboxToInt",
+      ISTORE,
+      GOTO /*B*/,
+      -1 /*A*/,
+      NEW /*MatchError*/,
+      DUP,
+      ALOAD /*1*/,
+      "<init>",
+      ATHROW,
+      -1 /*B*/,
+      ILOAD,
+      IRETURN
+    )
 
     assertSameSummary(getMethod(c, "a"), expected)
     assertSameSummary(getMethod(c, "b"), expected)
@@ -166,17 +210,29 @@ class PatmatBytecodeTest extends BytecodeTesting {
         |}
       """.stripMargin
     val List(c, cMod) = optCompiler.compileClasses(code)
-    assertSameSummary(getMethod(c, "t1"), List(ICONST_1, ICONST_2, IADD, IRETURN))
+    assertSameSummary(getMethod(c, "t1"),
+                      List(ICONST_1, ICONST_2, IADD, IRETURN))
     assertSameSummary(getMethod(c, "t2"), List(ICONST_1, IRETURN))
-    assertInvokedMethods(getMethod(c, "t3"), List("C.tplCall", "scala/Tuple2._1", "scala/Tuple2._2$mcI$sp", "scala/MatchError.<init>", "java/lang/String.length"))
-    assertInvokedMethods(getMethod(c, "t4"), List("C.tplCall", "scala/Tuple2._2$mcI$sp", "scala/MatchError.<init>"))
+    assertInvokedMethods(getMethod(c, "t3"),
+                         List("C.tplCall",
+                              "scala/Tuple2._1",
+                              "scala/Tuple2._2$mcI$sp",
+                              "scala/MatchError.<init>",
+                              "java/lang/String.length"))
+    assertInvokedMethods(
+      getMethod(c, "t4"),
+      List("C.tplCall", "scala/Tuple2._2$mcI$sp", "scala/MatchError.<init>"))
     assertNoInvoke(getMethod(c, "t5"))
     assertSameSummary(getMethod(c, "t6"), List(BIPUSH, IRETURN))
 
     // MatchError reachable because of the type pattern `s: String`
-    assertInvokedMethods(getMethod(c, "t7"), List("C.a", "C.b", "scala/MatchError.<init>", "java/lang/String.length"))
+    assertInvokedMethods(
+      getMethod(c, "t7"),
+      List("C.a", "C.b", "scala/MatchError.<init>", "java/lang/String.length"))
     assertSameSummary(getMethod(c, "t8"), List(ALOAD, "b", IRETURN))
     // C allocation not eliminated - constructor may have side-effects.
-    assertSameSummary(getMethod(c, "t9"), List(NEW, DUP, LDC, BIPUSH, "<init>", "a", "toString", ARETURN))
+    assertSameSummary(
+      getMethod(c, "t9"),
+      List(NEW, DUP, LDC, BIPUSH, "<init>", "a", "toString", ARETURN))
   }
 }

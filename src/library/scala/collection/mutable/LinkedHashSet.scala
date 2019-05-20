@@ -16,29 +16,28 @@ package mutable
 
 import scala.collection.generic.DefaultSerializable
 
-
 /** This class implements mutable sets using a hashtable.
- *  The iterator and all traversal methods of this class visit elements in the order they were inserted.
- *
- *  @author  Matthias Zenger
- *  @author  Martin Odersky
- *  @author  Pavel Pavlov
- *  @since   1
- *
- *  @tparam A     the type of the elements contained in this set.
- *
- *  @define Coll `LinkedHashSet`
- *  @define coll linked hash set
- *  @define mayNotTerminateInf
- *  @define willNotTerminateInf
- *  @define orderDependent
- *  @define orderDependentFold
- */
+  *  The iterator and all traversal methods of this class visit elements in the order they were inserted.
+  *
+  *  @author  Matthias Zenger
+  *  @author  Martin Odersky
+  *  @author  Pavel Pavlov
+  *  @since   1
+  *
+  *  @tparam A     the type of the elements contained in this set.
+  *
+  *  @define Coll `LinkedHashSet`
+  *  @define coll linked hash set
+  *  @define mayNotTerminateInf
+  *  @define willNotTerminateInf
+  *  @define orderDependent
+  *  @define orderDependentFold
+  */
 class LinkedHashSet[A]
-  extends AbstractSet[A]
+    extends AbstractSet[A]
     with SetOps[A, LinkedHashSet, LinkedHashSet[A]]
     with StrictOptimizedIterableOps[A, LinkedHashSet, LinkedHashSet[A]]
-    with DefaultSerializable  {
+    with DefaultSerializable {
 
   override def iterableFactory: IterableFactory[LinkedHashSet] = LinkedHashSet
 
@@ -71,16 +70,20 @@ class LinkedHashSet[A]
 
   override def last: A =
     if (size > 0) lastEntry.key
-    else throw new java.util.NoSuchElementException("Cannot call .last on empty LinkedHashSet")
-      
+    else
+      throw new java.util.NoSuchElementException(
+        "Cannot call .last on empty LinkedHashSet")
+
   override def lastOption: Option[A] =
     if (size > 0) Some(lastEntry.key)
     else None
 
   override def head: A =
     if (size > 0) firstEntry.key
-    else throw new java.util.NoSuchElementException("Cannot call .head on empty LinkedHashSet")
-      
+    else
+      throw new java.util.NoSuchElementException(
+        "Cannot call .head on empty LinkedHashSet")
+
   override def headOption: Option[A] =
     if (size > 0) Some(firstEntry.key)
     else None
@@ -118,8 +121,8 @@ class LinkedHashSet[A]
     private[this] var cur = firstEntry
     def hasNext = cur ne null
     def next() =
-      if (hasNext) { val res = cur.key; cur = cur.later; res }
-      else Iterator.empty.next()
+      if (hasNext) { val res = cur.key; cur = cur.later; res } else
+        Iterator.empty.next()
   }
 
   override def foreach[U](f: A => U): Unit = {
@@ -138,7 +141,9 @@ class LinkedHashSet[A]
 
   private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.defaultWriteObject()
-    table.serializeTo(out, { e => out.writeObject(e.key) })
+    table.serializeTo(out, { e =>
+      out.writeObject(e.key)
+    })
   }
 
   private def readObject(in: java.io.ObjectInputStream): Unit = {
@@ -147,14 +152,14 @@ class LinkedHashSet[A]
     table.init(in, table.createNewEntry(in.readObject().asInstanceOf[A], null))
   }
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "LinkedHashSet"
 }
 
 /** $factoryInfo
- *  @define Coll `LinkedHashSet`
- *  @define coll linked hash set
- */
+  *  @define Coll `LinkedHashSet`
+  *  @define coll linked hash set
+  */
 @SerialVersionUID(3L)
 object LinkedHashSet extends IterableFactory[LinkedHashSet] {
 
@@ -163,17 +168,17 @@ object LinkedHashSet extends IterableFactory[LinkedHashSet] {
   def from[E](it: collection.IterableOnce[E]) =
     it match {
       case lhs: LinkedHashSet[E] => lhs
-      case _ => Growable.from(empty[E], it)
+      case _                     => Growable.from(empty[E], it)
     }
 
   def newBuilder[A] = new GrowableBuilder(empty[A])
 
   /** Class for the linked hash set entry, used internally.
-   *  @since 2.10
-   */
-  private[mutable] final class Entry[A](val key: A) extends HashEntry[A, Entry[A]] {
+    *  @since 2.10
+    */
+  private[mutable] final class Entry[A](val key: A)
+      extends HashEntry[A, Entry[A]] {
     var earlier: Entry[A] = null
     var later: Entry[A] = null
   }
 }
-

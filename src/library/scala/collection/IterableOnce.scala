@@ -26,6 +26,7 @@ import scala.collection.mutable.StringBuilder
   * @define coll collection
   */
 trait IterableOnce[+A] extends Any {
+
   /** Iterator can be used only once */
   def iterator: Iterator[A]
 
@@ -35,12 +36,14 @@ trait IterableOnce[+A] extends Any {
   def knownSize: Int
 }
 
-final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) extends AnyVal {
+final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A])
+    extends AnyVal {
   @deprecated("Use .iterator.withFilter(...) instead", "2.13.0")
   def withFilter(f: A => Boolean): Iterator[A] = it.iterator.withFilter(f)
 
   @deprecated("Use .iterator.reduceLeftOption(...) instead", "2.13.0")
-  def reduceLeftOption(f: (A, A) => A): Option[A] = it.iterator.reduceLeftOption(f)
+  def reduceLeftOption(f: (A, A) => A): Option[A] =
+    it.iterator.reduceLeftOption(f)
 
   @deprecated("Use .iterator.min instead", "2.13.0")
   def min(implicit ord: Ordering[A]): A = it.iterator.min
@@ -82,7 +85,8 @@ final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) ext
   def forall(f: A => Boolean): Boolean = it.iterator.forall(f)
 
   @deprecated("Use .iterator.collectFirst(...) instead", "2.13.0")
-  def collectFirst[B](f: PartialFunction[A, B]): Option[B] = it.iterator.collectFirst(f)
+  def collectFirst[B](f: PartialFunction[A, B]): Option[B] =
+    it.iterator.collectFirst(f)
 
   @deprecated("Use .iterator.filter(...) instead", "2.13.0")
   def filter(f: A => Boolean): Iterator[A] = it.iterator.filter(f)
@@ -91,13 +95,15 @@ final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) ext
   def exists(f: A => Boolean): Boolean = it.iterator.exists(f)
 
   @deprecated("Use .iterator.copyToBuffer(...) instead", "2.13.0")
-  def copyToBuffer(dest: mutable.Buffer[A]): Unit = it.iterator.copyToBuffer(dest)
+  def copyToBuffer(dest: mutable.Buffer[A]): Unit =
+    it.iterator.copyToBuffer(dest)
 
   @deprecated("Use .iterator.reduce(...) instead", "2.13.0")
   def reduce(f: (A, A) => A): A = it.iterator.reduce(f)
 
   @deprecated("Use .iterator.reduceRightOption(...) instead", "2.13.0")
-  def reduceRightOption(f: (A, A) => A): Option[A] = it.iterator.reduceRightOption(f)
+  def reduceRightOption(f: (A, A) => A): Option[A] =
+    it.iterator.reduceRightOption(f)
 
   @deprecated("Use .iterator.toIndexedSeq instead", "2.13.0")
   def toIndexedSeq: IndexedSeq[A] = it.iterator.toIndexedSeq
@@ -105,7 +111,7 @@ final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) ext
   @deprecated("Use .iterator.foreach(...) instead", "2.13.0")
   @`inline` def foreach[U](f: A => U): Unit = it match {
     case it: Iterable[A] => it.foreach(f)
-    case _ => it.iterator.foreach(f)
+    case _               => it.iterator.foreach(f)
   }
 
   @deprecated("Use .iterator.to(factory) instead", "2.13.0")
@@ -117,7 +123,7 @@ final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) ext
   @deprecated("Use .iterator.toArray", "2.13.0")
   def toArray[B >: A: ClassTag]: Array[B] = it match {
     case it: Iterable[B] => it.toArray[B]
-    case _ => mutable.ArrayBuffer.from(it).toArray
+    case _               => mutable.ArrayBuffer.from(it).toArray
   }
 
   @deprecated("Use .iterator.to(List) instead", "2.13.0")
@@ -151,63 +157,69 @@ final class IterableOnceExtensionMethods[A](private val it: IterableOnce[A]) ext
   @deprecated("Use .iterator.isEmpty instead", "2.13.0")
   def isEmpty: Boolean = it match {
     case it: Iterable[A] => it.isEmpty
-    case _ => it.iterator.isEmpty
+    case _               => it.iterator.isEmpty
   }
 
   @deprecated("Use .iterator.mkString instead", "2.13.0")
   def mkString(start: String, sep: String, end: String): String = it match {
     case it: Iterable[A] => it.mkString(start, sep, end)
-    case _ => it.iterator.mkString(start, sep, end)
+    case _               => it.iterator.mkString(start, sep, end)
   }
 
   @deprecated("Use .iterator.mkString instead", "2.13.0")
   def mkString(sep: String): String = it match {
     case it: Iterable[A] => it.mkString(sep)
-    case _ => it.iterator.mkString(sep)
+    case _               => it.iterator.mkString(sep)
   }
 
   @deprecated("Use .iterator.mkString instead", "2.13.0")
   def mkString: String = it match {
     case it: Iterable[A] => it.mkString
-    case _ => it.iterator.mkString
+    case _               => it.iterator.mkString
   }
 
   @deprecated("Use .iterator.find instead", "2.13.0")
   def find(p: A => Boolean): Option[A] = it.iterator.find(p)
 
   @deprecated("Use .iterator.foldLeft instead", "2.13.0")
-  @`inline` def foldLeft[B](z: B)(op: (B, A) => B): B = it.iterator.foldLeft(z)(op)
+  @`inline` def foldLeft[B](z: B)(op: (B, A) => B): B =
+    it.iterator.foldLeft(z)(op)
 
   @deprecated("Use .iterator.foldRight instead", "2.13.0")
-  @`inline` def foldRight[B](z: B)(op: (A, B) => B): B = it.iterator.foldRight(z)(op)
+  @`inline` def foldRight[B](z: B)(op: (A, B) => B): B =
+    it.iterator.foldRight(z)(op)
 
   @deprecated("Use .iterator.fold instead", "2.13.0")
   def fold[A1 >: A](z: A1)(op: (A1, A1) => A1): A1 = it.iterator.fold(z)(op)
 
   @deprecated("Use .iterator.foldLeft instead", "2.13.0")
-  @`inline` def /: [B](z: B)(op: (B, A) => B): B = foldLeft[B](z)(op)
+  @`inline` def /:[B](z: B)(op: (B, A) => B): B = foldLeft[B](z)(op)
 
   @deprecated("Use .iterator.foldRight instead", "2.13.0")
-  @`inline` def :\ [B](z: B)(op: (A, B) => B): B = foldRight[B](z)(op)
+  @`inline` def :\[B](z: B)(op: (A, B) => B): B = foldRight[B](z)(op)
 
-  @deprecated("Use .iterator.map instead or consider requiring an Iterable", "2.13.0")
+  @deprecated("Use .iterator.map instead or consider requiring an Iterable",
+              "2.13.0")
   def map[B](f: A => B): IterableOnce[B] = it match {
     case it: Iterable[A] => it.map(f)
-    case _ => it.iterator.map(f)
+    case _               => it.iterator.map(f)
   }
 
-  @deprecated("Use .iterator.flatMap instead or consider requiring an Iterable", "2.13.0")
+  @deprecated("Use .iterator.flatMap instead or consider requiring an Iterable",
+              "2.13.0")
   def flatMap[B](f: A => IterableOnce[B]): IterableOnce[B] = it match {
     case it: Iterable[A] => it.flatMap(f)
-    case _ => it.iterator.flatMap(f)
+    case _               => it.iterator.flatMap(f)
   }
 
   @deprecated("Use .iterator.sameElements instead", "2.13.0")
-  def sameElements[B >: A](that: IterableOnce[B]): Boolean = it.iterator.sameElements(that)
+  def sameElements[B >: A](that: IterableOnce[B]): Boolean =
+    it.iterator.sameElements(that)
 }
 
 object IterableOnce {
-  @`inline` implicit def iterableOnceExtensionMethods[A](it: IterableOnce[A]): IterableOnceExtensionMethods[A] =
+  @`inline` implicit def iterableOnceExtensionMethods[A](
+      it: IterableOnce[A]): IterableOnceExtensionMethods[A] =
     new IterableOnceExtensionMethods[A](it)
 
   /** Computes the number of elements to copy to an array from a source IterableOnce
@@ -218,7 +230,10 @@ object IterableOnce {
     * @param len the requested number of elements to copy (we may only be able to copy less than this)
     * @return the number of elements that will be copied to the destination array
     */
-  @inline private[collection] def elemsToCopyToArray(srcLen: Int, destLen: Int, start: Int, len: Int): Int =
+  @inline private[collection] def elemsToCopyToArray(srcLen: Int,
+                                                     destLen: Int,
+                                                     start: Int,
+                                                     len: Int): Int =
     math.max(math.min(math.min(len, srcLen), destLen - start), 0)
 }
 
@@ -459,19 +474,21 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
   def span(p: A => Boolean): (C, C)
 
   /** Splits this $coll into a prefix/suffix pair at a given position.
-   *
-   *  Note: `c splitAt n` is equivalent to (but possibly more efficient than)
-   *         `(c take n, c drop n)`.
-   *  $orderDependent
-   *
-   *  @param n the position at which to split.
-   *  @return  a pair of ${coll}s consisting of the first `n`
-   *           elements of this $coll, and the other elements.
-   *  @note    Reuse: $consumesOneAndProducesTwoIterators
-   */
+    *
+    *  Note: `c splitAt n` is equivalent to (but possibly more efficient than)
+    *         `(c take n, c drop n)`.
+    *  $orderDependent
+    *
+    *  @param n the position at which to split.
+    *  @return  a pair of ${coll}s consisting of the first `n`
+    *           elements of this $coll, and the other elements.
+    *  @note    Reuse: $consumesOneAndProducesTwoIterators
+    */
   def splitAt(n: Int): (C, C) = {
     var i = 0
-    span { _ => if (i < n) { i += 1; true } else false }
+    span { _ =>
+      if (i < n) { i += 1; true } else false
+    }
   }
 
   /** Applies a side-effecting function to each element in this collection.
@@ -516,14 +533,16 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @return  `'''true'''` if this collection is known to have finite size,
     *           `'''false'''` otherwise.
     */
-  @deprecated("Check .knownSize instead of .hasDefiniteSize for more actionable information (see scaladoc for details)", "2.13.0")
+  @deprecated(
+    "Check .knownSize instead of .hasDefiniteSize for more actionable information (see scaladoc for details)",
+    "2.13.0")
   def hasDefiniteSize: Boolean = true
 
   /** Tests whether this $coll can be repeatedly traversed.  Always
-   *  true for Iterables and false for Iterators unless overridden.
-   *
-   *  @return   `true` if it is repeatedly traversable, `false` otherwise.
-   */
+    *  true for Iterables and false for Iterators unless overridden.
+    *
+    *  @return   `true` if it is repeatedly traversable, `false` otherwise.
+    */
   def isTraversableAgain: Boolean = false
 
   /** Apply `f` to each element for its side effects
@@ -531,7 +550,7 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     */
   def foreach[U](f: A => U): Unit = {
     val it = iterator
-    while(it.hasNext) f(it.next())
+    while (it.hasNext) f(it.next())
   }
 
   /** Tests whether a predicate holds for all elements of this $coll.
@@ -635,13 +654,14 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *           where `x,,1,,, ..., x,,n,,` are the elements of this $coll.
     *           Returns `z` if this $coll is empty.
     */
-  def foldRight[B](z: B)(op: (A, B) => B): B = reversed.foldLeft(z)((b, a) => op(a, b))
+  def foldRight[B](z: B)(op: (A, B) => B): B =
+    reversed.foldLeft(z)((b, a) => op(a, b))
 
   @deprecated("Use foldLeft instead of /:", "2.13.0")
-  @`inline` final def /: [B](z: B)(op: (B, A) => B): B = foldLeft[B](z)(op)
+  @`inline` final def /:[B](z: B)(op: (B, A) => B): B = foldLeft[B](z)(op)
 
   @deprecated("Use foldRight instead of :\\", "2.13.0")
-  @`inline` final def :\ [B](z: B)(op: (A, B) => B): B = foldRight[B](z)(op)
+  @`inline` final def :\[B](z: B)(op: (A, B) => B): B = foldRight[B](z)(op)
 
   /** Folds the elements of this $coll using the specified associative binary operator.
     * The default implementation in `IterableOnce` is equivalent to `foldLeft` but may be
@@ -709,8 +729,7 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
       if (first) {
         acc = x
         first = false
-      }
-      else acc = op(acc, x)
+      } else acc = op(acc, x)
     }
     acc
   }
@@ -746,7 +765,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @return  an option value containing the result of `reduceLeft(op)` if this $coll is nonempty,
     *           `None` otherwise.
     */
-  def reduceLeftOption[B >: A](op: (B, A) => B): Option[B] = if (isEmpty) None else Some(reduceLeft(op))
+  def reduceLeftOption[B >: A](op: (B, A) => B): Option[B] =
+    if (isEmpty) None else Some(reduceLeft(op))
 
   /** Optionally applies a binary operator to all elements of this $coll, going
     *  right to left.
@@ -758,7 +778,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @return  an option value containing the result of `reduceRight(op)` if this $coll is nonempty,
     *           `None` otherwise.
     */
-  def reduceRightOption[B >: A](op: (A, B) => B): Option[B] = if (isEmpty) None else Some(reduceRight(op))
+  def reduceRightOption[B >: A](op: (A, B) => B): Option[B] =
+    if (isEmpty) None else Some(reduceRight(op))
 
   /** Tests whether the $coll is empty.
     *
@@ -773,7 +794,9 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *
     *  @return    `true` if the $coll contains at least one element, `false` otherwise.
     */
-  @deprecatedOverriding("nonEmpty is defined as !isEmpty; override isEmpty instead", "2.13.0")
+  @deprecatedOverriding(
+    "nonEmpty is defined as !isEmpty; override isEmpty instead",
+    "2.13.0")
   def nonEmpty: Boolean = !isEmpty
 
   /** The size of this $coll.
@@ -793,21 +816,22 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
   }
 
   @deprecated("Use `dest ++= coll` instead", "2.13.0")
-  @inline final def copyToBuffer[B >: A](dest: mutable.Buffer[B]): Unit = dest ++= this
+  @inline final def copyToBuffer[B >: A](dest: mutable.Buffer[B]): Unit =
+    dest ++= this
 
   /** Copy elements to an array, returning the number of elements written.
-   *
-   *  Fills the given array `xs` starting at index `start` with values of this $coll.
-   *
-   *  Copying will stop once either all the elements of this $coll have been copied,
-   *  or the end of the array is reached.
-   *
-   *  @param  xs     the array to fill.
-   *  @tparam B      the type of the elements of the array.
-   *  @return        the number of elements written to the array
-   *
-   *  $willNotTerminateInf
-   */
+    *
+    *  Fills the given array `xs` starting at index `start` with values of this $coll.
+    *
+    *  Copying will stop once either all the elements of this $coll have been copied,
+    *  or the end of the array is reached.
+    *
+    *  @param  xs     the array to fill.
+    *  @tparam B      the type of the elements of the array.
+    *  @return        the number of elements written to the array
+    *
+    *  $willNotTerminateInf
+    */
   def copyToArray[B >: A](xs: Array[B]): Int = copyToArray(xs, 0)
 
   /** Copy elements to an array, returning the number of elements written.
@@ -879,7 +903,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *   @tparam  B   the result type of the `*` operator.
     *   @return       the product of all elements of this $coll with respect to the `*` operator in `num`.
     */
-  def product[B >: A](implicit num: Numeric[B]): B = foldLeft(num.one)(num.times)
+  def product[B >: A](implicit num: Numeric[B]): B =
+    foldLeft(num.one)(num.times)
 
   /** Finds the smallest element.
     *
@@ -1037,9 +1062,10 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
   def collectFirst[B](pf: PartialFunction[A, B]): Option[B] = {
     // Presumably the fastest way to get in and out of a partial function is for a sentinel function to return itself
     // (Tested to be lower-overhead than runWith.  Would be better yet to not need to (formally) allocate it)
-    val sentinel: scala.Function1[A, Any] = new scala.runtime.AbstractFunction1[A, Any] {
-      def apply(a: A) = this
-    }
+    val sentinel: scala.Function1[A, Any] =
+      new scala.runtime.AbstractFunction1[A, Any] {
+        def apply(a: A) = this
+      }
     val it = iterator
     while (it.hasNext) {
       val x = pf.applyOrElse(it.next(), sentinel)
@@ -1048,19 +1074,22 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     None
   }
 
-  @deprecated("`aggregate` is not relevant for sequential collections. Use `foldLeft(z)(seqop)` instead.", "2.13.0")
-  def aggregate[B](z: => B)(seqop: (B, A) => B, combop: (B, B) => B): B = foldLeft(z)(seqop)
+  @deprecated(
+    "`aggregate` is not relevant for sequential collections. Use `foldLeft(z)(seqop)` instead.",
+    "2.13.0")
+  def aggregate[B](z: => B)(seqop: (B, A) => B, combop: (B, B) => B): B =
+    foldLeft(z)(seqop)
 
   /** Tests whether every element of this collection's iterator relates to the
-   *  corresponding element of another collection by satisfying a test predicate.
-   *
-   *  @param   that    the other collection
-   *  @param   p       the test predicate, which relates elements from both collections
-   *  @tparam  B       the type of the elements of `that`
-   *  @return          `true` if both collections have the same length and
-   *                   `p(x, y)` is `true` for all corresponding elements `x` of this iterator
-   *                   and `y` of `that`, otherwise `false`
-   */
+    *  corresponding element of another collection by satisfying a test predicate.
+    *
+    *  @param   that    the other collection
+    *  @param   p       the test predicate, which relates elements from both collections
+    *  @tparam  B       the type of the elements of `that`
+    *  @return          `true` if both collections have the same length and
+    *                   `p(x, y)` is `true` for all corresponding elements `x` of this iterator
+    *                   and `y` of `that`, otherwise `false`
+    */
   def corresponds[B](that: IterableOnce[B])(p: (A, B) => Boolean): Boolean = {
     val a = iterator
     val b = that.iterator
@@ -1140,7 +1169,10 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @param end   the ending string.
     *  @return      the string builder `b` to which elements were appended.
     */
-  def addString(b: StringBuilder, start: String, sep: String, end: String): StringBuilder = {
+  def addString(b: StringBuilder,
+                start: String,
+                sep: String,
+                end: String): StringBuilder = {
     val jsb = b.underlying
     if (start.length != 0) jsb.append(start)
     val it = iterator
@@ -1176,7 +1208,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @param sep   the separator string.
     *  @return      the string builder `b` to which elements were appended.
     */
-  @inline final def addString(b: StringBuilder, sep: String): StringBuilder = addString(b, "", sep, "")
+  @inline final def addString(b: StringBuilder, sep: String): StringBuilder =
+    addString(b, "", sep, "")
 
   /** Appends all elements of this $coll to a string builder.
     *  The written text consists of the string representations (w.r.t. the method
@@ -1198,7 +1231,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
     *  @param  b    the string builder to which elements are appended.
     *  @return      the string builder `b` to which elements were appended.
     */
-  @inline final def addString(b: StringBuilder): StringBuilder = addString(b, "")
+  @inline final def addString(b: StringBuilder): StringBuilder =
+    addString(b, "")
 
   /** Given a collection factory `factory`, convert this collection to the appropriate
     * representation for the current element type `A`. Example uses:
@@ -1231,7 +1265,8 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
   @deprecated("Use .to(LazyList) instead of .toStream", "2.13.0")
   @`inline` final def toStream: immutable.Stream[A] = to(immutable.Stream)
 
-  @`inline` final def toBuffer[B >: A]: mutable.Buffer[B] = mutable.Buffer.from(this)
+  @`inline` final def toBuffer[B >: A]: mutable.Buffer[B] =
+    mutable.Buffer.from(this)
 
   /** Convert collection to array. */
   def toArray[B >: A: ClassTag]: Array[B] =
@@ -1239,8 +1274,7 @@ trait IterableOnceOps[+A, +CC[_], +C] extends Any { this: IterableOnce[A] =>
       val destination = new Array[B](knownSize)
       copyToArray(destination, 0)
       destination
-    }
-    else mutable.ArrayBuffer.from(this).toArray[B]
+    } else mutable.ArrayBuffer.from(this).toArray[B]
 
   // For internal use
   protected def reversed: Iterable[A] = {

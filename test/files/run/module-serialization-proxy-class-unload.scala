@@ -3,7 +3,8 @@ object Module {
 }
 
 object Test {
-  private val readResolve = classOf[scala.runtime.ModuleSerializationProxy].getDeclaredMethod("readResolve")
+  private val readResolve = classOf[scala.runtime.ModuleSerializationProxy]
+    .getDeclaredMethod("readResolve")
   readResolve.setAccessible(true)
 
   val testClassesDir = System.getProperty("partest.output")
@@ -16,10 +17,13 @@ object Test {
   }
 
   def deserializeDynamicLoadedClass(): Unit = {
-    val loader = new java.net.URLClassLoader(Array(new java.io.File(testClassesDir).toURI.toURL), ClassLoader.getSystemClassLoader)
+    val loader = new java.net.URLClassLoader(
+      Array(new java.io.File(testClassesDir).toURI.toURL),
+      ClassLoader.getSystemClassLoader)
     val moduleClass = loader.loadClass("Module$")
     assert(moduleClass ne Module.getClass)
-    val result = readResolve.invoke(new scala.runtime.ModuleSerializationProxy(moduleClass))
+    val result = readResolve.invoke(
+      new scala.runtime.ModuleSerializationProxy(moduleClass))
     assert(result.getClass == moduleClass)
   }
 }

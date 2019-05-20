@@ -1,4 +1,3 @@
-
 /*
 Was:
 test/files/pos/t9245.scala:5: error: recursive value catchExpr1 needs type
@@ -18,7 +17,7 @@ Now:
           throw x$1
       }
     }
-*/
+ */
 trait Test {
   def catchExpr1: PartialFunction[Throwable, Any] = ???
   def test = {

@@ -17,8 +17,8 @@ class LazyZipOpsTest {
   private val zipped2 = ws lazyZip xs
   private val zipped3 = ws lazyZip xs lazyZip ys
   private val zipped4 = ws lazyZip xs lazyZip ys lazyZip zs
-  private val map = Map(1 -> "foo" , 2 -> "bar")
-  private val sortedMap = TreeMap(1 -> "foo" , 2 -> "bar")
+  private val map = Map(1 -> "foo", 2 -> "bar")
+  private val sortedMap = TreeMap(1 -> "foo", 2 -> "bar")
   private val sortedSet = TreeSet(1, 2, 3)
 
   @Test
@@ -84,17 +84,18 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZip2_withMap(): Unit = {
-    val res: Map[Int, (String, String)] = map.lazyZip(ys).map { case ((k, v), s) => k -> (s, v) }
+    val res: Map[Int, (String, String)] =
+      map.lazyZip(ys).map { case ((k, v), s) => k -> (s, v) }
 
-    assertThat(res, either(
-      is(Map(1 -> ("a", "foo"), 2 -> ("b", "bar"))))
-      .or(is(Map(1 -> ("b", "foo"), 2 -> ("a", "bar"))))
-    )
+    assertThat(res,
+               either(is(Map(1 -> ("a", "foo"), 2 -> ("b", "bar"))))
+                 .or(is(Map(1 -> ("b", "foo"), 2 -> ("a", "bar")))))
   }
 
   @Test
   def lazyZip2_withSortedMap(): Unit = {
-    val res: TreeMap[Int, (String, String)] = sortedMap.lazyZip(ys).map { case ((k, v), s) => k -> (s, v) }
+    val res: TreeMap[Int, (String, String)] =
+      sortedMap.lazyZip(ys).map { case ((k, v), s) => k -> (s, v) }
 
     assertEquals(Map(1 -> ("a", "foo"), 2 -> ("b", "bar")), res)
   }
@@ -108,7 +109,8 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZip3_flatMap(): Unit = {
-    val res: List[(Int, Int, String)] = zipped3.flatMap((a, b, c) => List((a, b, c)))
+    val res: List[(Int, Int, String)] =
+      zipped3.flatMap((a, b, c) => List((a, b, c)))
 
     assertEquals(List((1, 1, "a"), (2, 2, "b"), (3, 3, "c")), res)
   }
@@ -162,17 +164,19 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZip3_withMap(): Unit = {
-    val res: Map[Int, (Int, String, String)] = map.lazyZip(ws).lazyZip(ys).map { case ((k, v), w, y) => k -> (w, y, v) }
+    val res: Map[Int, (Int, String, String)] =
+      map.lazyZip(ws).lazyZip(ys).map { case ((k, v), w, y) => k -> (w, y, v) }
 
-    assertThat(res, either(
-      is(Map(1 -> (1, "a", "foo"), 2 -> (2, "b", "bar"))))
-      .or(is(Map(1 -> (2, "b", "foo"), 2 -> (1, "a", "bar"))))
-    )
+    assertThat(res,
+               either(is(Map(1 -> (1, "a", "foo"), 2 -> (2, "b", "bar"))))
+                 .or(is(Map(1 -> (2, "b", "foo"), 2 -> (1, "a", "bar")))))
   }
 
   @Test
   def lazyZip3_withSortedMap(): Unit = {
-    val res: TreeMap[Int, (Int, String, String)] = sortedMap.lazyZip(ws).lazyZip(ys)
+    val res: TreeMap[Int, (Int, String, String)] = sortedMap
+      .lazyZip(ws)
+      .lazyZip(ys)
       .map { case ((k, v), w, y) => k -> (w, y, v) }
 
     assertEquals(Map(1 -> (1, "a", "foo"), 2 -> (2, "b", "bar")), res)
@@ -180,21 +184,26 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZip4_map(): Unit = {
-    val res: List[(Int, Int, String, Boolean)] = zipped4.map((a, b, c, d) => (a, b, c, d))
+    val res: List[(Int, Int, String, Boolean)] =
+      zipped4.map((a, b, c, d) => (a, b, c, d))
 
-    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), res)
+    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)),
+                 res)
   }
 
   @Test
   def lazyZip4_flatMap(): Unit = {
-    val res: List[(Int, Int, String, Boolean)] = zipped4.flatMap((a, b, c, d) => List((a, b, c, d)))
+    val res: List[(Int, Int, String, Boolean)] =
+      zipped4.flatMap((a, b, c, d) => List((a, b, c, d)))
 
-    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), res)
+    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)),
+                 res)
   }
 
   @Test
   def lazyZip4_filter(): Unit = {
-    val res: List[(Int, Int, String, Boolean)] = zipped4.filter((_, _, _, d) => d)
+    val res: List[(Int, Int, String, Boolean)] =
+      zipped4.filter((_, _, _, d) => d)
 
     assertEquals(List((1, 1, "a", true), (3, 3, "c", true)), res)
   }
@@ -223,7 +232,8 @@ class LazyZipOpsTest {
   def lazyZip4_toIterable(): Unit = {
     val iter: collection.Iterable[(Int, Int, String, Boolean)] = zipped4
 
-    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)), iter.to(List))
+    assertEquals(List((1, 1, "a", true), (2, 2, "b", false), (3, 3, "c", true)),
+                 iter.to(List))
   }
 
   @Test
@@ -234,25 +244,31 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZip4_withOrdering(): Unit = {
-    val res: TreeSet[Int] = sortedSet.lazyZip(xs).lazyZip(ws).lazyZip(ws).map(_ + _ + _ + _)
+    val res: TreeSet[Int] =
+      sortedSet.lazyZip(xs).lazyZip(ws).lazyZip(ws).map(_ + _ + _ + _)
 
     assertEquals(TreeSet(4, 8, 12), res)
   }
 
   @Test
   def lazyZip4_withMap(): Unit = {
-    val res: Map[Int, (Int, Int, String, String)] = map.lazyZip(ws).lazyZip(xs).lazyZip(ys)
+    val res: Map[Int, (Int, Int, String, String)] = map
+      .lazyZip(ws)
+      .lazyZip(xs)
+      .lazyZip(ys)
       .map { case ((k, v), w, x, y) => k -> (w, x, y, v) }
 
-    assertThat(res, either(
-      is(Map(1 -> (1, 1, "a", "foo"), 2 -> (2, 2, "b", "bar"))))
-      .or(is(Map(1 -> (2, 2, "b", "foo"), 2 -> (1, 1, "a", "bar"))))
-    )
+    assertThat(res,
+               either(is(Map(1 -> (1, 1, "a", "foo"), 2 -> (2, 2, "b", "bar"))))
+                 .or(is(Map(1 -> (2, 2, "b", "foo"), 2 -> (1, 1, "a", "bar")))))
   }
 
   @Test
   def lazyZip4_withSortedMap(): Unit = {
-    val res: TreeMap[Int, (Int, Int, String, String)] = sortedMap.lazyZip(ws).lazyZip(xs).lazyZip(ys)
+    val res: TreeMap[Int, (Int, Int, String, String)] = sortedMap
+      .lazyZip(ws)
+      .lazyZip(xs)
+      .lazyZip(ys)
       .map { case ((k, v), w, x, y) => k -> (w, x, y, v) }
 
     assertEquals(Map(1 -> (1, 1, "a", "foo"), 2 -> (2, 2, "b", "bar")), res)
@@ -260,17 +276,18 @@ class LazyZipOpsTest {
 
   @Test
   def lazyZipArray: Unit = {
-    val a = Array(1,2,3).lazyZip(List(4,5,6)).map(_ + _)
+    val a = Array(1, 2, 3).lazyZip(List(4, 5, 6)).map(_ + _)
     val at: Array[Int] = a
     assertArrayEquals(Array(5, 7, 9), at)
   }
 
   @Test
   def lazyZipString: Unit = {
-    val v = "abc".lazyZip(List(1,2,3)).map((a, b) => a.toInt + b.toInt)
+    val v = "abc".lazyZip(List(1, 2, 3)).map((a, b) => a.toInt + b.toInt)
     val vt: IndexedSeq[Int] = v
     assertEquals(Vector(98, 100, 102), vt)
-    val s = "abc".lazyZip(List(1,2,3)).map((a, b) => (a.toInt + b.toInt).toChar)
+    val s =
+      "abc".lazyZip(List(1, 2, 3)).map((a, b) => (a.toInt + b.toInt).toChar)
     val st: String = s
     assertEquals("bdf", st)
   }

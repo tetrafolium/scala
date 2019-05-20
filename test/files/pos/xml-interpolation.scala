@@ -2,7 +2,7 @@
 //
 object foo {
   val bar = "baz"
-  val xml = 
+  val xml =
     <root>
       {bar}
       { bar }

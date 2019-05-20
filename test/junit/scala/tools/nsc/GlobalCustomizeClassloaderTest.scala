@@ -26,15 +26,16 @@ class GlobalCustomizeClassloaderTest {
     }
 
     val g = new Global(new Settings) {
-      override protected[scala] def findMacroClassLoader(): ClassLoader = new URLClassLoader(Nil, getClass.getClassLoader){
-        override def close(): Unit = closeUnexpected()
-      }
-      override protected def findPluginClassLoader(classpath: Seq[Path]): ClassLoader = {
+      override protected[scala] def findMacroClassLoader(): ClassLoader =
+        new URLClassLoader(Nil, getClass.getClassLoader) {
+          override def close(): Unit = closeUnexpected()
+        }
+      override protected def findPluginClassLoader(
+          classpath: Seq[Path]): ClassLoader = {
         val d = new VirtualDirectory("", None)
         val xml = d.fileNamed("scalac-plugin.xml")
         val out = xml.bufferedOutput
-        out.write(
-          s"""<plugin>
+        out.write(s"""<plugin>
             |<name>sample-plugin</name>
             |<classname>${classOf[SamplePlugin].getName}</classname>
             |</plugin>
@@ -58,7 +59,8 @@ class GlobalCustomizeClassloaderTest {
     val typed = typer.typed(q"scala.tools.nsc.SampleMacro.m")
     assert(!reporter.hasErrors)
     typed match {
-      case Typed(Literal(Constant(s: String)), _) => Assert.assertEquals(SampleMacro.data, s)
+      case Typed(Literal(Constant(s: String)), _) =>
+        Assert.assertEquals(SampleMacro.data, s)
       case _ => Assert.fail()
     }
     g.close()

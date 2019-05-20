@@ -24,32 +24,34 @@ import scalax.rules.scalasig._
 import scala.io.AnsiColor.{BOLD, RESET}
 
 /**The main object used to execute scalap on the command-line.
- *
- * @author Matthias Zenger, Stephane Micheloud, Burak Emir, Ilya Sergey
- */
+  *
+  * @author Matthias Zenger, Stephane Micheloud, Burak Emir, Ilya Sergey
+  */
 class Main {
-  val SCALA_SIG            = "ScalaSig"
+  val SCALA_SIG = "ScalaSig"
   val SCALA_SIG_ANNOTATION = "Lscala/reflect/ScalaSignature;"
   val SCALA_LONG_SIG_ANNOTATION = "Lscala/reflect/ScalaLongSignature;"
-  val BYTES_VALUE          = "bytes"
+  val BYTES_VALUE = "bytes"
 
-  val versionMsg = "Scala classfile decoder %s -- %s\n".format(Properties.versionString, Properties.copyrightString)
+  val versionMsg = "Scala classfile decoder %s -- %s\n".format(
+    Properties.versionString,
+    Properties.copyrightString)
 
   /**Verbose program run?
-   */
+    */
   var verbose = false
   var printPrivates = false
 
   def isScalaFile(bytes: Array[Byte]): Boolean = {
-    val byteCode  = ByteCode(bytes)
+    val byteCode = ByteCode(bytes)
     val classFile = ClassFileParser.parse(byteCode)
     classFile.attribute("ScalaSig").isDefined
   }
 
   /**Processes the given Java class file.
-   *
-   * @param clazz the class file to be processed.
-   */
+    *
+    * @param clazz the class file to be processed.
+    */
   def processJavaClassFile(clazz: Classfile): Unit = {
     // construct a new output stream writer
     val out = new OutputStreamWriter(Console.out)
@@ -59,12 +61,13 @@ class Main {
     out.flush()
   }
 
-  def isPackageObjectFile(s: String) = s != null && (s.endsWith(".package") || s == "package")
+  def isPackageObjectFile(s: String) =
+    s != null && (s.endsWith(".package") || s == "package")
 
   def parseScalaSignature(scalaSig: ScalaSig, isPackageObject: Boolean) = {
-    val baos   = new ByteArrayOutputStream
+    val baos = new ByteArrayOutputStream
     val stream = new PrintStream(baos)
-    val syms   = scalaSig.topLevelClasses ++ scalaSig.topLevelObjects
+    val syms = scalaSig.topLevelClasses ++ scalaSig.topLevelObjects
 
     syms.head.parent match {
       // Partial match
@@ -101,13 +104,13 @@ class Main {
   }
 
   /** Executes scalap with the given arguments and classpath for the
-   *  class denoted by `classname`.
-   */
+    *  class denoted by `classname`.
+    */
   def process(args: Arguments, path: ClassPath)(classname: String): Unit = {
     // find the classfile
     val encName = classname match {
       case "scala.AnyRef" => "java.lang.Object"
-      case _ =>
+      case _              =>
         // we have to encode every fragment of a name separately, otherwise the NameTransformer
         // will encode using unicode escaping dot separators as well
         // we can afford allocations because this is not a performance critical code
@@ -129,8 +132,8 @@ class Main {
           val clazz = new Classfile(reader)
           processJavaClassFile(clazz)
         }
-        // if the class corresponds to the artificial class scala.Any.
-        // (see member list in class scala.tool.nsc.symtab.Definitions)
+      // if the class corresponds to the artificial class scala.Any.
+      // (see member list in class scala.tool.nsc.symtab.Definitions)
       case _ =>
         Console.println(s"class/object $classname not found.")
     }
@@ -167,7 +170,7 @@ object Main extends Main {
   }
 
   def main(args: Array[String]): Unit =
-  // print usage information if there is no command-line argument
+    // print usage information if there is no command-line argument
     if (args.isEmpty) usage()
     else {
       val arguments = parseArguments(args)
@@ -192,7 +195,8 @@ object Main extends Main {
         val path = createClassPath(cpArg, settings, registry)
         // print the classpath if output is verbose
         if (verbose)
-          Console.println(BOLD + "CLASSPATH" + RESET + " = " + path.asClassPathString)
+          Console.println(
+            BOLD + "CLASSPATH" + RESET + " = " + path.asClassPathString)
 
         // process all given classes
         arguments.getOthers foreach process(arguments, path)
@@ -202,7 +206,8 @@ object Main extends Main {
     }
 
   private def parseArguments(args: Array[String]) =
-    Arguments.Parser('-')
+    Arguments
+      .Parser('-')
       .withOption(opts.showPrivateDefs)
       .withOption(opts.verbose)
       .withOption(opts.version)
@@ -214,11 +219,16 @@ object Main extends Main {
       .withOption(opts.logClassPath)
       .parse(args)
 
-  private def createClassPath(cpArg: Option[String], settings: Settings, closeableRegistry: CloseableRegistry) = cpArg match {
-    case Some(cp) =>
-      AggregateClassPath(new ClassPathFactory(settings, closeableRegistry).classesInExpandedPath(cp))
-    case _ =>
-      settings.classpath.value = "." // include '.' in the default classpath scala/bug#6669
-      new PathResolver(settings, closeableRegistry).result
-  }
+  private def createClassPath(cpArg: Option[String],
+                              settings: Settings,
+                              closeableRegistry: CloseableRegistry) =
+    cpArg match {
+      case Some(cp) =>
+        AggregateClassPath(
+          new ClassPathFactory(settings, closeableRegistry)
+            .classesInExpandedPath(cp))
+      case _ =>
+        settings.classpath.value = "." // include '.' in the default classpath scala/bug#6669
+        new PathResolver(settings, closeableRegistry).result
+    }
 }

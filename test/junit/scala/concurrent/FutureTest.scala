@@ -1,4 +1,3 @@
-
 package scala.concurrent
 
 import org.junit.Assert._

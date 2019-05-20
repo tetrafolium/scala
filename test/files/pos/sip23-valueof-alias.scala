@@ -5,7 +5,7 @@ object Test {
 
   valueOf[SOne]
 
-  val one : 1 = 1
+  val one: 1 = 1
 
   valueOf[one.type]
 

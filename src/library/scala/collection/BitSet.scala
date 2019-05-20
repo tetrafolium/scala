@@ -18,7 +18,6 @@ import java.io.{ObjectInputStream, ObjectOutputStream}
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.mutable.Builder
 
-
 /** Base type of bitsets.
   *
   * This trait provides most of the operations of a `BitSet` independently of its representation.
@@ -32,25 +31,32 @@ import scala.collection.mutable.Builder
   * @define Coll `BitSet`
   */
 trait BitSet extends SortedSet[Int] with BitSetOps[BitSet] {
-  override protected def fromSpecific(coll: IterableOnce[Int]): BitSetC = bitSetFactory.fromSpecific(coll)
-  override protected def newSpecificBuilder: Builder[Int, BitSetC] = bitSetFactory.newBuilder
+  override protected def fromSpecific(coll: IterableOnce[Int]): BitSetC =
+    bitSetFactory.fromSpecific(coll)
+  override protected def newSpecificBuilder: Builder[Int, BitSetC] =
+    bitSetFactory.newBuilder
   override def empty: BitSetC = bitSetFactory.empty
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "BitSet"
   override def unsorted: Set[Int] = this
 }
 
 @SerialVersionUID(3L)
 object BitSet extends SpecificIterableFactory[Int, BitSet] {
-  private[collection] final val ordMsg = "No implicit Ordering[${B}] found to build a SortedSet[${B}]. You may want to upcast to a Set[Int] first by calling `unsorted`."
-  private[collection] final val zipOrdMsg = "No implicit Ordering[${B}] found to build a SortedSet[(Int, ${B})]. You may want to upcast to a Set[Int] first by calling `unsorted`."
+  private[collection] final val ordMsg =
+    "No implicit Ordering[${B}] found to build a SortedSet[${B}]. You may want to upcast to a Set[Int] first by calling `unsorted`."
+  private[collection] final val zipOrdMsg =
+    "No implicit Ordering[${B}] found to build a SortedSet[(Int, ${B})]. You may want to upcast to a Set[Int] first by calling `unsorted`."
 
   def empty: BitSet = immutable.BitSet.empty
   def newBuilder: Builder[Int, BitSet] = immutable.BitSet.newBuilder
-  def fromSpecific(it: IterableOnce[Int]): BitSet = immutable.BitSet.fromSpecific(it)
+  def fromSpecific(it: IterableOnce[Int]): BitSet =
+    immutable.BitSet.fromSpecific(it)
 
   @SerialVersionUID(3L)
-  private[collection] abstract class SerializationProxy(@transient protected val coll: BitSet) extends Serializable {
+  private[collection] abstract class SerializationProxy(
+      @transient protected val coll: BitSet)
+      extends Serializable {
 
     @transient protected var elems: Array[Long] = _
 
@@ -59,7 +65,7 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
       val nwords = coll.nwords
       out.writeInt(nwords)
       var i = 0
-      while(i < nwords) {
+      while (i < nwords) {
         out.writeLong(coll.word(i))
         i += 1
       }
@@ -70,7 +76,7 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
       val nwords = in.readInt()
       elems = new Array[Long](nwords)
       var i = 0
-      while(i < nwords) {
+      while (i < nwords) {
         elems(i) = in.readLong()
         i += 1
       }
@@ -82,7 +88,7 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
 
 /** Base implementation type of bitsets */
 trait BitSetOps[+C <: BitSet with BitSetOps[C]]
-  extends SortedSetOps[Int, SortedSet, C] { self =>
+    extends SortedSetOps[Int, SortedSet, C] { self =>
   import BitSetOps._
 
   def bitSetFactory: SpecificIterableFactory[Int, BitSetC]
@@ -125,8 +131,8 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
       current != end
     }
     def next(): Int =
-      if (hasNext) { val r = current; current += 1; r }
-      else Iterator.empty.next()
+      if (hasNext) { val r = current; current += 1; r } else
+        Iterator.empty.next()
   }
 
   override def size: Int = {
@@ -144,10 +150,11 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
   @inline private[this] def smallestInt: Int = {
     val thisnwords = nwords
     var i = 0
-    while(i < thisnwords) {
+    while (i < thisnwords) {
       val currentWord = word(i)
       if (currentWord != 0L) {
-        return java.lang.Long.numberOfTrailingZeros(currentWord) + (i * WordLength)
+        return java.lang.Long
+          .numberOfTrailingZeros(currentWord) + (i * WordLength)
       }
       i += 1
     }
@@ -156,10 +163,11 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
 
   @inline private[this] def largestInt: Int = {
     var i = nwords - 1
-    while(i >= 0) {
+    while (i >= 0) {
       val currentWord = word(i)
       if (currentWord != 0L) {
-        return ((i + 1) * WordLength) - java.lang.Long.numberOfLeadingZeros(currentWord) - 1
+        return ((i + 1) * WordLength) - java.lang.Long
+          .numberOfLeadingZeros(currentWord) - 1
       }
       i -= 1
     }
@@ -170,7 +178,6 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
     if (Ordering.Int eq ord) largestInt
     else if (Ordering.Int isReverseOf ord) smallestInt
     else super.max(ord)
-
 
   override def min[B >: Int](implicit ord: Ordering[B]): Int =
     if (Ordering.Int eq ord) smallestInt
@@ -187,7 +194,7 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
       var w = word(i)
       var j = i * WordLength
       while (w != 0L) {
-        if ((w&1L) == 1L) f(j)
+        if ((w & 1L) == 1L) f(j)
         w = w >>> 1
         j += 1
       }
@@ -200,7 +207,7 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
   def toBitMask: Array[Long] = {
     val a = new Array[Long](nwords)
     var i = a.length
-    while(i > 0) {
+    while (i > 0) {
       i -= 1
       a(i) = word(i)
     }
@@ -218,23 +225,24 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
         a(pos) = 0
         pos += 1
       }
-      if (f > 0 && pos < len) a(pos) &= ~((1L << f)-1)
+      if (f > 0 && pos < len) a(pos) &= ~((1L << f) - 1)
     }
     if (until.isDefined) {
       val u = until.get
       val w = u / 64
       val b = u % 64
-      var clearw = w+1
+      var clearw = w + 1
       while (clearw < len) {
         a(clearw) = 0
         clearw += 1
       }
-      if (w < len) a(w) &= (1L << b)-1
+      if (w < len) a(w) &= (1L << b) - 1
     }
     coll.fromBitMaskNoCopy(a)
   }
 
-  override def concat(other: collection.IterableOnce[Int])(implicit dummy: DummyImplicit): C = other match {
+  override def concat(other: collection.IterableOnce[Int])(
+      implicit dummy: DummyImplicit): C = other match {
     case otherBitset: BitSet =>
       val len = coll.nwords max otherBitset.nwords
       val words = new Array[Long](len)
@@ -279,7 +287,7 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
     coll.fromBitMaskNoCopy(words)
   }
 
-  @`inline` final def ^ (other: BitSet): C = xor(other)
+  @`inline` final def ^(other: BitSet): C = xor(other)
 
   /**
     * Builds a new bitset by applying a function to all elements of this bitset
@@ -289,9 +297,11 @@ trait BitSetOps[+C <: BitSet with BitSetOps[C]]
     */
   def map(f: Int => Int): C = fromSpecific(new View.Map(toIterable, f))
 
-  def flatMap(f: Int => IterableOnce[Int]): C = fromSpecific(new View.FlatMap(toIterable, f))
+  def flatMap(f: Int => IterableOnce[Int]): C =
+    fromSpecific(new View.FlatMap(toIterable, f))
 
-  def collect(pf: PartialFunction[Int, Int]): C = fromSpecific(super[SortedSetOps].collect(pf).toIterable)
+  def collect(pf: PartialFunction[Int, Int]): C =
+    fromSpecific(super[SortedSetOps].collect(pf).toIterable)
 
   override def partition(p: Int => Boolean): (C, C) = {
     val left = filter(p)
@@ -306,7 +316,9 @@ object BitSetOps {
   private[collection] final val WordLength = 64
   private[collection] final val MaxSize = (Int.MaxValue >> LogWL) + 1
 
-  private[collection] def updateArray(elems: Array[Long], idx: Int, w: Long): Array[Long] = {
+  private[collection] def updateArray(elems: Array[Long],
+                                      idx: Int,
+                                      w: Long): Array[Long] = {
     var len = elems.length
     while (len > 0 && (elems(len - 1) == 0L || w == 0L && idx == len - 1)) len -= 1
     var newlen = len
@@ -318,13 +330,18 @@ object BitSetOps {
     newelems
   }
 
-  private[collection] def computeWordForFilter(pred: Int => Boolean, isFlipped: Boolean, oldWord: Long, wordIndex: Int): Long =
-    if (oldWord == 0L) 0L else {
+  private[collection] def computeWordForFilter(pred: Int => Boolean,
+                                               isFlipped: Boolean,
+                                               oldWord: Long,
+                                               wordIndex: Int): Long =
+    if (oldWord == 0L) 0L
+    else {
       var w = oldWord
       val trailingZeroes = java.lang.Long.numberOfTrailingZeros(w)
       var jmask = 1L << trailingZeroes
       var j = wordIndex * BitSetOps.WordLength + trailingZeroes
-      val maxJ = (wordIndex + 1) * BitSetOps.WordLength - java.lang.Long.numberOfLeadingZeros(w)
+      val maxJ = (wordIndex + 1) * BitSetOps.WordLength - java.lang.Long
+        .numberOfLeadingZeros(w)
       while (j != maxJ) {
         if ((w & jmask) != 0L) {
           if (pred(j) == isFlipped) {

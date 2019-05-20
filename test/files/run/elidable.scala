@@ -6,7 +6,8 @@ import elidable._
 // runs -Xelide-below WARNING or 900
 
 object Fail {
-  def fail(msg: String): Unit = throw new IllegalStateException(s"Expected failure: $msg")
+  def fail(msg: String): Unit =
+    throw new IllegalStateException(s"Expected failure: $msg")
 }
 import Fail.fail
 
@@ -38,21 +39,23 @@ object Test {
 
   @elidable(FINEST) def f5() = {}
   @elidable(FINEST) def f6() = true
-  @elidable(FINEST) def f7() = 1:Byte
-  @elidable(FINEST) def f8() = 1:Short
-  @elidable(FINEST) def f9() = 1:Char
+  @elidable(FINEST) def f7() = 1: Byte
+  @elidable(FINEST) def f8() = 1: Short
+  @elidable(FINEST) def f9() = 1: Char
   @elidable(FINEST) def fa() = 1
   @elidable(FINEST) def fb() = 1L
   @elidable(FINEST) def fc() = 1.0f
   @elidable(FINEST) def fd() = 1.0
-  @elidable(FINEST) def fe() = { fail("Should have been elided to empty string.") ; "hello, world" }
+  @elidable(FINEST) def fe() = {
+    fail("Should have been elided to empty string."); "hello, world"
+  }
 
   /* variable elisions? see test/files/neg/t10068.scala
   @elidable(INFO) val goner1: Int      = { fail("Should have been elided.") ; 42 }
   @elidable(INFO) lazy val goner2: Int = { fail("Should have been elided.") ; 42 }
   @elidable(INFO) var goner3: Int      = { fail("Should have been elided.") ; 42 }
   @elidable(INFO) var goner4: Nothing  = _
-  */
+   */
 
   def main(args: Array[String]): Unit = {
     f1()
@@ -82,7 +85,7 @@ object Test {
     println(fd())
     println(fe())
     if (!fe().isEmpty) fail(s"Not empty: [${fe()}]")
-/*
+    /*
 ()
 false
 0
@@ -93,10 +96,10 @@ false
 0.0
 0.0
    // was: null
-*/
+     */
 
     // this one won't show up in the output because a call to f1 is elidable when accessed through T
-    (c:T).f1()
+    (c: T).f1()
 
     // Test whether the method definitions are still available.
     List("Test", "Test$", "O", "O$", "C", "T") foreach { className =>
@@ -105,8 +108,9 @@ false
       }
     }
     List("Test", "Test$") foreach { className =>
-      List("f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe") foreach { methodName =>
-        Class.forName(className).getMethod(methodName)
+      List("f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe") foreach {
+        methodName =>
+          Class.forName(className).getMethod(methodName)
       }
     }
 
@@ -120,6 +124,6 @@ false
       case _: NullPointerException => println("NPE")
       case _: NotImplementedError   => println("NIE")
     }
-    */
+   */
   }
 }

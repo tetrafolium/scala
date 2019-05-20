@@ -1,4 +1,3 @@
-
 // scalac: -Yrangepos
 //
 object Test {
@@ -65,9 +64,9 @@ object Test {
       def op0(implicit b: f0.Bar): f0.Bar = b
     }
 
-    { class Foo ; f }.op0
+    { class Foo; f }.op0
 
-    { object f1 extends Foo ; f1 }.op0
+    { object f1 extends Foo; f1 }.op0
 
     // The above expands to the following ...
     val stab0 =
@@ -77,7 +76,7 @@ object Test {
       })
     stab0.op0(stab0.f0.Bar.mkBar)
 
-    { val f1 = new Foo ; f1 }.op0
+    { val f1 = new Foo; f1 }.op0
 
     // The above expands to the following ...
     val stab1 =

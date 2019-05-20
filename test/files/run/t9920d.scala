@@ -6,7 +6,6 @@ trait T { _: C =>
   }
 }
 
-
 object Test extends C with T {
   def main(args: Array[String]): Unit = {
     foo

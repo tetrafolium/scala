@@ -25,7 +25,7 @@ import scala.runtime.Statics
   * @tparam C  Collection type
   */
 trait StrictOptimizedIterableOps[+A, +CC[_], +C]
-  extends Any
+    extends Any
     with IterableOps[A, CC, C] {
 
   // Optimized, push-based version of `partition`
@@ -55,7 +55,8 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     (first.result(), second.result())
   }
 
-  override def unzip[A1, A2](implicit asPair: A => (A1, A2)): (CC[A1], CC[A2]) = {
+  override def unzip[A1, A2](
+      implicit asPair: A => (A1, A2)): (CC[A1], CC[A2]) = {
     val first = iterableFactory.newBuilder[A1]
     val second = iterableFactory.newBuilder[A2]
     foreach { a =>
@@ -66,7 +67,8 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     (first.result(), second.result())
   }
 
-  override def unzip3[A1, A2, A3](implicit asTriple: A => (A1, A2, A3)): (CC[A1], CC[A2], CC[A3]) = {
+  override def unzip3[A1, A2, A3](
+      implicit asTriple: A => (A1, A2, A3)): (CC[A1], CC[A2], CC[A3]) = {
     val b1 = iterableFactory.newBuilder[A1]
     val b2 = iterableFactory.newBuilder[A2]
     val b3 = iterableFactory.newBuilder[A3]
@@ -94,7 +96,9 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[String]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedMap[B, C2](b: mutable.Builder[B, C2], f: A => B): C2 = {
+  @inline protected[this] final def strictOptimizedMap[B, C2](
+      b: mutable.Builder[B, C2],
+      f: A => B): C2 = {
     val it = iterator
     while (it.hasNext) {
       b += f(it.next())
@@ -112,7 +116,9 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[String]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedFlatMap[B, C2](b: mutable.Builder[B, C2], f: A => IterableOnce[B]): C2 = {
+  @inline protected[this] final def strictOptimizedFlatMap[B, C2](
+      b: mutable.Builder[B, C2],
+      f: A => IterableOnce[B]): C2 = {
     val it = iterator
     while (it.hasNext) {
       b ++= f(it.next())
@@ -130,7 +136,9 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[Int]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedConcat[B >: A, C2](that: IterableOnce[B], b: mutable.Builder[B, C2]): C2 = {
+  @inline protected[this] final def strictOptimizedConcat[B >: A, C2](
+      that: IterableOnce[B],
+      b: mutable.Builder[B, C2]): C2 = {
     b ++= this
     b ++= that
     b.result()
@@ -146,18 +154,22 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[String]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedCollect[B, C2](b: mutable.Builder[B, C2], pf: PartialFunction[A, B]): C2 = {
+  @inline protected[this] final def strictOptimizedCollect[B, C2](
+      b: mutable.Builder[B, C2],
+      pf: PartialFunction[A, B]): C2 = {
     val marker = Statics.pfMarker
     val it = iterator
     while (it.hasNext) {
       val elem = it.next()
-      val v = pf.applyOrElse(elem, ((x: A) => marker).asInstanceOf[Function[A, B]])
+      val v =
+        pf.applyOrElse(elem, ((x: A) => marker).asInstanceOf[Function[A, B]])
       if (marker ne v.asInstanceOf[AnyRef]) b += v
     }
     b.result()
   }
 
-  override def flatten[B](implicit toIterableOnce: A => IterableOnce[B]): CC[B] =
+  override def flatten[B](
+      implicit toIterableOnce: A => IterableOnce[B]): CC[B] =
     strictOptimizedFlatten(iterableFactory.newBuilder)
 
   /**
@@ -167,7 +179,9 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[Int]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedFlatten[B, C2](b: mutable.Builder[B, C2])(implicit toIterableOnce: A => IterableOnce[B]): C2 = {
+  @inline protected[this] final def strictOptimizedFlatten[B, C2](
+      b: mutable.Builder[B, C2])(
+      implicit toIterableOnce: A => IterableOnce[B]): C2 = {
     val it = iterator
     while (it.hasNext) {
       b ++= toIterableOnce(it.next())
@@ -185,7 +199,9 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     * @tparam C2 Type of the resulting collection (e.g. `List[(Int, String)]`)
     * @return The resulting collection
     */
-  @inline protected[this] final def strictOptimizedZip[B, C2](that: IterableOnce[B], b: mutable.Builder[(A, B), C2]): C2 = {
+  @inline protected[this] final def strictOptimizedZip[B, C2](
+      that: IterableOnce[B],
+      b: mutable.Builder[(A, B), C2]): C2 = {
     val it1 = iterator
     val it2 = that.iterator
     while (it1.hasNext && it2.hasNext) {
@@ -218,11 +234,14 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
     b.result()
   }
 
-  override def filter(pred: A => Boolean): C = filterImpl(pred, isFlipped = false)
+  override def filter(pred: A => Boolean): C =
+    filterImpl(pred, isFlipped = false)
 
-  override def filterNot(pred: A => Boolean): C = filterImpl(pred, isFlipped = true)
+  override def filterNot(pred: A => Boolean): C =
+    filterImpl(pred, isFlipped = true)
 
-  protected[collection] def filterImpl(pred: A => Boolean, isFlipped: Boolean): C = {
+  protected[collection] def filterImpl(pred: A => Boolean,
+                                       isFlipped: Boolean): C = {
     val b = newSpecificBuilder
     val it = iterator
     while (it.hasNext) {
@@ -235,12 +254,13 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
   }
 
   // Optimized, push-based version of `partitionMap`
-  override def partitionMap[A1, A2](f: A => Either[A1, A2]): (CC[A1], CC[A2]) = {
+  override def partitionMap[A1, A2](
+      f: A => Either[A1, A2]): (CC[A1], CC[A2]) = {
     val l = iterableFactory.newBuilder[A1]
     val r = iterableFactory.newBuilder[A2]
     foreach { x =>
       f(x) match {
-        case Left(x1) => l += x1
+        case Left(x1)  => l += x1
         case Right(x2) => r += x2
       }
     }
@@ -248,7 +268,7 @@ trait StrictOptimizedIterableOps[+A, +CC[_], +C]
   }
 
   // Optimization avoids creation of second collection
-  override def tapEach[U](f: A => U): C  = {
+  override def tapEach[U](f: A => U): C = {
     foreach(f)
     coll
   }

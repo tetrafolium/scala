@@ -1,10 +1,10 @@
 package object foo {
-	def bar: Unit = {}
+  def bar: Unit = {}
 }
 
 package foo {
 
-	package bar{
-		class Baz
-	}
+  package bar {
+    class Baz
+  }
 }

@@ -7,8 +7,8 @@ import scala.annotation._
 
 class A {
   implicit class BooleanOps(val b: Boolean) {
-    @deprecated("bobo", since="2.11.0")
-    @migration("Used to return 5", changedIn="2.12.6")
+    @deprecated("bobo", since = "2.11.0")
+    @migration("Used to return 5", changedIn = "2.12.6")
     def bippy() = 42
   }
   def f = (null == null).bippy
@@ -17,7 +17,7 @@ class A {
 
 /*
 
-$ ~/scala-2.10.4/bin/scalac -d /tmp -Xmigration:2.10 -deprecation test/files/neg/t6120.scala 
+$ ~/scala-2.10.4/bin/scalac -d /tmp -Xmigration:2.10 -deprecation test/files/neg/t6120.scala
 test/files/neg/t6120.scala:14: warning: method bippy in class BooleanOps is deprecated: bobo
   def f = (null == null).bippy
                          ^

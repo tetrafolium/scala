@@ -1,4 +1,3 @@
-
 package t10375
 
 trait T {

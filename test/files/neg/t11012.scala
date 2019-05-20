@@ -7,7 +7,7 @@ class B @deprecated("constructor!", "") extends StaticAnnotation
 
 @A class C
 
-@B class D   // should warn
+@B class D // should warn
 
 trait T {
   def foo = new B

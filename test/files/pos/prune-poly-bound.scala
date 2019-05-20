@@ -4,7 +4,8 @@ class Derived[T1] extends Base[T1]
 class Foo[T2, U2]
 
 object Foo {
-  implicit def mkFoo[T3, U3 <: Base[T3]](implicit ev: U3 <:< Base[T3]) : Foo[U3, Base[T3]] = ???
+  implicit def mkFoo[T3, U3 <: Base[T3]](
+      implicit ev: U3 <:< Base[T3]): Foo[U3, Base[T3]] = ???
 }
 
 object Test {

@@ -5,7 +5,9 @@ object Test {
   trait Solve[A, H <: Holder[A]] {
     type Output <: Holder[A]
   }
-  type SolveAux[A, H <: Holder[A], O <: Holder[A]] = Solve[A, H] {type Output = O}
+  type SolveAux[A, H <: Holder[A], O <: Holder[A]] = Solve[A, H] {
+    type Output = O
+  }
 
   implicit def nilSolve[A] = new Solve[A, NilHolder[A]] {
     override type Output = NilHolder[A]
@@ -15,7 +17,8 @@ object Test {
     type Output <: Holder[A]
   }
 
-  implicit def wrapAux[A, H <: Holder[A], O <: Holder[A]](implicit one : SolveAux[A, H, O]) =
+  implicit def wrapAux[A, H <: Holder[A], O <: Holder[A]](
+      implicit one: SolveAux[A, H, O]) =
     new WrapSolve[A, H] {
       override type Output = O
     }

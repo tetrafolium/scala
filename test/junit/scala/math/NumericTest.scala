@@ -19,7 +19,9 @@ class NumericTest {
   @Test
   def testBigDecimalAsIfIntegral: Unit = {
     val num = scala.math.Numeric.BigDecimalAsIfIntegral
-    assertTrue(num.quot(BigDecimal(2.5), BigDecimal(0.5)) equals BigDecimal(5.0))
-    assertTrue(num.quot(BigDecimal(5.0), BigDecimal(2.0)) equals BigDecimal(2.0))
-  }}
-
+    assertTrue(
+      num.quot(BigDecimal(2.5), BigDecimal(0.5)) equals BigDecimal(5.0))
+    assertTrue(
+      num.quot(BigDecimal(5.0), BigDecimal(2.0)) equals BigDecimal(2.0))
+  }
+}

@@ -27,7 +27,7 @@ import scala.annotation.implicitNotFound
   *  @define coll immutable bitset
   */
 sealed abstract class BitSet
-  extends AbstractSet[Int]
+    extends AbstractSet[Int]
     with SortedSet[Int]
     with SortedSetOps[Int, SortedSet, BitSet]
     with StrictOptimizedSortedSetOps[Int, SortedSet, BitSet]
@@ -39,7 +39,8 @@ sealed abstract class BitSet
 
   def bitSetFactory = BitSet
 
-  protected[collection] def fromBitMaskNoCopy(elems: Array[Long]): BitSet = BitSet.fromBitMaskNoCopy(elems)
+  protected[collection] def fromBitMaskNoCopy(elems: Array[Long]): BitSet =
+    BitSet.fromBitMaskNoCopy(elems)
 
   def incl(elem: Int): BitSet = {
     require(elem >= 0, "bitset element must be >= 0")
@@ -62,23 +63,35 @@ sealed abstract class BitSet
     */
   protected def updateWord(idx: Int, w: Long): BitSet
 
-  override def map(f: Int => Int): BitSet = strictOptimizedMap(newSpecificBuilder, f)
-  override def map[B](f: Int => B)(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def map(f: Int => Int): BitSet =
+    strictOptimizedMap(newSpecificBuilder, f)
+  override def map[B](f: Int => B)(implicit @implicitNotFound(
+                                     collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].map(f)
 
-  override def flatMap(f: Int => IterableOnce[Int]): BitSet = strictOptimizedFlatMap(newSpecificBuilder, f)
-  override def flatMap[B](f: Int => IterableOnce[B])(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def flatMap(f: Int => IterableOnce[Int]): BitSet =
+    strictOptimizedFlatMap(newSpecificBuilder, f)
+  override def flatMap[B](f: Int => IterableOnce[B])(
+      implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].flatMap(f)
 
-  override def collect(pf: PartialFunction[Int, Int]): BitSet = strictOptimizedCollect(newSpecificBuilder, pf)
-  override def collect[B](pf: scala.PartialFunction[Int, B])(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def collect(pf: PartialFunction[Int, Int]): BitSet =
+    strictOptimizedCollect(newSpecificBuilder, pf)
+  override def collect[B](pf: scala.PartialFunction[Int, B])(
+      implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].collect(pf)
 
   // necessary for disambiguation
-  override def zip[B](that: scala.IterableOnce[B])(implicit @implicitNotFound(collection.BitSet.zipOrdMsg) ev: Ordering[(Int, B)]): SortedSet[(Int, B)] =
+  override def zip[B](that: scala.IterableOnce[B])(
+      implicit @implicitNotFound(collection.BitSet.zipOrdMsg) ev: Ordering[
+        (Int, B)]): SortedSet[(Int, B)] =
     super.zip(that)
 
-  protected[this] def writeReplace(): AnyRef = new BitSet.SerializationProxy(this)
+  protected[this] def writeReplace(): AnyRef =
+    new BitSet.SerializationProxy(this)
 }
 
 /**
@@ -100,7 +113,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
   def newBuilder: Builder[Int, BitSet] =
     mutable.BitSet.newBuilder.mapResult(bs => fromBitMaskNoCopy(bs.elems))
 
-  private def createSmall(a: Long, b: Long): BitSet = if (b == 0L) new BitSet1(a) else new BitSet2(a, b)
+  private def createSmall(a: Long, b: Long): BitSet =
+    if (b == 0L) new BitSet1(a) else new BitSet2(a, b)
 
   /** A bitset containing all the bits in an array */
   def fromBitMask(elems: Array[Long]): BitSet = {
@@ -125,7 +139,9 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
     else new BitSetN(elems)
   }
 
-  @deprecated("Implementation classes of BitSet should not be accessed directly", "2.13.0")
+  @deprecated(
+    "Implementation classes of BitSet should not be accessed directly",
+    "2.13.0")
   class BitSet1(val elems: Long) extends BitSet {
     protected[collection] def nwords = 1
     protected[collection] def word(idx: Int) = if (idx == 0) elems else 0L
@@ -134,95 +150,102 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
       else if (idx == 1) createSmall(elems, w)
       else fromBitMaskNoCopy(updateArray(Array(elems), idx, w))
 
-
     override def diff(other: collection.Set[Int]): BitSet = other match {
-      case bs: collection.BitSet => bs.nwords match {
-        case 0 => this
-        case _ =>
-          val newElems = elems & ~bs.word(0)
-          if (newElems == 0L) empty else new BitSet1(newElems)
-      }
+      case bs: collection.BitSet =>
+        bs.nwords match {
+          case 0 => this
+          case _ =>
+            val newElems = elems & ~bs.word(0)
+            if (newElems == 0L) empty else new BitSet1(newElems)
+        }
       case _ => super.diff(other)
     }
 
-    override def filterImpl(pred: Int => Boolean, isFlipped: Boolean): BitSet = {
+    override def filterImpl(pred: Int => Boolean,
+                            isFlipped: Boolean): BitSet = {
       val _elems = BitSetOps.computeWordForFilter(pred, isFlipped, elems, 0)
       if (_elems == 0L) empty else new BitSet1(_elems)
     }
   }
 
-  @deprecated("Implementation classes of BitSet should not be accessed directly", "2.13.0")
+  @deprecated(
+    "Implementation classes of BitSet should not be accessed directly",
+    "2.13.0")
   class BitSet2(val elems0: Long, val elems1: Long) extends BitSet {
     protected[collection] def nwords = 2
-    protected[collection] def word(idx: Int) = if (idx == 0) elems0 else if (idx == 1) elems1 else 0L
+    protected[collection] def word(idx: Int) =
+      if (idx == 0) elems0 else if (idx == 1) elems1 else 0L
     protected[collection] def updateWord(idx: Int, w: Long): BitSet =
       if (idx == 0) new BitSet2(w, elems1)
       else if (idx == 1) createSmall(elems0, w)
       else fromBitMaskNoCopy(updateArray(Array(elems0, elems1), idx, w))
 
-
     override def diff(other: collection.Set[Int]): BitSet = other match {
-      case bs: collection.BitSet => bs.nwords match {
-        case 0 => this
-        case 1 =>
-          new BitSet2(elems0 & ~bs.word(0), elems1)
-        case _ =>
-          val _elems0 = elems0 & ~bs.word(0)
-          val _elems1 = elems1 & ~bs.word(1)
+      case bs: collection.BitSet =>
+        bs.nwords match {
+          case 0 => this
+          case 1 =>
+            new BitSet2(elems0 & ~bs.word(0), elems1)
+          case _ =>
+            val _elems0 = elems0 & ~bs.word(0)
+            val _elems1 = elems1 & ~bs.word(1)
 
-          if (_elems1 == 0L) {
-            if (_elems0 == 0L) {
-              empty
+            if (_elems1 == 0L) {
+              if (_elems0 == 0L) {
+                empty
+              } else {
+                new BitSet1(_elems0)
+              }
             } else {
-              new BitSet1(_elems0)
+              new BitSet2(_elems0, _elems1)
             }
-          } else {
-            new BitSet2(_elems0, _elems1)
-          }
-      }
+        }
       case _ => super.diff(other)
     }
 
-    override def filterImpl(pred: Int => Boolean, isFlipped: Boolean): BitSet = {
+    override def filterImpl(pred: Int => Boolean,
+                            isFlipped: Boolean): BitSet = {
       val _elems0 = BitSetOps.computeWordForFilter(pred, isFlipped, elems0, 0)
       val _elems1 = BitSetOps.computeWordForFilter(pred, isFlipped, elems1, 1)
 
       if (_elems1 == 0L) {
         if (_elems0 == 0L) {
           empty
-        }
-        else new BitSet1(_elems0)
-      }
-      else new BitSet2(_elems0, _elems1)
+        } else new BitSet1(_elems0)
+      } else new BitSet2(_elems0, _elems1)
     }
   }
 
-  @deprecated("Implementation classes of BitSet should not be accessed directly", "2.13.0")
+  @deprecated(
+    "Implementation classes of BitSet should not be accessed directly",
+    "2.13.0")
   class BitSetN(val elems: Array[Long]) extends BitSet {
     protected[collection] def nwords = elems.length
 
-    protected[collection] def word(idx: Int) = if (idx < nwords) elems(idx) else 0L
+    protected[collection] def word(idx: Int) =
+      if (idx < nwords) elems(idx) else 0L
 
-    protected[collection] def updateWord(idx: Int, w: Long): BitSet = fromBitMaskNoCopy(updateArray(elems, idx, w))
+    protected[collection] def updateWord(idx: Int, w: Long): BitSet =
+      fromBitMaskNoCopy(updateArray(elems, idx, w))
 
     override def diff(that: collection.Set[Int]): BitSet = that match {
       case bs: collection.BitSet =>
         /*
-          * Algorithm:
-          *
-          * We iterate, word-by-word, backwards from the shortest of the two bitsets (this, or bs) i.e. the one with
-          * the fewer words. Two extra concerns for optimization are described below.
-          *
-          * Array Shrinking:
-          * If `this` is not longer than `bs`, then since we must iterate through the full array of words,
-          * we can track the new highest index word which is non-zero, at little additional cost. At the end, the new
-          * Array[Long] allocated for the returned BitSet will only be of size `maxNonZeroIndex + 1`
-          *
-          * Tracking Changes:
-          * If the two sets are disjoint, then we can return `this`. Therefor, until at least one change is detected,
-          * we check each word for if it has changed from its corresponding word in `this`. Once a single change is
-          * detected, we stop checking because the cost of the new Array must be paid anyways.
-          */
+         * Algorithm:
+         *
+         * We iterate, word-by-word, backwards from the shortest of the two bitsets (this, or bs) i.e. the one with
+         * the fewer words. Two extra concerns for optimization are described below.
+         *
+         * Array Shrinking:
+         * If `this` is not longer than `bs`, then since we must iterate through the full array of words,
+         * we can track the new highest index word which is non-zero, at little additional cost. At the end, the new
+         * Array[Long] allocated for the returned BitSet will only be of size `maxNonZeroIndex + 1`
+         *
+         * Tracking Changes:
+         * If the two sets are disjoint, then we can return `this`. Therefor, until at least one change is detected,
+         * we check each word for if it has changed from its corresponding word in `this`. Once a single change is
+         * detected, we stop checking because the cost of the new Array must be paid anyways.
+         */
 
         val bsnwords = bs.nwords
         val thisnwords = nwords
@@ -295,8 +318,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
       case _ => super.diff(that)
     }
 
-
-    override def filterImpl(pred: Int => Boolean, isFlipped: Boolean): BitSet = {
+    override def filterImpl(pred: Int => Boolean,
+                            isFlipped: Boolean): BitSet = {
       // here, we may have opportunity to shrink the size of the array
       // so, track the highest index which is non-zero. That ( + 1 ) will be our new array length
       var i = nwords - 1
@@ -305,7 +328,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
       var anyChanges = false
       while (i >= 0 && currentWord == 0L) {
         val oldWord = word(i)
-        currentWord = BitSetOps.computeWordForFilter(pred, isFlipped, oldWord, i)
+        currentWord =
+          BitSetOps.computeWordForFilter(pred, isFlipped, oldWord, i)
         anyChanges ||= currentWord != oldWord
         i -= 1
       }
@@ -316,7 +340,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
         val minimumNonZeroIndex: Int = i + 1
         while (!anyChanges && i >= 0) {
           val oldWord = word(i)
-          currentWord = BitSetOps.computeWordForFilter(pred, isFlipped, oldWord, i)
+          currentWord =
+            BitSetOps.computeWordForFilter(pred, isFlipped, oldWord, i)
           anyChanges ||= currentWord != oldWord
           i -= 1
         }
@@ -326,12 +351,15 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
           } else if (minimumNonZeroIndex == 0) {
             new BitSet1(currentWord)
           } else if (minimumNonZeroIndex == 1) {
-            new BitSet2(BitSetOps.computeWordForFilter(pred, isFlipped, word(0), 0), currentWord)
+            new BitSet2(
+              BitSetOps.computeWordForFilter(pred, isFlipped, word(0), 0),
+              currentWord)
           } else {
             val newArray = elems.take(minimumNonZeroIndex + 1)
             newArray(i + 1) = currentWord
             while (i >= 0) {
-              newArray(i) = BitSetOps.computeWordForFilter(pred, isFlipped, word(i), i)
+              newArray(i) =
+                BitSetOps.computeWordForFilter(pred, isFlipped, word(i), i)
               i -= 1
             }
             fromBitMaskNoCopy(newArray)
@@ -344,7 +372,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
   }
 
   @SerialVersionUID(3L)
-  private final class SerializationProxy(coll: BitSet) extends scala.collection.BitSet.SerializationProxy(coll) {
+  private final class SerializationProxy(coll: BitSet)
+      extends scala.collection.BitSet.SerializationProxy(coll) {
     protected[this] def readResolve(): Any = BitSet.fromBitMaskNoCopy(elems)
   }
 }

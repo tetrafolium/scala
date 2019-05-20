@@ -7,7 +7,7 @@ case class X() extends W[Foo]
 case class XX() extends W[Bar]
 case class Y() extends W[Bar]
 case class Z[T >: Bar <: Foo](
-  z1: W[T]
+    z1: W[T]
 ) extends W[T]
 
 object Main {
@@ -15,7 +15,7 @@ object Main {
   def f1(w: W[Bar]): Int = {
     w match {
       // case XX() => 2
-      case Y() => 1
+      case Y()  => 1
       case Z(z) => f1(z)
     }
   }

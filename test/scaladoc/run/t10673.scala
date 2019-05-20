@@ -18,8 +18,9 @@ object Test extends ScaladocModelTest {
   def scalaURL = "http://bog.us"
 
   override def scaladocSettings = {
-    val samplePath = getClass.getClassLoader.getResource("scala/Function1.class").getPath
-    val scalaLibPath = if(samplePath.contains("!")) { // in scala-library.jar
+    val samplePath =
+      getClass.getClassLoader.getResource("scala/Function1.class").getPath
+    val scalaLibPath = if (samplePath.contains("!")) { // in scala-library.jar
       val scalaLibUri = samplePath.split("!")(0)
       new URI(scalaLibUri).getPath
     } else { // individual class files on disk
@@ -32,8 +33,9 @@ object Test extends ScaladocModelTest {
     import access._
     def showParents(e: MemberTemplateEntity): Unit = {
       e.parentTypes.foreach(_._2.refEntity.foreach {
-        case (_, (LinkToExternalTpl(name, _, tpl), _)) => println(s"'$name' links to $tpl")
-        case (_, (Tooltip(name), _))                   => println(s"'$name' no link!")
+        case (_, (LinkToExternalTpl(name, _, tpl), _)) =>
+          println(s"'$name' links to $tpl")
+        case (_, (Tooltip(name), _)) => println(s"'$name' no link!")
       })
     }
 

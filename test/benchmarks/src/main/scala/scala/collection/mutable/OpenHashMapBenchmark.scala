@@ -9,31 +9,33 @@ import benchmark._
 import java.util.concurrent.TimeUnit
 
 /** Utilities for the [[OpenHashMapBenchmark]].
-  * 
+  *
   * The method calls are tested by looping to the size desired for the map;
   * instead of using the JMH harness, which iterates for a fixed length of time.
   */
 private object OpenHashMapBenchmark {
 
   /** Abstract state container for the `put()` bulk calling tests.
-    * 
+    *
     * Provides an array of adequately-sized, empty maps to each invocation,
     * so that hash table allocation won't be done during measurement.
     * Provides enough maps to make each invocation long enough to avoid timing artifacts.
     * Performs a GC after re-creating the empty maps before every invocation,
     * so that only the GCs caused by the invocation contribute to the measurement.
-    * 
+    *
     * Records the memory used by all the maps in the last invocation of each iteration.
-    * 
+    *
     * @tparam K type of the map keys to be used in the test
     */
   @State(Scope.Thread)
-  private[this] abstract class BulkPutState[K](implicit keyBuilder: KeySeqBuilder[K]) {
+  private[this] abstract class BulkPutState[K](
+      implicit keyBuilder: KeySeqBuilder[K]) {
+
     /** A lower-bound estimate of the number of nanoseconds per `put()` call */
     private[this] val nanosPerPut: Double = 5
 
     /** Minimum number of nanoseconds per invocation, so as to avoid timing artifacts. */
-    private[this] val minNanosPerInvocation = 1000000  // one millisecond
+    private[this] val minNanosPerInvocation = 1000000 // one millisecond
 
     /** Size of the maps created in this trial. */
     private[this] var size: Int = _
@@ -54,7 +56,7 @@ private object OpenHashMapBenchmark {
     private[this] var _keys: KeySeq[K] = _
     def keys() = _keys
 
-    var maps: Array[OpenHashMap[K,Int]] = null
+    var maps: Array[OpenHashMap[K, Int]] = null
 
     @Setup
     def threadSetup(params: BenchmarkParams): Unit = {
@@ -72,11 +74,11 @@ private object OpenHashMapBenchmark {
 
     @Setup(Level.Invocation)
     def setup(params: IterationParams): Unit = {
-      for (i <- 0 until maps.length) maps(i) = new OpenHashMap[K,Int](size)
+      for (i <- 0 until maps.length) maps(i) = new OpenHashMap[K, Int](size)
 
       if (params.getType == IterationType.MEASUREMENT) {
         _operations += _mapEntries
-        System.gc()  // clean up after last invocation
+        System.gc() // clean up after last invocation
       }
     }
 
@@ -85,26 +87,29 @@ private object OpenHashMapBenchmark {
       if (params.getType == IterationType.MEASUREMENT) {
         // limit to smaller cases to avoid OOM
         _memory =
-          if (_mapEntries <= 1000000) GraphLayout.parseInstance(maps(0), maps.tail).totalSize
+          if (_mapEntries <= 1000000)
+            GraphLayout.parseInstance(maps(0), maps.tail).totalSize
           else 0
       }
     }
   }
 
   /** Abstract state container for the `get()` bulk calling tests.
-    * 
+    *
     * Provides a thread-scoped map of the expected size.
     * Performs a GC after loading the map.
-    * 
+    *
     * @tparam K type of the map keys to be used in the test
     */
   @State(Scope.Thread)
-  private[this] abstract class BulkGetState[K](implicit keyBuilder: KeySeqBuilder[K]) {
+  private[this] abstract class BulkGetState[K](
+      implicit keyBuilder: KeySeqBuilder[K]) {
+
     /** The sequence of keys to store into a map. */
     private[this] var _keys: KeySeq[K] = _
     def keys() = _keys
 
-    val map = new OpenHashMap[K,Int].empty
+    val map = new OpenHashMap[K, Int].empty
 
     /** Load the map with keys from `1` to `size`. */
     @Setup
@@ -117,19 +122,21 @@ private object OpenHashMapBenchmark {
   }
 
   /** Abstract state container for the `get()` bulk calling tests with deleted entries.
-    * 
+    *
     * Provides a thread-scoped map of the expected size, from which entries have been removed.
     * Performs a GC after loading the map.
-    * 
+    *
     * @tparam K type of the map keys to be used in the test
     */
   @State(Scope.Thread)
-  private[this] abstract class BulkRemovedGetState[K](implicit keyBuilder: KeySeqBuilder[K]) {
+  private[this] abstract class BulkRemovedGetState[K](
+      implicit keyBuilder: KeySeqBuilder[K]) {
+
     /** The sequence of keys to store into a map. */
     private[this] var _keys: KeySeq[K] = _
     def keys() = _keys
 
-    val map = new OpenHashMap[K,Int].empty
+    val map = new OpenHashMap[K, Int].empty
 
     /** Load the map with keys from `1` to `size`, removing half of them. */
     @Setup
@@ -165,16 +172,18 @@ private object OpenHashMapBenchmark {
   private class AnyRefBulkGetState extends BulkGetState[AnyRef]
   private class AnyRefBulkRemovedGetState extends BulkRemovedGetState[AnyRef]
 
-
   /** Put entries into the given map.
     * Adds entries using a range of keys from the given list.
-    * 
+    *
     * @param from lowest index in the range of keys to add
     * @param to highest index in the range of keys to add, plus one
     */
-  private[this] def put[K](map: OpenHashMap[K,Int], keys: KeySeq[K], from: Int, to: Int): Unit = {
+  private[this] def put[K](map: OpenHashMap[K, Int],
+                           keys: KeySeq[K],
+                           from: Int,
+                           to: Int): Unit = {
     var i = from
-    while (i < to) {  // using a `for` expression instead adds significant overhead
+    while (i < to) { // using a `for` expression instead adds significant overhead
       map.put(keys(i), i)
       i += 1
     }
@@ -183,15 +192,15 @@ private object OpenHashMapBenchmark {
   /** Put entries into the given map.
     * Adds entries using all of the keys from the given list.
     */
-  private def put[K](map: OpenHashMap[K,Int], keys: KeySeq[K]): Unit =
+  private def put[K](map: OpenHashMap[K, Int], keys: KeySeq[K]): Unit =
     put(map, keys, 0, keys.size)
 
   /** Put entries into the given map, removing half of them as they're added.
-    * 
+    *
     * @param keys list of keys to use
     */
-  private def put_remove[K](map: OpenHashMap[K,Int], keys: KeySeq[K]): Unit = {
-    val blocks = 25  // should be a non-trivial factor of `size`
+  private def put_remove[K](map: OpenHashMap[K, Int], keys: KeySeq[K]): Unit = {
+    val blocks = 25 // should be a non-trivial factor of `size`
     val size = keys.size
     val blockSize: Int = size / blocks
     var base = 0
@@ -210,7 +219,7 @@ private object OpenHashMapBenchmark {
   }
 
   /** Get elements from the given map. */
-  private def get[K](map: OpenHashMap[K,Int], keys: KeySeq[K]) = {
+  private def get[K](map: OpenHashMap[K, Int], keys: KeySeq[K]) = {
     val size = keys.size
     var i = 0
     var sum = 0
@@ -233,8 +242,18 @@ private object OpenHashMapBenchmark {
 class OpenHashMapBenchmark {
   import OpenHashMapBenchmark._
 
-  @Param(Array("50", "100", "1000", "10000", "100000", "1000000", "2500000",
-               "5000000", "7500000", "10000000", "25000000"))
+  @Param(
+    Array("50",
+          "100",
+          "1000",
+          "10000",
+          "100000",
+          "1000000",
+          "2500000",
+          "5000000",
+          "7500000",
+          "10000000",
+          "25000000"))
   var size: Int = _
 
   // Tests with Int keys
@@ -270,7 +289,6 @@ class OpenHashMapBenchmark {
   @Benchmark
   def get_Int_after_put_remove(state: IntBulkRemovedGetState) =
     get(state.map, state.keys)
-
 
   // Tests with AnyRef keys
 

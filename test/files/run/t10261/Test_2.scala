@@ -8,7 +8,7 @@ case class C(value: String)
 
 object Test {
   def main(args: Array[String]): Unit = {
-    assert(Try{C("")}.isFailure, "Empty value should fail to parse") // check that parse is used to validate input
+    assert(Try { C("") }.isFailure, "Empty value should fail to parse") // check that parse is used to validate input
     assert(C("a").value == "a", "Unexpected value")
   }
 }

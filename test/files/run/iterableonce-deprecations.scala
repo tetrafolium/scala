@@ -18,7 +18,7 @@ object Test {
     i.toStream
     i.toVector
 
-    val ti: IterableOnce[(Int, Int)] = List((1,2), (3,4), (5,6))
+    val ti: IterableOnce[(Int, Int)] = List((1, 2), (3, 4), (5, 6))
 
     ti.toMap
   }

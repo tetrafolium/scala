@@ -13,7 +13,8 @@ object Test extends ReplTest {
     """\$Lambda.*""".r.replaceAllIn(s, "<function0>")
   }
 
-  def code = """
+  def code =
+    """
     |var x = 10
     |var y = 11
     |x = 12

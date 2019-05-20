@@ -16,8 +16,8 @@ import scala.util.Properties.lineSeparator
 import scala.util.matching.Regex
 
 /** This is for name logic which is independent of the compiler (notice there's no Global.)
- *  That includes at least generating, metaquoting, mangling, and unmangling.
- */
+  *  That includes at least generating, metaquoting, mangling, and unmangling.
+  */
 object Naming {
   def unmangle(str: String): String = {
     val ESC = '\u001b'
@@ -25,19 +25,21 @@ object Naming {
     // Looking to exclude binary data which hoses the terminal, but
     // let through the subset of it we need, like whitespace and also
     // <ESC> for ansi codes.
-    val binaryChars = cleaned count (ch => ch < 32 && !ch.isWhitespace && ch != ESC)
+    val binaryChars = cleaned count (ch =>
+      ch < 32 && !ch.isWhitespace && ch != ESC)
     // Lots of binary chars - translate all supposed whitespace into spaces
     // except supposed line endings, otherwise scrubbed lines run together
     if (binaryChars > 5) // more than one can count while holding a hamburger
       cleaned map {
         case c if lineSeparator contains c => c
-        case c if c.isWhitespace => ' '
-        case c if c < 32 => '?'
-        case c => c
+        case c if c.isWhitespace           => ' '
+        case c if c < 32                   => '?'
+        case c                             => c
       }
     // Not lots - preserve whitespace and ESC
     else
-      cleaned map (ch => if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch)
+      cleaned map (ch =>
+        if (ch.isWhitespace || ch == ESC) ch else if (ch < 32) '?' else ch)
   }
 
   // Uncompiled regex pattern to detect `line` package and members
@@ -50,12 +52,12 @@ object Naming {
   //
   lazy val lineRegex: String = {
     val sn = sessionNames
-    val members = List(sn.read, sn.eval, sn.print) map Regex.quote mkString("(?:", "|", ")")
+    val members = List(sn.read, sn.eval, sn.print) map Regex.quote mkString ("(?:", "|", ")")
     Regex.quote(sn.line) + """\d+[./]""" + members + """[$.]"""
   }
 
   private def removeLineWrapper(s: String) = s.replaceAll(lineRegex, "")
-  private def removeIWPackages(s: String)  = s.replaceAll("""\$iw[$.]""", "")
+  private def removeIWPackages(s: String) = s.replaceAll("""\$iw[$.]""", "")
 
   object sessionNames {
     // All values are configurable by passing e.g. -Dscala.repl.name.read=XXX
@@ -94,16 +96,16 @@ object Naming {
 
 trait Naming {
   import Naming.{NameCreator, sessionNames}
-  private lazy val userVar     = new NameCreator(sessionNames.res)  // var name, like res0
+  private lazy val userVar = new NameCreator(sessionNames.res) // var name, like res0
   private lazy val internalVar = new NameCreator(sessionNames.ires) // internal var name, like $ires0
   private var _freshLineId = 0
 
-  def isUserVarName(name: String)     = userVar didGenerate name
+  def isUserVarName(name: String) = userVar didGenerate name
   def isInternalVarName(name: String) = internalVar didGenerate name
 
   def freshUserVarName() = userVar()
   def freshInternalVarName() = internalVar()
-  def freshLineId() = { _freshLineId += 1 ; _freshLineId}
+  def freshLineId() = { _freshLineId += 1; _freshLineId }
 
   def resetAllCreators(): Unit = {
     userVar.reset()

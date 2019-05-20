@@ -1,4 +1,3 @@
-
 package p {
   object `package` {
     def f() = 42

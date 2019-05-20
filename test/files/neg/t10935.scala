@@ -1,4 +1,3 @@
-
 object a {
   var size = 0
   size += 1 + "foo".lengt

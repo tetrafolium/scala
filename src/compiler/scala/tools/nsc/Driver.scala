@@ -28,13 +28,14 @@ abstract class Driver {
 
   /** Forward errors to the (current) reporter. */
   protected def scalacError(msg: String): Unit = {
-    reporter.error(FakePos("scalac"), msg + "\n  scalac -help  gives more information")
+    reporter.error(FakePos("scalac"),
+                   msg + "\n  scalac -help  gives more information")
   }
 
   /** True to continue compilation. */
   protected def processSettingsHook(): Boolean = {
-    if (settings.version) { reporter echo versionMsg ; false }
-    else !reporter.hasErrors
+    if (settings.version) { reporter echo versionMsg; false } else
+      !reporter.hasErrors
   }
 
   protected def newCompiler(): Global
@@ -51,14 +52,14 @@ abstract class Driver {
   }
 
   def process(args: Array[String]): Boolean = {
-    val ss   = new Settings(scalacError)
+    val ss = new Settings(scalacError)
     reporter = Reporter(ss)
-    command  = new CompilerCommand(args.toList, ss)
+    command = new CompilerCommand(args.toList, ss)
     settings = command.settings
 
     if (processSettingsHook()) {
       val compiler = newCompiler()
-      reporter     = compiler.reporter    // adopt the compiler's reporter, which may be custom
+      reporter = compiler.reporter // adopt the compiler's reporter, which may be custom
       try {
         if (reporter.hasErrors)
           reporter.flush()
@@ -71,8 +72,8 @@ abstract class Driver {
         case ex: Throwable =>
           compiler.reportThrowable(ex)
           ex match {
-            case FatalError(msg)  => // signals that we should fail compilation.
-            case _                => throw ex // unexpected error, tell the outside world.
+            case FatalError(msg) => // signals that we should fail compilation.
+            case _               => throw ex // unexpected error, tell the outside world.
           }
       }
     } else if (reporter.hasErrors) reporter.flush()

@@ -32,8 +32,8 @@ class MapAppendBenchmark {
   @Benchmark def plus1(bh: Blackhole): Unit = {
     var m = Map.empty[Int, Unit]
     var i = 0
-    while(i < size) {
-      m = m + ((i -> ())) + (((i+size) -> ()))
+    while (i < size) {
+      m = m + ((i -> ())) + (((i + size) -> ()))
       i += 1
     }
     bh.consume(m)
@@ -42,8 +42,8 @@ class MapAppendBenchmark {
   @Benchmark def plus2(bh: Blackhole): Unit = {
     var m = Map.empty[Int, Unit]
     var i = 0
-    while(i < size) {
-      m = m + ((i -> ()), ((i+size) -> ()))
+    while (i < size) {
+      m = m + ((i -> ()), ((i + size) -> ()))
       i += 1
     }
     bh.consume(m)
@@ -53,8 +53,8 @@ class MapAppendBenchmark {
     val empty = IndexedSeq.empty
     var m = Map.empty[Int, Unit]
     var i = 0
-    while(i < size) {
-      m = m + ((i -> ()), ((i+size) -> ()), empty: _*)
+    while (i < size) {
+      m = m + ((i -> ()), ((i + size) -> ()), empty: _*)
       i += 1
     }
     bh.consume(m)

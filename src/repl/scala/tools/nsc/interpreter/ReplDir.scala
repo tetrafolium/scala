@@ -21,10 +21,14 @@ import scala.reflect.io.{AbstractFile, Directory, PlainDirectory}
 import scala.collection.mutable.Clearable
 
 /** Directory to save .class files to. */
-trait ReplDir extends AbstractFile with Clearable { }
+trait ReplDir extends AbstractFile with Clearable {}
 
-private class ReplVirtualDir() extends VirtualDirectory("(memory)", None) with ReplDir { }
-private class ReplRealDir(dir: Directory) extends PlainDirectory(dir) with ReplDir {
+private class ReplVirtualDir()
+    extends VirtualDirectory("(memory)", None)
+    with ReplDir {}
+private class ReplRealDir(dir: Directory)
+    extends PlainDirectory(dir)
+    with ReplDir {
   def clear() = {
     dir.deleteRecursively()
     dir.createDirectory()
@@ -34,14 +38,15 @@ private class ReplRealDir(dir: Directory) extends PlainDirectory(dir) with ReplD
 class ReplOutput(val dirSetting: MutableSettings#StringSetting) {
   // outdir for generated classfiles - may be in-memory (the default),
   // a generated temporary directory, or a specified outdir.
-  val dir: ReplDir = (
-    if (dirSetting.isDefault)
-      new ReplVirtualDir()
-    else if (dirSetting.value == "")
-      new ReplRealDir(Directory.makeTemp("repl"))
-    else
-      new ReplRealDir(Directory(dirSetting.value))
-  )
+  val dir: ReplDir =
+    (
+      if (dirSetting.isDefault)
+        new ReplVirtualDir()
+      else if (dirSetting.value == "")
+        new ReplRealDir(Directory.makeTemp("repl"))
+      else
+        new ReplRealDir(Directory(dirSetting.value))
+    )
 
   // print the contents hierarchically
   def show(out: PrintWriter) = {

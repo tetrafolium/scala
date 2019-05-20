@@ -96,8 +96,12 @@ class OrderingTest {
       assert(ord.reverse isReverseOf ord)
       assert(!(ord isReverseOf ord))
       assert(!(ord.reverse isReverseOf ord.reverse))
-      assert(!ord.isReverseOf({ (_, _) => 0 }: Ordering[T]))
-      assert(!ord.reverse.isReverseOf({ (_, _) => 0 }: Ordering[T]))
+      assert(!ord.isReverseOf({ (_, _) =>
+        0
+      }: Ordering[T]))
+      assert(!ord.reverse.isReverseOf({ (_, _) =>
+        0
+      }: Ordering[T]))
     }
 
     check(Ordering[Int])
@@ -108,7 +112,9 @@ class OrderingTest {
     check(Ordering[(Int, Long, Float, Double, Byte, Char)])
     check(Ordering[(Int, Long, Float, Double, Byte, Char, Short)])
     check(Ordering[(Int, Long, Float, Double, Byte, Char, Short, BigInt)])
-    check(Ordering[(Int, Long, Float, Double, Byte, Char, Short, BigInt, BigDecimal)])
+    check(
+      Ordering[
+        (Int, Long, Float, Double, Byte, Char, Short, BigInt, BigDecimal)])
     check(Ordering[Option[Int]])
 
     import Ordering.Implicits._
@@ -156,8 +162,10 @@ class OrderingTest {
     def checkFloats(floats: Float*): Unit = {
       def same(f1: Float, f2: Float): Boolean = {
         val thisBits = jl.Float.floatToRawIntBits(f1)
-        if (thisBits == fNegZeroBits) jl.Float.floatToRawIntBits(f2) == fNegZeroBits
-        else if (thisBits == fPosZeroBits) jl.Float.floatToRawIntBits(f2) == fPosZeroBits
+        if (thisBits == fNegZeroBits)
+          jl.Float.floatToRawIntBits(f2) == fNegZeroBits
+        else if (thisBits == fPosZeroBits)
+          jl.Float.floatToRawIntBits(f2) == fPosZeroBits
         else f1 == f2 || (jl.Float.isNaN(f1) && jl.Float.isNaN(f2))
       }
 
@@ -180,8 +188,8 @@ class OrderingTest {
         assertTrue(msg, O.lt(i, j) != O.gteq(i, j))
         // exactly one of `lt`, `equiv`, `gt` is true
         assertTrue(msg,
-          (O.lt(i, j) ^ O.equiv(i, j) ^ O.gt(i, j))
-            && !(O.lt(i, j) && O.equiv(i, j) && O.gt(i, j)))
+                   (O.lt(i, j) ^ O.equiv(i, j) ^ O.gt(i, j))
+                     && !(O.lt(i, j) && O.equiv(i, j) && O.gt(i, j)))
 
         // consistency with `max` and `min`
         assertEquals(msg, O.compare(i, j) >= 0, same(O.max(i, j), i))
@@ -196,8 +204,10 @@ class OrderingTest {
     def checkDoubles(doubles: Double*): Unit = {
       def same(d1: Double, d2: Double): Boolean = {
         val thisBits = jl.Double.doubleToRawLongBits(d1)
-        if (thisBits == dNegZeroBits) jl.Double.doubleToRawLongBits(d2) == dNegZeroBits
-        else if (thisBits == dPosZeroBits) jl.Double.doubleToRawLongBits(d2) == dPosZeroBits
+        if (thisBits == dNegZeroBits)
+          jl.Double.doubleToRawLongBits(d2) == dNegZeroBits
+        else if (thisBits == dPosZeroBits)
+          jl.Double.doubleToRawLongBits(d2) == dPosZeroBits
         else d1 == d2 || (jl.Double.isNaN(d1) && jl.Double.isNaN(d2))
       }
 
@@ -220,8 +230,8 @@ class OrderingTest {
         assertTrue(msg, O.lt(i, j) != O.gteq(i, j))
         // exactly one of `lt`, `equiv`, `gt` is true
         assertTrue(msg,
-          (O.lt(i, j) ^ O.equiv(i, j) ^ O.gt(i, j))
-            && !(O.lt(i, j) && O.equiv(i, j) && O.gt(i, j)))
+                   (O.lt(i, j) ^ O.equiv(i, j) ^ O.gt(i, j))
+                     && !(O.lt(i, j) && O.equiv(i, j) && O.gt(i, j)))
 
         // consistency with `max` and `min`
         assertEquals(msg, O.compare(i, j) >= 0, same(O.max(i, j), i))
@@ -260,7 +270,9 @@ class OrderingTest {
     check(Ordering[(Int, Long, Float, Double, Byte, Char)])
     check(Ordering[(Int, Long, Float, Double, Byte, Char, Short)])
     check(Ordering[(Int, Long, Float, Double, Byte, Char, Short, BigInt)])
-    check(Ordering[(Int, Long, Float, Double, Byte, Char, Short, BigInt, BigDecimal)])
+    check(
+      Ordering[
+        (Int, Long, Float, Double, Byte, Char, Short, BigInt, BigDecimal)])
     check(Ordering[Option[Int]])
 
     import Ordering.Implicits._

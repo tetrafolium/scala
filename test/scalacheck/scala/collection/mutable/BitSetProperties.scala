@@ -32,7 +32,9 @@ object BitSetProperties extends Properties("mutable.BitSet") {
     (left.diff(right): Set[Int]) ?= left.to(HashSet).diff(right.to(HashSet))
   }
   property("diff hashSet") = forAll { (left: BitSet, right: BitSet) =>
-    (left.diff(right.to(HashSet)): Set[Int]) ?= left.to(HashSet).diff(right.to(HashSet))
+    (left.diff(right.to(HashSet)): Set[Int]) ?= left
+      .to(HashSet)
+      .diff(right.to(HashSet))
   }
   property("filter") = forAll { (bs: BitSet) =>
     bs.filter(_ % 2 == 0) ?= bs.toList.filter(_ % 2 == 0).to(BitSet)
@@ -50,22 +52,24 @@ object BitSetProperties extends Properties("mutable.BitSet") {
     (left ?= bs.filter(p)) && (right ?= bs.filterNot(p))
   }
 
-
-  property("addAll(Range)") = forAll{ (bs: BitSet, range: Range) =>
+  property("addAll(Range)") = forAll { (bs: BitSet, range: Range) =>
     val bsClone1 = bs.clone()
     val bsClone2 = bs.clone()
     range.foreach(bsClone2.add)
     bsClone1.addAll(range) ?= bsClone2
   }
 
-  property("subsetOf(BitSet) equivalent to slow implementation") = forAll{ (left: BitSet, right: BitSet) =>
-    (Prop(left.subsetOf(right)) ==> left.forall(right)) &&
+  property("subsetOf(BitSet) equivalent to slow implementation") = forAll {
+    (left: BitSet, right: BitSet) =>
+      (Prop(left.subsetOf(right)) ==> left.forall(right)) &&
       (Prop(left.forall(right)) ==> Prop(left.subsetOf(right)))
   }
 
-  property("left subsetOf (left union right) && right subsetOf (left union right)") = forAll{ (left: BitSet, right: BitSet) =>
-    val leftUnionRight = left concat right
-    left.subsetOf(leftUnionRight) && right.subsetOf(leftUnionRight)
-  }
+  property(
+    "left subsetOf (left union right) && right subsetOf (left union right)") =
+    forAll { (left: BitSet, right: BitSet) =>
+      val leftUnionRight = left concat right
+      left.subsetOf(leftUnionRight) && right.subsetOf(leftUnionRight)
+    }
 
 }

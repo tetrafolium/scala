@@ -15,16 +15,18 @@ class HashSetTest {
 
     val h2 = new HashSet[String]
     h2 += null
-    for (i <- 0 until 20) h2 +=  "" + i
+    for (i <- 0 until 20) h2 += "" + i
     assertTrue(h2 contains null)
     for (i <- 0 until 20) assertTrue(h2.contains("" + i))
     for (i <- 20 until 40) assertFalse(h2.contains("" + i))
-    assertEquals((0 until 20).map("" + _).toList.sorted.mkString(",") + ",null", h2.toList.map("" + _).sorted.mkString(","))
+    assertEquals((0 until 20).map("" + _).toList.sorted.mkString(",") + ",null",
+                 h2.toList.map("" + _).sorted.mkString(","))
 
     h2 -= null
     h2 -= "" + 0
     assertFalse(h2 contains null)
-    assertEquals((1 until 20).map("" + _).toList.sorted.mkString(","), h2.toList.map("" + _).sorted.mkString(","))
+    assertEquals((1 until 20).map("" + _).toList.sorted.mkString(","),
+                 h2.toList.map("" + _).sorted.mkString(","))
   }
 
   @Test
@@ -53,7 +55,7 @@ class HashSetTest {
     val hs = HashSet.from(1 to 5)
     val it = hs.iterator
     var s = 0
-    while(it.hasNext) s += it.next()
+    while (it.hasNext) s += it.next()
     assertEquals((1 to 5).sum, s)
   }
 
@@ -67,7 +69,8 @@ class HashSetTest {
 
   @Test
   def addConflicting: Unit = {
-    val hs = HashSet[PackageEntryImpl](PackageEntryImpl("javax"), PackageEntryImpl("java"))
+    val hs = HashSet[PackageEntryImpl](PackageEntryImpl("javax"),
+                                       PackageEntryImpl("java"))
     assertFalse(hs.add(PackageEntryImpl("java")))
   }
 }

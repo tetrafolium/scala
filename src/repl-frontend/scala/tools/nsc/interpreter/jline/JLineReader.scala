@@ -21,7 +21,9 @@ import jconsole.history.{History => JHistory}
 import scala.tools.nsc.interpreter.shell._
 
 trait JLineCompletion extends Completion with Completer {
-  final def complete(buf: String, cursor: Int, candidates: ju.List[CharSequence]): Int =
+  final def complete(buf: String,
+                     cursor: Int,
+                     candidates: ju.List[CharSequence]): Int =
     complete(if (buf == null) "" else buf, cursor) match {
       case CompletionResult(newCursor, newCandidates) =>
         newCandidates foreach candidates.add
@@ -30,11 +32,12 @@ trait JLineCompletion extends Completion with Completer {
 }
 
 /**
- * Reads from the console using JLine.
- *
- * Eagerly instantiates all relevant JLine classes, so that we can detect linkage errors on `new JLineReader` and retry.
- */
-class JlineReader(isAcross: Boolean, isPaged: Boolean) extends InteractiveReader {
+  * Reads from the console using JLine.
+  *
+  * Eagerly instantiates all relevant JLine classes, so that we can detect linkage errors on `new JLineReader` and retry.
+  */
+class JlineReader(isAcross: Boolean, isPaged: Boolean)
+    extends InteractiveReader {
   def interactive = true
 
   val history: History = new JLineHistory.JLineFileHistory()
@@ -62,22 +65,25 @@ class JlineReader(isAcross: Boolean, isPaged: Boolean) extends InteractiveReader
     _completion = completion
     completion match {
       case NoCompletion => // ignore
-      case jlineCompleter: Completer => consoleReader.initCompletion(jlineCompleter)
+      case jlineCompleter: Completer =>
+        consoleReader.initCompletion(jlineCompleter)
       case _ => // should not happen, but hey
     }
   }
 
-  def reset()                     = consoleReader.getTerminal().reset()
-  def redrawLine()                = consoleReader.redrawLineAndFlush()
+  def reset() = consoleReader.getTerminal().reset()
+  def redrawLine() = consoleReader.redrawLineAndFlush()
   def readOneLine(prompt: String) = consoleReader.readLine(prompt)
-  def readOneKey(prompt: String)  = consoleReader.readOneKey(prompt)
+  def readOneKey(prompt: String) = consoleReader.readOneKey(prompt)
 }
 
 // implements a jline interface
-private class JLineConsoleReader(val isAcross: Boolean) extends jconsole.ConsoleReader with VariColumnTabulator {
+private class JLineConsoleReader(val isAcross: Boolean)
+    extends jconsole.ConsoleReader
+    with VariColumnTabulator {
   val marginSize = 3
 
-  def width  = getTerminal.getWidth()
+  def width = getTerminal.getWidth()
   def height = getTerminal.getHeight()
 
   private def morePrompt = "--More--"
@@ -86,10 +92,9 @@ private class JLineConsoleReader(val isAcross: Boolean) extends jconsole.Console
     val key = readOneKey(morePrompt)
     try key match {
       case '\r' | '\n' => 1
-      case 'q' => -1
-      case _ => height - 1
-    }
-    finally {
+      case 'q'         => -1
+      case _           => height - 1
+    } finally {
       eraseLine()
       // TODO: still not quite managing to erase --More-- and get
       // back to a scala prompt without another keypress.
@@ -107,19 +112,20 @@ private class JLineConsoleReader(val isAcross: Boolean) extends jconsole.Console
     printColumns_(items.asScala.toList map (_.toString))
   }
 
-  private def printColumns_(items: List[String]): Unit = if (items exists (_ != "")) {
-    val grouped = tabulate(items)
-    var linesLeft = if (isPaginationEnabled()) height - 1 else Int.MaxValue
-    grouped foreach { xs =>
-      println(xs.mkString)
-      linesLeft -= 1
-      if (linesLeft <= 0) {
-        linesLeft = emulateMore()
-        if (linesLeft < 0)
-          return
+  private def printColumns_(items: List[String]): Unit =
+    if (items exists (_ != "")) {
+      val grouped = tabulate(items)
+      var linesLeft = if (isPaginationEnabled()) height - 1 else Int.MaxValue
+      grouped foreach { xs =>
+        println(xs.mkString)
+        linesLeft -= 1
+        if (linesLeft <= 0) {
+          linesLeft = emulateMore()
+          if (linesLeft < 0)
+            return
+        }
       }
     }
-  }
 
   def readOneKey(prompt: String) = {
     this.print(prompt)

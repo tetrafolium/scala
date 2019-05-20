@@ -1,8 +1,8 @@
 import language.existentials
 
 /** All of these should work, some don't yet.
- *  !!!
- */
+  *  !!!
+  */
 class A {
   def f() = { case class Bob(); Bob }
 
@@ -23,7 +23,7 @@ class A {
     lazy val bippy3a = f _
     bippy3a
   }
-  */
+ */
 }
 
 /*
@@ -48,4 +48,4 @@ error: scala.reflect.internal.Types$TypeError: type mismatch;
   at scala.tools.nsc.typechecker.Typers$Typer.typed(Typers.scala:5562)
   at scala.tools.nsc.typechecker.Typers$Typer.$anonfun$typedArg$1(Typers.scala:3247)
   at scala.tools.nsc.typechecker.Typers$Typer.typedArg(Typers.scala:477)
-*/
+ */

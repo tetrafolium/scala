@@ -1,8 +1,8 @@
 import scala.collection.ArrayOps
 object Test {
   def genericArrayOps[T](xs: Array[T]): ArrayOps[T] = xs match {
-    case x: Array[AnyRef]  => refArrayOps[AnyRef](x).asInstanceOf[ArrayOps[T]]
-    case null              => null.asInstanceOf[ArrayOps[T]] // `ArrayOps` is AnyVal
+    case x: Array[AnyRef] => refArrayOps[AnyRef](x).asInstanceOf[ArrayOps[T]]
+    case null             => null.asInstanceOf[ArrayOps[T]] // `ArrayOps` is AnyVal
   }
   // def genericArrayOps[T >: Nothing <: Any](xs: Array[T]): scala.collection.mutable.ArrayOps[T]
   //   = OptionMatching.runOrElse(xs)(((x1: Array[T]) =>

@@ -6,8 +6,10 @@ object Test {
     def apply[A](f: Int => A): Apply[A] = new Apply[A]
   }
 
-  def foo = Apply(i => i match {
-    case 1 => Success(Some(1))
-    case _ => Success(None)
-  })
+  def foo =
+    Apply(i =>
+      i match {
+        case 1 => Success(Some(1))
+        case _ => Success(None)
+    })
 }

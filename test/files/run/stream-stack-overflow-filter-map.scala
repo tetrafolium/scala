@@ -29,7 +29,8 @@ object Test extends App {
 
   //Reduced version of the test case - either invocation used to cause a stack
   //overflow before commit 80b3f433e5536d086806fa108ccdfacf10719cc2.
-  val resFMap = (1 to 10000).to(LazyList) withFilter (_ => false) flatMap (Seq(_))
+  val resFMap = (1 to 10000).to(LazyList) withFilter (_ => false) flatMap (Seq(
+    _))
   val resMap = (1 to 10000).to(LazyList) withFilter (_ => false) map (_ + 1)
 
   //Complete test case for withFilter + map/flatMap, as requested by @axel22.

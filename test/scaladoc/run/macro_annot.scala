@@ -1,6 +1,6 @@
 import scala.tools.nsc.doc.model._
 import scala.tools.partest.ScaladocModelTest
-import scala.tools.nsc.doc.{ DocFactory, Universe }
+import scala.tools.nsc.doc.{DocFactory, Universe}
 
 object Test extends ScaladocModelTest {
   override def resourceFile = "simulacrum_2.scala"
@@ -10,7 +10,9 @@ object Test extends ScaladocModelTest {
   override def extraSettings = super.extraSettings + s" -cp ${testOutput.path}"
 
   override def model: Option[Universe] = {
-    val macroCode = new reflect.io.File(new java.io.File(resourcePath.toString + "/" + "simulacrum_1.scala")).slurp()
+    val macroCode = new reflect.io.File(
+      new java.io.File(resourcePath.toString + "/" + "simulacrum_1.scala"))
+      .slurp()
 
     // before generating the model, first compile the macro (using a full compiler)
     compileString(newCompiler())(macroCode)

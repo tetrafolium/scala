@@ -18,13 +18,14 @@ import scala.language.higherKinds
 
 /** Base trait for sorted sets */
 trait SortedSet[A]
-  extends Set[A]
-     with collection.SortedSet[A]
-     with SortedSetOps[A, SortedSet, SortedSet[A]] {
+    extends Set[A]
+    with collection.SortedSet[A]
+    with SortedSetOps[A, SortedSet, SortedSet[A]] {
 
   override def unsorted: Set[A] = this
 
-  override def sortedIterableFactory: SortedIterableFactory[SortedIterableCC] = SortedSet
+  override def sortedIterableFactory: SortedIterableFactory[SortedIterableCC] =
+    SortedSet
 }
 
 /**
@@ -32,14 +33,15 @@ trait SortedSet[A]
   * @define Coll `immutable.SortedSet`
   */
 trait SortedSetOps[A, +CC[X] <: SortedSet[X], +C <: SortedSetOps[A, CC, C]]
-  extends SetOps[A, Set, C]
-     with collection.SortedSetOps[A, CC, C] {
+    extends SetOps[A, Set, C]
+    with collection.SortedSetOps[A, CC, C] {
 
   def unsorted: Set[A]
 }
 
-trait StrictOptimizedSortedSetOps[A, +CC[X] <: SortedSet[X], +C <: SortedSetOps[A, CC, C]]
-  extends SortedSetOps[A, CC, C]
+trait StrictOptimizedSortedSetOps[
+    A, +CC[X] <: SortedSet[X], +C <: SortedSetOps[A, CC, C]]
+    extends SortedSetOps[A, CC, C]
     with collection.StrictOptimizedSortedSetOps[A, CC, C]
     with StrictOptimizedSetOps[A, Set, C]
 
@@ -52,6 +54,6 @@ trait StrictOptimizedSortedSetOps[A, +CC[X] <: SortedSet[X], +C <: SortedSetOps[
 object SortedSet extends SortedIterableFactory.Delegate[SortedSet](TreeSet) {
   override def from[E: Ordering](it: IterableOnce[E]): SortedSet[E] = it match {
     case ss: SortedSet[E] if Ordering[E] == ss.ordering => ss
-    case _ => super.from(it)
+    case _                                              => super.from(it)
   }
 }

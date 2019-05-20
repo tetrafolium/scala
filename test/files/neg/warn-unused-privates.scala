@@ -2,19 +2,19 @@
 // scalac: -deprecation -Ywarn-unused -Xfatal-warnings
 //
 class Bippy(a: Int, b: Int) {
-  private def this(c: Int) = this(c, c)           // warn
-  private def bippy(x: Int): Int      = bippy(x)  // TODO: could warn
-  private def boop(x: Int)            = x+a+b     // warn
-  final private val MILLIS1           = 2000      // no warn, might have been inlined
-  final private val MILLIS2: Int      = 1000      // warn
-  final private val HI_COMPANION: Int = 500       // no warn, accessed from companion
+  private def this(c: Int) = this(c, c) // warn
+  private def bippy(x: Int): Int = bippy(x) // TODO: could warn
+  private def boop(x: Int) = x + a + b // warn
+  final private val MILLIS1 = 2000 // no warn, might have been inlined
+  final private val MILLIS2: Int = 1000 // warn
+  final private val HI_COMPANION: Int = 500 // no warn, accessed from companion
   def hi() = Bippy.HI_INSTANCE
 }
 object Bippy {
   def hi(x: Bippy) = x.HI_COMPANION
-  private val HI_INSTANCE: Int = 500      // no warn, accessed from instance
-  private val HEY_INSTANCE: Int = 1000    // warn
-  private lazy val BOOL: Boolean = true   // warn
+  private val HI_INSTANCE: Int = 500 // no warn, accessed from instance
+  private val HEY_INSTANCE: Int = 1000 // warn
+  private lazy val BOOL: Boolean = true // warn
 }
 
 class A(val msg: String)
@@ -25,23 +25,23 @@ class B3(msg0: String) extends A("msg")
 trait Bing
 
 /*** Early defs warnings disabled primarily due to scala/bug#6595.
- *   The test case is here to assure we aren't issuing false positives;
- *   the ones labelled "warn" don't warn.
+  *   The test case is here to assure we aren't issuing false positives;
+  *   the ones labelled "warn" don't warn.
  ***/
 class Boppy extends {
-  private val hmm: String = "abc"       // no warn, used in early defs
-  private val hom: String = "def"       // no warn, used in body
-  private final val him   = "ghi"       // no warn, might have been (was) inlined
-  final val him2          = "ghi"       // no warn, same
-  final val himinline     = him
-  private val hum: String = "jkl"       // warn
+  private val hmm: String = "abc" // no warn, used in early defs
+  private val hom: String = "def" // no warn, used in body
+  private final val him = "ghi" // no warn, might have been (was) inlined
+  final val him2 = "ghi" // no warn, same
+  final val himinline = him
+  private val hum: String = "jkl" // warn
   final val ding = hmm.length
 } with Bing {
   val dinger = hom
   private val hummer = "def" // warn
 
-  private final val bum   = "ghi"       // no warn, might have been (was) inlined
-  final val bum2          = "ghi"       // no warn, same
+  private final val bum = "ghi" // no warn, might have been (was) inlined
+  final val bum2 = "ghi" // no warn, same
 }
 
 trait Accessors {
@@ -80,7 +80,7 @@ trait DefaultArgs {
 /* scala/bug#7707 Both usages warn default arg because using PrivateRyan.apply, not new.
 case class PrivateRyan private (ryan: Int = 42) { def f = PrivateRyan() }
 object PrivateRyan { def f = PrivateRyan() }
-*/
+ */
 
 class Outer {
   class Inner
@@ -132,7 +132,7 @@ trait Underwarn {
   def f(): Seq[Int]
 
   def g() = {
-    val Seq(_, _) = f()  // no warn
+    val Seq(_, _) = f() // no warn
     true
   }
 }
@@ -155,24 +155,24 @@ trait Boundings {
   def d = D(42)
 
   def f() = {
-    val C(x, y, Some(z)) = c              // warn
+    val C(x, y, Some(z)) = c // warn
     17
   }
   def g() = {
-    val C(x @ _, y @ _, Some(z @ _)) = c  // no warn
+    val C(x @ _, y @ _, Some(z @ _)) = c // no warn
     17
   }
   def h() = {
-    val C(x @ _, y @ _, z @ Some(_)) = c  // warn for z?
+    val C(x @ _, y @ _, z @ Some(_)) = c // warn for z?
     17
   }
 
   def v() = {
-    val D(x) = d                          // warn
+    val D(x) = d // warn
     17
   }
   def w() = {
-    val D(x @ _) = d                      // no warn
+    val D(x @ _) = d // no warn
     17
   }
 
@@ -183,42 +183,42 @@ trait Forever {
     val t = Option((17, 42))
     for {
       ns <- t
-      (i, j) = ns                        // no warn
+      (i, j) = ns // no warn
     } yield (i + j)
   }
   def g = {
     val t = Option((17, 42))
     for {
       ns <- t
-      (i, j) = ns                        // no warn
-    } yield 42                           // val emitted only if needed, hence nothing unused
+      (i, j) = ns // no warn
+    } yield 42 // val emitted only if needed, hence nothing unused
   }
 }
 
 trait Ignorance {
-  private val readResolve = 42      // ignore
+  private val readResolve = 42 // ignore
 }
 
 trait CaseyKasem {
   def f = 42 match {
-    case x if x < 25 => "no warn"
+    case x if x < 25            => "no warn"
     case y if toString.nonEmpty => "no warn" + y
-    case z => "warn"
+    case z                      => "warn"
   }
 }
 trait CaseyAtTheBat {
   def f = Option(42) match {
-    case Some(x) if x < 25 => "no warn"
+    case Some(x) if x < 25                => "no warn"
     case Some(y @ _) if toString.nonEmpty => "no warn"
-    case Some(z) => "warn"
-    case None => "no warn"
+    case Some(z)                          => "warn"
+    case None                             => "no warn"
   }
 }
 
 class `not even using companion privates`
 
 object `not even using companion privates` {
-  private implicit class `for your eyes only`(i: Int) {  // warn
+  private implicit class `for your eyes only`(i: Int) { // warn
     def f = i
   }
 }
@@ -226,7 +226,7 @@ object `not even using companion privates` {
 class `no warn in patmat anonfun isDefinedAt` {
   def f(pf: PartialFunction[String, Int]) = pf("42")
   def g = f {
-    case s => s.length        // no warn (used to warn case s => true in isDefinedAt)
+    case s => s.length // no warn (used to warn case s => true in isDefinedAt)
   }
 }
 
@@ -234,7 +234,7 @@ class `no warn in patmat anonfun isDefinedAt` {
 class `nonprivate alias is enclosing` {
   class C
   type C2 = C
-  private class D extends C2   // warn
+  private class D extends C2 // warn
 }
 
 object `classof something` {

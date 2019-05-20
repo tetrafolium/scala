@@ -94,6 +94,7 @@ import scala.util.control.{ControlThrowable, NonFatal}
   * @author NthPortal
   */
 object Using {
+
   /** Performs an operation using a resource, and then releases the resource,
     * even if the operation throws an exception.
     *
@@ -102,7 +103,9 @@ object Using {
     * @return a [[Try]] containing an exception if one or more were thrown,
     *         or the result of the operation if no exceptions were thrown
     */
-  def apply[R: Releasable, A](resource: => R)(f: R => A): Try[A] = Try { Using.resource(resource)(f) }
+  def apply[R: Releasable, A](resource: => R)(f: R => A): Try[A] = Try {
+    Using.resource(resource)(f)
+  }
 
   /** A resource manager.
     *
@@ -150,7 +153,8 @@ object Using {
       */
     def acquire[R: Releasable](resource: R): Unit = {
       if (resource == null) throw new NullPointerException("null resource")
-      if (closed) throw new IllegalStateException("Manager has already been closed")
+      if (closed)
+        throw new IllegalStateException("Manager has already been closed")
       resources = new Resource(resource) :: resources
     }
 
@@ -182,6 +186,7 @@ object Using {
   }
 
   object Manager {
+
     /** Performs an operation using a `Manager`, then closes the `Manager`,
       * releasing its resources (in reverse order of acquisition).
       *
@@ -212,21 +217,26 @@ object Using {
       */
     def apply[A](op: Manager => A): Try[A] = Try { (new Manager).manage(op) }
 
-    private final class Resource[R](resource: R)(implicit releasable: Releasable[R]) {
+    private final class Resource[R](resource: R)(
+        implicit releasable: Releasable[R]) {
       def release(): Unit = releasable.release(resource)
     }
   }
 
-  private def preferentiallySuppress(primary: Throwable, secondary: Throwable): Throwable = {
+  private def preferentiallySuppress(primary: Throwable,
+                                     secondary: Throwable): Throwable = {
     def score(t: Throwable): Int = t match {
       case _: VirtualMachineError                   => 4
       case _: LinkageError                          => 3
       case _: InterruptedException | _: ThreadDeath => 2
       case _: ControlThrowable                      => 0
-      case e if !NonFatal(e)                        => 1 // in case this method gets out of sync with NonFatal
-      case _                                        => -1
+      case e if !NonFatal(e) =>
+        1 // in case this method gets out of sync with NonFatal
+      case _ => -1
     }
-    @inline def suppress(t: Throwable, suppressed: Throwable): Throwable = { t.addSuppressed(suppressed); t }
+    @inline def suppress(t: Throwable, suppressed: Throwable): Throwable = {
+      t.addSuppressed(suppressed); t
+    }
 
     if (score(secondary) > score(primary)) suppress(secondary, primary)
     else suppress(primary, secondary)
@@ -245,7 +255,8 @@ object Using {
     * @return the result of the operation, if neither the operation nor
     *         releasing the resource throws
     */
-  def resource[R, A](resource: R)(body: R => A)(implicit releasable: Releasable[R]): A = {
+  def resource[R, A](resource: R)(body: R => A)(
+      implicit releasable: Releasable[R]): A = {
     if (resource == null) throw new NullPointerException("null resource")
 
     var toThrow: Throwable = null
@@ -259,8 +270,10 @@ object Using {
       if (toThrow eq null) releasable.release(resource)
       else {
         try releasable.release(resource)
-        catch { case other: Throwable => toThrow = preferentiallySuppress(toThrow, other) }
-        finally throw toThrow
+        catch {
+          case other: Throwable =>
+            toThrow = preferentiallySuppress(toThrow, other)
+        } finally throw toThrow
       }
     }
   }
@@ -283,8 +296,7 @@ object Using {
   def resources[R1: Releasable, R2: Releasable, A](
       resource1: R1,
       resource2: => R2
-    )(body: (R1, R2) => A
-  ): A =
+  )(body: (R1, R2) => A): A =
     resource(resource1) { r1 =>
       resource(resource2) { r2 =>
         body(r1, r2)
@@ -312,8 +324,7 @@ object Using {
       resource1: R1,
       resource2: => R2,
       resource3: => R3
-    )(body: (R1, R2, R3) => A
-  ): A =
+  )(body: (R1, R2, R3) => A): A =
     resource(resource1) { r1 =>
       resource(resource2) { r2 =>
         resource(resource3) { r3 =>
@@ -341,13 +352,16 @@ object Using {
     * @return the result of the operation, if neither the operation nor
     *         releasing the resources throws
     */
-  def resources[R1: Releasable, R2: Releasable, R3: Releasable, R4: Releasable, A](
+  def resources[R1: Releasable,
+                R2: Releasable,
+                R3: Releasable,
+                R4: Releasable,
+                A](
       resource1: R1,
       resource2: => R2,
       resource3: => R3,
       resource4: => R4
-    )(body: (R1, R2, R3, R4) => A
-  ): A =
+  )(body: (R1, R2, R3, R4) => A): A =
     resource(resource1) { r1 =>
       resource(resource2) { r2 =>
         resource(resource3) { r3 =>
@@ -373,13 +387,16 @@ object Using {
     * @tparam R the type of the resource
     */
   trait Releasable[-R] {
+
     /** Releases the specified resource. */
     def release(resource: R): Unit
   }
 
   object Releasable {
+
     /** An implicit `Releasable` for [[java.lang.AutoCloseable `AutoCloseable`s]]. */
-    implicit val autoCloseableIsReleasable: Releasable[AutoCloseable] = (resource: AutoCloseable) => resource.close()
+    implicit val autoCloseableIsReleasable: Releasable[AutoCloseable] =
+      (resource: AutoCloseable) => resource.close()
   }
 
 }

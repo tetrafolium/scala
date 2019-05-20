@@ -4,7 +4,8 @@ import scala.tools.partest.ReplTest
 
 object Test extends ReplTest {
   override def extraSettings = "-deprecation"
-  def code = """
+  def code =
+    """
 // basics
 3+4
 def gcd(x: Int, y: Int): Int = {
@@ -116,10 +117,10 @@ def x => y => z
 
 
 // multi-line string
-"""+ "\"\"\""+ """
+""" + "\"\"\"" + """
 hello
 there
-"""+ "\"\"\""+ """
+""" + "\"\"\"" + """
 (1 +   // give up early by typing two blank lines
 
 

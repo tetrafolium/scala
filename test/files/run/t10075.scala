@@ -11,7 +11,9 @@ trait SerializableActually {
   var notSerializedTR: NotSerializable = new NotSerializable
 }
 
-class SerializableBecauseTransient extends Serializable with SerializableActually {
+class SerializableBecauseTransient
+    extends Serializable
+    with SerializableActually {
   @transient
   lazy val notSerializedLV: NotSerializable = new NotSerializable
 
@@ -29,7 +31,7 @@ object Test {
     val obj = new SerializableBecauseTransient
     // must force, since `null` valued field is serialized regardless of its type
     val forceTLV = obj.notSerializedTLV
-    val forceLV  = obj.notSerializedLV
+    val forceLV = obj.notSerializedLV
     new java.io.ObjectOutputStream(new java.io.ByteArrayOutputStream) writeObject obj
   }
 }

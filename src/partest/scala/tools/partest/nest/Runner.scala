@@ -35,6 +35,7 @@ import scala.util.control.ControlThrowable
 
 /** pos/t1234.scala or pos/t1234 if dir */
 case class TestInfo(testFile: File) {
+
   /** pos/t1234 */
   val testIdent: String = testFile.testIdent
 
@@ -78,7 +79,7 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
 
   def pushTranscript(msg: String) = _transcript.add(msg)
 
-  lazy val outDir = { outFile.mkdirs() ; outFile }
+  lazy val outDir = { outFile.mkdirs(); outFile }
 
   def showCrashInfo(t: Throwable): Unit = {
     System.err.println(s"Crashed running test $testIdent: " + t)
@@ -94,15 +95,16 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
       genCrash(t)
   }
 
-  def genPass(): TestState        = Pass(testFile)
-  def genFail(reason: String)     = Fail(testFile, reason, transcript.toArray)
-  def genResult(b: Boolean)       = if (b) genPass() else genFail("predicate failed")
-  def genSkip(reason: String)     = Skip(testFile, reason)
-  def genTimeout()                = Fail(testFile, "timed out", transcript.toArray)
+  def genPass(): TestState = Pass(testFile)
+  def genFail(reason: String) = Fail(testFile, reason, transcript.toArray)
+  def genResult(b: Boolean) = if (b) genPass() else genFail("predicate failed")
+  def genSkip(reason: String) = Skip(testFile, reason)
+  def genTimeout() = Fail(testFile, "timed out", transcript.toArray)
   def genCrash(caught: Throwable) = Crash(testFile, caught, transcript.toArray)
-  def genUpdated()                = Updated(testFile)
+  def genUpdated() = Updated(testFile)
 
-  private def workerError(msg: String): Unit = System.err.println("Error: " + msg)
+  private def workerError(msg: String): Unit =
+    System.err.println("Error: " + msg)
 
   def javac(files: List[File]): TestState = {
     // compile using command-line javac compiler
@@ -114,29 +116,35 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
       joinPaths(outDir :: testClassPath),
       "-J-Duser.language=en",
       "-J-Duser.country=US"
-    ) ++ (toolArgsFor(files)("javac")
-    ) ++ (files.map(_.getAbsolutePath)
-    )
+    ) ++ (toolArgsFor(files)("javac")) ++ (files.map(_.getAbsolutePath))
 
     pushTranscript(args mkString " ")
-    if (runCommand(args, logFile)) genPass() else {
+    if (runCommand(args, logFile)) genPass()
+    else {
       genFail("java compilation failed")
     }
   }
 
   /** Evaluate an action body and judge whether it passed. */
-  def nextTestAction[T](body: => T)(eval: PartialFunction[T, TestState]): TestState = eval.applyOrElse(body, (_: T) => genPass)
+  def nextTestAction[T](body: => T)(
+      eval: PartialFunction[T, TestState]): TestState =
+    eval.applyOrElse(body, (_: T) => genPass)
+
   /** If the action does not result in true, fail the action. */
-  def nextTestActionExpectTrue(reason: String, body: => Boolean): TestState = nextTestAction(body) { case false => genFail(reason) }
+  def nextTestActionExpectTrue(reason: String, body: => Boolean): TestState =
+    nextTestAction(body) { case false => genFail(reason) }
+
   /** Fail the action. */
-  def nextTestActionFailing(reason: String): TestState = nextTestActionExpectTrue(reason, false)
+  def nextTestActionFailing(reason: String): TestState =
+    nextTestActionExpectTrue(reason, false)
 
   private def assembleTestCommand(outDir: File, logFile: File): List[String] = {
     // check whether there is a ".javaopts" file
-    val argsFile  = testFile changeExtension "javaopts"
+    val argsFile = testFile changeExtension "javaopts"
     val javaopts = readOptionsFile(argsFile)
     if (javaopts.nonEmpty)
-      suiteRunner.verbose(s"Found javaopts file '$argsFile', using options: '${javaopts.mkString(",")}'")
+      suiteRunner.verbose(
+        s"Found javaopts file '$argsFile', using options: '${javaopts.mkString(",")}'")
 
     // Note! As this currently functions, suiteRunner.javaOpts must precede argString
     // because when an option is repeated to java only the last one wins.
@@ -146,12 +154,16 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     //
     // debug: Found javaopts file 'files/shootout/message.scala-2.javaopts', using options: '-Xss32k'
     // debug: java -Xss32k -Xss2m -Xms256M -Xmx1024M -classpath [...]
-    val propertyOpts = propertyOptions(fork = true).map { case (k, v) => s"-D$k=$v" }
+    val propertyOpts = propertyOptions(fork = true).map {
+      case (k, v) => s"-D$k=$v"
+    }
 
     val classpath = joinPaths(extraClasspath ++ testClassPath)
 
     javaCmdPath +: (
-      (suiteRunner.javaOpts.split(' ') ++ extraJavaOptions ++ javaopts).filter(_ != "").toList ++ Seq(
+      (suiteRunner.javaOpts.split(' ') ++ extraJavaOptions ++ javaopts)
+        .filter(_ != "")
+        .toList ++ Seq(
         "-classpath",
         join(outDir.toString, classpath)
       ) ++ propertyOpts ++ Seq(
@@ -165,7 +177,7 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
 
   def propertyOptions(fork: Boolean): List[(String, String)] = {
     val testFullPath = testFile.getAbsolutePath
-    val extras =   if (suiteRunner.debug) List("partest.debug" -> "true") else Nil
+    val extras = if (suiteRunner.debug) List("partest.debug" -> "true") else Nil
     val immutablePropsToCheck = List[(String, String)](
       "file.encoding" -> "UTF-8",
       "user.language" -> "en",
@@ -190,33 +202,37 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     } else {
       for ((k, requiredValue) <- immutablePropsToCheck) {
         val actual = System.getProperty(k)
-        assert(actual == requiredValue, s"Unable to run test without forking as the current JVM has an incorrect system property. For $k, found $actual, required $requiredValue")
+        assert(
+          actual == requiredValue,
+          s"Unable to run test without forking as the current JVM has an incorrect system property. For $k, found $actual, required $requiredValue"
+        )
       }
       shared
     }
   }
 
   /** Runs command redirecting standard out and
-   *  error out to output file.
-   */
+    *  error out to output file.
+    */
   protected def runCommand(args: Seq[String], outFile: File): Boolean = {
     //(Process(args) #> outFile !) == 0 or (Process(args) ! pl) == 0
     val pl = ProcessLogger(outFile)
-    val nonzero = 17     // rounding down from 17.3
+    val nonzero = 17 // rounding down from 17.3
     def run: Int = {
       val p = Process(args) run pl
       try p.exitValue
       catch {
         case e: InterruptedException =>
-          suiteRunner.verbose(s"Interrupted waiting for command to finish (${args mkString " "})")
+          suiteRunner.verbose(
+            s"Interrupted waiting for command to finish (${args mkString " "})")
           p.destroy
           nonzero
         case t: Throwable =>
-          suiteRunner.verbose(s"Exception waiting for command to finish: $t (${args mkString " "})")
+          suiteRunner.verbose(
+            s"Exception waiting for command to finish: $t (${args mkString " "})")
           p.destroy
           throw t
-      }
-      finally pl.close()
+      } finally pl.close()
     }
     (pl buffer run) == 0
   }
@@ -239,9 +255,11 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
       def run(): Unit = {
         StreamCapture.withExtraProperties(propertyOptions(fork = false).toMap) {
           try {
-            val out = Files.newOutputStream(log.toPath, StandardOpenOption.APPEND)
+            val out =
+              Files.newOutputStream(log.toPath, StandardOpenOption.APPEND)
             try {
-              val loader = new URLClassLoader(classesDir.toURI.toURL :: Nil, getClass.getClassLoader)
+              val loader = new URLClassLoader(classesDir.toURI.toURL :: Nil,
+                                              getClass.getClassLoader)
               StreamCapture.capturingOutErr(out) {
                 val cls = loader.loadClass("Test")
                 val main = cls.getDeclaredMethod("main", classOf[Array[String]])
@@ -251,19 +269,23 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
                   case ite: InvocationTargetException => throw ite.getCause
                 }
               }
-            }  finally {
+            } finally {
               out.close()
             }
           } catch {
             case t: ControlThrowable => throw t
-            case t: Throwable =>
+            case t: Throwable        =>
               // We'll let the checkfile diffing report this failure
-              Files.write(log.toPath, stackTraceString(t).getBytes(Charset.defaultCharset()), StandardOpenOption.APPEND)
+              Files.write(
+                log.toPath,
+                stackTraceString(t).getBytes(Charset.defaultCharset()),
+                StandardOpenOption.APPEND)
           }
         }
       }
 
-      pushTranscript(s"<in process execution of $testIdent> > ${logFile.getName}")
+      pushTranscript(
+        s"<in process execution of $testIdent> > ${logFile.getName}")
 
       TrapExit(() => run()) match {
         case Left((status, throwable)) if status != 0 =>
@@ -277,18 +299,18 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
   override def toString = s"Test($testIdent)"
 
   def fail(what: Any) = {
-    suiteRunner.verbose("scalac: compilation of "+what+" failed\n")
+    suiteRunner.verbose("scalac: compilation of " + what + " failed\n")
     false
   }
 
   /** Filter the check file for conditional blocks.
-   *  The check file can contain lines of the form:
-   *  `#partest java7`
-   *  where the line contains a conventional flag name.
-   *  If the flag tests true, succeeding lines are retained
-   *  (removed on false) until the next #partest flag.
-   *  A missing flag evaluates the same as true.
-   */
+    *  The check file can contain lines of the form:
+    *  `#partest java7`
+    *  where the line contains a conventional flag name.
+    *  If the flag tests true, succeeding lines are retained
+    *  (removed on false) until the next #partest flag.
+    *  A missing flag evaluates the same as true.
+    */
   def filteredCheck: Seq[String] = {
     import scala.util.Properties.{javaSpecVersion, isAvian}
     import scala.tools.nsc.settings.ScalaVersion
@@ -296,23 +318,24 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     def retainOn(expr0: String) = {
       val expr = expr0.trim
       def flagWasSet(f: String) = {
-        val allArgs = suiteRunner.scalacExtraArgs ++ suiteRunner.scalacOpts.split(' ')
+        val allArgs = suiteRunner.scalacExtraArgs ++ suiteRunner.scalacOpts
+          .split(' ')
         allArgs contains f
       }
-      val (invert, token) = if (expr startsWith "!") (true, expr drop 1) else (false, expr)
+      val (invert, token) =
+        if (expr startsWith "!") (true, expr drop 1) else (false, expr)
       val javaN = raw"java(\d+)(\+)?".r
       val cond = token.trim match {
         case javaN(v, up) =>
           val required = ScalaVersion(if (v.toInt <= 8) s"1.$v" else v)
-          val current  = ScalaVersion(javaSpecVersion)
+          val current = ScalaVersion(javaSpecVersion)
           if (up != null) current >= required else current == required
-        case "avian"  => isAvian
-        case "true"   => true
-        case "-optimise" | "-optimize"
-                      => flagWasSet("-optimise") || flagWasSet("-optimize")
-        case flag if flag startsWith "-"
-                      => flagWasSet(flag)
-        case rest     => rest.isEmpty
+        case "avian" => isAvian
+        case "true"  => true
+        case "-optimise" | "-optimize" =>
+          flagWasSet("-optimise") || flagWasSet("-optimize")
+        case flag if flag startsWith "-" => flagWasSet(flag)
+        case rest                        => rest.isEmpty
       }
       if (invert) !cond else cond
     }
@@ -332,64 +355,74 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
   // diff logfile checkfile
   def currentDiff = {
     val logged = file2String(logFile).linesIfNonEmpty.toList
-    val (checked, checkname) = if (checkFile.canRead) (filteredCheck, checkFile.getName) else (Nil, "empty")
-    compareContents(original = checked, revised = logged, originalName = checkname, revisedName = logFile.getName)
+    val (checked, checkname) =
+      if (checkFile.canRead) (filteredCheck, checkFile.getName)
+      else (Nil, "empty")
+    compareContents(original = checked,
+                    revised = logged,
+                    originalName = checkname,
+                    revisedName = logFile.getName)
   }
 
-  val gitRunner = List("/usr/local/bin/git", "/usr/bin/git") map (f => new java.io.File(f)) find (_.canRead)
-  val gitDiffOptions = "--ignore-space-at-eol --no-index " + propOrEmpty("partest.git_diff_options")
-    // --color=always --word-diff
+  val gitRunner = List("/usr/local/bin/git", "/usr/bin/git") map (f =>
+    new java.io.File(f)) find (_.canRead)
+  val gitDiffOptions = "--ignore-space-at-eol --no-index " + propOrEmpty(
+    "partest.git_diff_options")
+  // --color=always --word-diff
 
   def gitDiff(f1: File, f2: File): Option[String] = {
     try gitRunner map { git =>
-      val cmd  = s"$git diff $gitDiffOptions $f1 $f2"
+      val cmd = s"$git diff $gitDiffOptions $f1 $f2"
       val diff = Process(cmd).lazyLines_!.drop(4).map(_ + "\n").mkString
 
       "\n" + diff
-    }
-    catch { case t: Exception => None }
+    } catch { case t: Exception => None }
   }
 
   /** Normalize the log output by applying test-specific filters
-   *  and fixing filesystem-specific paths.
-   *
-   *  Line filters are picked up from `filter: pattern` at the top of sources.
-   *  The filtered line is detected with a simple "contains" test,
-   *  and yes, "filter" means "filter out" in this context.
-   *
-   *  File paths are detected using the absolute path of the test root.
-   *  A string that looks like a file path is normalized by replacing
-   *  the leading segments (the root) with "\$ROOT" and by replacing
-   *  any Windows backslashes with the one true file separator char.
-   */
+    *  and fixing filesystem-specific paths.
+    *
+    *  Line filters are picked up from `filter: pattern` at the top of sources.
+    *  The filtered line is detected with a simple "contains" test,
+    *  and yes, "filter" means "filter out" in this context.
+    *
+    *  File paths are detected using the absolute path of the test root.
+    *  A string that looks like a file path is normalized by replacing
+    *  the leading segments (the root) with "\$ROOT" and by replacing
+    *  any Windows backslashes with the one true file separator char.
+    */
   def normalizeLog(): Unit = {
     import scala.util.matching.Regex
 
     // Apply judiciously; there are line comments in the "stub implementations" error output.
-    val slashes    = """[/\\]+""".r
+    val slashes = """[/\\]+""".r
     def squashSlashes(s: String) = slashes replaceAllIn (s, "/")
 
     // this string identifies a path and is also snipped from log output.
-    val elided     = parentFile.getAbsolutePath
+    val elided = parentFile.getAbsolutePath
 
     // something to mark the elision in the log file (disabled)
-    val ellipsis   = "" //".../"    // using * looks like a comment
+    val ellipsis = "" //".../"    // using * looks like a comment
 
     // no spaces in test file paths below root, because otherwise how to detect end of path string?
-    val pathFinder = raw"""(?i)\Q${elided}${File.separator}\E([\${File.separator}\S]*)""".r
+    val pathFinder =
+      raw"""(?i)\Q${elided}${File.separator}\E([\${File.separator}\S]*)""".r
     def canonicalize(s: String): String = (
       pathFinder replaceAllIn (s, m =>
         Regex.quoteReplacement(ellipsis + squashSlashes(m group 1)))
     )
 
-    def masters    = {
-      val files = List(new File(parentFile, "filters"), new File(suiteRunner.pathSettings.srcDir.path, "filters"))
-      files filter (_.exists) flatMap (_.fileLines) map (_.trim) filter (s => !(s startsWith "#"))
+    def masters = {
+      val files = List(
+        new File(parentFile, "filters"),
+        new File(suiteRunner.pathSettings.srcDir.path, "filters"))
+      files filter (_.exists) flatMap (_.fileLines) map (_.trim) filter (s =>
+        !(s startsWith "#"))
     }
-    val filters    = toolArgs("filter", split = false) ++ masters
-    val elisions   = ListBuffer[String]()
+    val filters = toolArgs("filter", split = false) ++ masters
+    val elisions = ListBuffer[String]()
     //def lineFilter(s: String): Boolean  = !(filters exists (s contains _))
-    def lineFilter(s: String): Boolean  = (
+    def lineFilter(s: String): Boolean = (
       filters map (_.r) forall { r =>
         val res = (r findFirstIn s).isEmpty
         if (!res) elisions += s
@@ -401,7 +434,8 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     if (suiteRunner.verbose && elisions.nonEmpty) {
       import suiteRunner.log._
       val emdash = bold(yellow("--"))
-      pushTranscript(s"filtering ${logFile.getName}$EOL${elisions mkString (emdash, EOL + emdash, EOL)}")
+      pushTranscript(
+        s"filtering ${logFile.getName}$EOL${elisions mkString (emdash, EOL + emdash, EOL)}")
     }
   }
 
@@ -420,17 +454,20 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
         val bestDiff =
           if (!checkFile.canRead) diff
           else
-            gitRunner.flatMap(_ => withTempFile(outFile, fileBase, filteredCheck)(f =>
-                gitDiff(f, logFile))).getOrElse(diff)
+            gitRunner
+              .flatMap(_ =>
+                withTempFile(outFile, fileBase, filteredCheck)(f =>
+                  gitDiff(f, logFile)))
+              .getOrElse(diff)
         _transcript append bestDiff
         genFail("output differs")
     }
   }
 
   /** 1. Creates log file and output directory.
-   *  2. Runs script function, providing log file and output directory as arguments.
-   *     2b. or, just run the script without context and return a new context
-   */
+    *  2. Runs script function, providing log file and output directory as arguments.
+    *     2b. or, just run the script without context and return a new context
+    */
   def runInContext(body: => TestState): TestState = {
     body
   }
@@ -440,8 +477,7 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     if (sources.tail.nonEmpty) {
       val grouped = sources groupBy (_.group)
       grouped.keys.toList.sorted map (k => grouped(k) sortBy (_.getName))
-    }
-    else List(sources)
+    } else List(sources)
   )
 
   /** Source files for the given test file. */
@@ -464,11 +500,11 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
 
   // snort or scarf all the contributing flags files
   def flagsForCompilation(sources: List[File]): List[String] = {
-    val perTest  = readOptionsFile(flagsFile)
+    val perTest = readOptionsFile(flagsFile)
     val perGroup = if (testFile.isDirectory) {
       sources.flatMap(f => readOptionsFile(f changeExtension "flags"))
     } else Nil
-    val perFile  = toolArgsFor(sources)("scalac")
+    val perFile = toolArgsFor(sources)("scalac")
     perTest ++ perGroup ++ perFile
   }
 
@@ -477,16 +513,19 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     toolArgsFor(sources(testFile))(tool, split)
 
   // inspect given files for tool args
-  def toolArgsFor(files: List[File])(tool: String, split: Boolean = true): List[String] = {
-    def argsplitter(s: String) = if (split) words(s) filter (_.nonEmpty) else List(s)
+  def toolArgsFor(files: List[File])(tool: String,
+                                     split: Boolean = true): List[String] = {
+    def argsplitter(s: String) =
+      if (split) words(s) filter (_.nonEmpty) else List(s)
     def argsFor(f: File): List[String] = {
       import scala.util.matching.Regex
-      val p    = new Regex(s"(?:.*\\s)?${tool}:(?:\\s*)(.*)?", "args")
-      val max  = 10
-      val src  = Path(f).toFile.chars(codec)
+      val p = new Regex(s"(?:.*\\s)?${tool}:(?:\\s*)(.*)?", "args")
+      val max = 10
+      val src = Path(f).toFile.chars(codec)
       val args = try {
         src.getLines take max collectFirst {
-          case s if (p findFirstIn s).nonEmpty => for (m <- p findFirstMatchIn s) yield m group "args"
+          case s if (p findFirstIn s).nonEmpty =>
+            for (m <- p findFirstMatchIn s) yield m group "args"
         }
       } finally src.close()
       val parsed = args.flatten map argsplitter getOrElse Nil
@@ -501,62 +540,75 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     def result: TestState
     def description: String
 
-    def fsString = fs map (_.toString stripPrefix parentFile.toString + "/") mkString " "
+    def fsString =
+      fs map (_.toString stripPrefix parentFile.toString + "/") mkString " "
     def isOk = result.isOk
     def mkScalacString(): String = s"""scalac $fsString"""
-    override def toString = description + ( if (result.isOk) "" else "\n" + result.status )
+    override def toString =
+      description + (if (result.isOk) "" else "\n" + result.status)
   }
   case class OnlyJava(fs: List[File]) extends CompileRound {
     def description = s"""javac $fsString"""
-    lazy val result = { pushTranscript(description) ; javac(fs) }
+    lazy val result = { pushTranscript(description); javac(fs) }
   }
   case class OnlyScala(fs: List[File]) extends CompileRound {
     def description = mkScalacString()
-    lazy val result = { pushTranscript(description) ; attemptCompile(fs) }
+    lazy val result = { pushTranscript(description); attemptCompile(fs) }
   }
   case class ScalaAndJava(fs: List[File]) extends CompileRound {
     def description = mkScalacString()
-    lazy val result = { pushTranscript(description) ; attemptCompile(fs) }
+    lazy val result = { pushTranscript(description); attemptCompile(fs) }
   }
 
   def compilationRounds(file: File): List[CompileRound] =
     groupedFiles(sources(file)).map(mixedCompileGroup).flatten
   def mixedCompileGroup(allFiles: List[File]): List[CompileRound] = {
     val (scalaFiles, javaFiles) = allFiles partition (_.isScala)
-    val round1                  = if (scalaFiles.isEmpty) None else Some(ScalaAndJava(allFiles))
-    val round2                  = if (javaFiles.isEmpty) None else Some(OnlyJava(javaFiles))
+    val round1 = if (scalaFiles.isEmpty) None else Some(ScalaAndJava(allFiles))
+    val round2 = if (javaFiles.isEmpty) None else Some(OnlyJava(javaFiles))
 
     List(round1, round2).flatten
   }
 
   def runPosTest(): TestState =
-    if (checkFile.exists) genFail("unexpected check file for pos test (use -Xfatal-warnings with neg test to verify warnings)")
+    if (checkFile.exists)
+      genFail(
+        "unexpected check file for pos test (use -Xfatal-warnings with neg test to verify warnings)")
     else runTestCommon()
 
   def runNegTest(): TestState = runInContext {
     // pass if it checks and didn't crash the compiler
     // or, OK, we'll let you crash the compiler with a FatalError if you supply a check file
     def checked(r: CompileRound) = r.result match {
-      case crash @ Crash(_, t, _) if !checkFile.canRead || !t.isInstanceOf[FatalError] => crash
+      case crash @ Crash(_, t, _)
+          if !checkFile.canRead || !t.isInstanceOf[FatalError] =>
+        crash
       case dnc @ _ => diffIsOk
     }
 
-    compilationRounds(testFile).find(!_.result.isOk).map(checked).getOrElse(genFail("expected compilation failure"))
+    compilationRounds(testFile)
+      .find(!_.result.isOk)
+      .map(checked)
+      .getOrElse(genFail("expected compilation failure"))
   }
 
   // run compilation until failure, evaluate `andAlso` on success
   def runTestCommon(andAlso: => TestState = genPass): TestState = runInContext {
     // DirectCompiler already says compilation failed
-    val res = compilationRounds(testFile).find(!_.result.isOk).map(_.result).getOrElse(genPass)
+    val res = compilationRounds(testFile)
+      .find(!_.result.isOk)
+      .map(_.result)
+      .getOrElse(genPass)
     res andAlso andAlso
   }
 
   def extraClasspath = kind match {
-    case "specialized"  => List(suiteRunner.pathSettings.srcSpecLib.fold(sys.error, identity))
-    case _              => Nil
+    case "specialized" =>
+      List(suiteRunner.pathSettings.srcSpecLib.fold(sys.error, identity))
+    case _ => Nil
   }
   def extraJavaOptions = kind match {
-    case "instrumented" => ("-javaagent:"+agentLib).split(' ')
+    case "instrumented" => ("-javaagent:" + agentLib).split(' ')
     case _              => Array.empty[String]
   }
 
@@ -570,17 +622,18 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
 
     // run compiler in resident mode
     // $SCALAC -d "$os_dstbase".obj -Xresident -sourcepath . "$@"
-    val sourcedir  = logFile.getParentFile.getAbsoluteFile
-    val sourcepath = sourcedir.getAbsolutePath+File.separator
-    suiteRunner.verbose("sourcepath: "+sourcepath)
+    val sourcedir = logFile.getParentFile.getAbsoluteFile
+    val sourcepath = sourcedir.getAbsolutePath + File.separator
+    suiteRunner.verbose("sourcepath: " + sourcepath)
 
-    val argList = List(
-      "-d", outDir.getAbsoluteFile.getPath,
-      "-Xresident",
-      "-sourcepath", sourcepath)
+    val argList = List("-d",
+                       outDir.getAbsoluteFile.getPath,
+                       "-Xresident",
+                       "-sourcepath",
+                       sourcepath)
 
     // configure input/output files
-    val logOut    = new FileOutputStream(logFile)
+    val logOut = new FileOutputStream(logFile)
     val logWriter = new PrintStream(logOut, true)
     val resReader = new BufferedReader(new FileReader(resFile))
     val logConsoleWriter = new PrintWriter(new OutputStreamWriter(logOut), true)
@@ -589,13 +642,15 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     val settings = new Settings(workerError)
     settings.sourcepath.value = sourcepath
     settings.classpath.value = joinPaths(fileManager.testClassPath)
-    val reporter = new ConsoleReporter(settings, scala.Console.in, logConsoleWriter)
+    val reporter =
+      new ConsoleReporter(settings, scala.Console.in, logConsoleWriter)
     val command = new CompilerCommand(argList, settings)
     object compiler extends Global(command.settings, reporter)
 
     def resCompile(line: String): TestState = {
       // suiteRunner.verbose("compiling "+line)
-      val cmdArgs = (line split ' ').toList map (fs => new File(dir, fs).getAbsolutePath)
+      val cmdArgs = (line split ' ').toList map (fs =>
+        new File(dir, fs).getAbsolutePath)
       // suiteRunner.verbose("cmdArgs: "+cmdArgs)
       val sett = new Settings(workerError)
       sett.sourcepath.value = sourcepath
@@ -613,16 +668,20 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     def loop(): TestState = {
       logWriter.print(prompt)
       resReader.readLine() match {
-        case null | ""  => logWriter.close() ; genPass
-        case line       => resCompile(line) andAlso loop()
+        case null | "" => logWriter.close(); genPass
+        case line      => resCompile(line) andAlso loop()
       }
     }
     // res/t687.res depends on ignoring its compilation failure
     // and just looking at the diff, so I made them all do that
     // because this is long enough.
-    /*val res =*/ Output.withRedirected(logWriter)(try loop() finally resReader.close())
+    /*val res =*/
+    Output.withRedirected(logWriter)(
+      try loop()
+      finally resReader.close())
 
-    /*res andAlso*/ diffIsOk
+    /*res andAlso*/
+    diffIsOk
   }
 
   def run(): (TestState, Long) = {
@@ -630,14 +689,14 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     logFile.delete()
     stopwatch.start()
 
-    val state =  kind match {
-      case "pos"          => runPosTest()
-      case "neg"          => runNegTest()
-      case "res"          => runResidentTest()
-      case "scalap"       => runScalapTest()
-      case "script"       => runScriptTest()
+    val state = kind match {
+      case "pos"                   => runPosTest()
+      case "neg"                   => runNegTest()
+      case "res"                   => runResidentTest()
+      case "scalap"                => runScalapTest()
+      case "script"                => runScriptTest()
       case k if k.endsWith("-neg") => runNegTest()
-      case _              => runRunTest()
+      case _                       => runRunTest()
     }
     (state, stopwatch.stop)
   }
@@ -645,13 +704,19 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
   private def runRunTest(): TestState = {
     val argsFile = testFile changeExtension "javaopts"
     val javaopts = readOptionsFile(argsFile)
-    val execInProcess = PartestDefaults.execInProcess && javaopts.isEmpty && !Set("specialized", "instrumented").contains(testFile.getParentFile.getName)
-    def exec() = if (execInProcess) execTestInProcess(outDir, logFile) else execTest(outDir, logFile)
+    val execInProcess = PartestDefaults.execInProcess && javaopts.isEmpty && !Set(
+      "specialized",
+      "instrumented").contains(testFile.getParentFile.getName)
+    def exec() =
+      if (execInProcess) execTestInProcess(outDir, logFile)
+      else execTest(outDir, logFile)
     def noexec() = genSkip("no-exec: tests compiled but not run")
-    runTestCommon(if (suiteRunner.config.optNoExec) noexec() else exec().andAlso(diffIsOk))
+    runTestCommon(
+      if (suiteRunner.config.optNoExec) noexec() else exec().andAlso(diffIsOk))
   }
 
-  private def decompileClass(clazz: Class[_], isPackageObject: Boolean): String = {
+  private def decompileClass(clazz: Class[_],
+                             isPackageObject: Boolean): String = {
     import scala.tools.scalap
 
     // TODO: remove use of reflection once Scala 2.11.0-RC1 is out
@@ -661,15 +726,20 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     // ByteCode forClass clazz bytes
     val bytes = {
       import scala.language.{reflectiveCalls, existentials}
-      type ByteCode       = { def bytes: Array[Byte] }
+      type ByteCode = { def bytes: Array[Byte] }
       type ByteCodeModule = { def forClass(clazz: Class[_]): ByteCode }
-      val ByteCode        = {
+      val ByteCode = {
         val ByteCodeModuleCls =
           // RC1 package structure -- see: scala/scala#3588 and https://issues.scala-lang.org/browse/SI-8345
-          (util.Try { Class.forName("scala.tools.scalap.scalax.rules.scalasig.ByteCode$") }
+          (util.Try {
+            Class.forName("scala.tools.scalap.scalax.rules.scalasig.ByteCode$")
+          }
           // M8 package structure
-           getOrElse  Class.forName("scala.tools.scalap.scalasig.ByteCode$"))
-        ByteCodeModuleCls.getDeclaredFields()(0).get(null).asInstanceOf[ByteCodeModule]
+            getOrElse Class.forName("scala.tools.scalap.scalasig.ByteCode$"))
+        ByteCodeModuleCls
+          .getDeclaredFields()(0)
+          .get(null)
+          .asInstanceOf[ByteCodeModule]
       }
       ByteCode.forClass(clazz).bytes
     }
@@ -679,8 +749,11 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
 
   def runScalapTest(): TestState = runTestCommon {
     val isPackageObject = testFile.getName startsWith "package"
-    val className       = testFile.getName.stripSuffix(".scala").capitalize + (if (!isPackageObject) "" else ".package")
-    val loader          = ScalaClassLoader.fromURLs(List(outDir.toURI.toURL), this.getClass.getClassLoader)
+    val className = testFile.getName
+      .stripSuffix(".scala")
+      .capitalize + (if (!isPackageObject) "" else ".package")
+    val loader = ScalaClassLoader.fromURLs(List(outDir.toURI.toURL),
+                                           this.getClass.getClassLoader)
     logFile writeAll decompileClass(loader loadClass className, isPackageObject)
     diffIsOk
   }
@@ -692,7 +765,8 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     val cmdFile = if (isWin) testFile changeExtension "bat" else testFile
     val succeeded = (((s"$cmdFile $args" #> logFile).!) == 0)
 
-    val result = if (succeeded) genPass else genFail(s"script $cmdFile failed to run")
+    val result =
+      if (succeeded) genPass else genFail(s"script $cmdFile failed to run")
 
     result andAlso diffIsOk
   }
@@ -708,25 +782,26 @@ class Runner(val testInfo: TestInfo, val suiteRunner: AbstractRunner) {
     def pass(s: String) = bold(green("% ")) + s
     def fail(s: String) = bold(red("% ")) + s
     _transcript.toList match {
-      case Nil  => Nil
-      case xs   => (xs.init map pass) :+ fail(xs.last)
+      case Nil => Nil
+      case xs  => (xs.init map pass) :+ fail(xs.last)
     }
   }
 }
 
 /** Loads `library.properties` from the jar. */
 object Properties extends scala.util.PropertiesTrait {
-  protected def propCategory    = "partest"
-  protected def pickJarBasedOn  = classOf[AbstractRunner]
+  protected def propCategory = "partest"
+  protected def pickJarBasedOn = classOf[AbstractRunner]
 }
 
 case class TimeoutException(duration: Duration) extends RuntimeException
 
-class LogContext(val file: File, val writers: Option[(StringWriter, PrintWriter)])
+class LogContext(val file: File,
+                 val writers: Option[(StringWriter, PrintWriter)])
 
 object LogContext {
   def apply(file: File, swr: StringWriter, wr: PrintWriter): LogContext = {
-    require (file != null)
+    require(file != null)
     new LogContext(file, Some((swr, wr)))
   }
   def apply(file: File): LogContext = new LogContext(file, None)
@@ -744,16 +819,19 @@ object Output {
   private def err = java.lang.System.err
   private val redirVar = new DynamicVariable[Option[PrintStream]](None)
 
-  class Redirecter(stream: PrintStream) extends PrintStream(new OutputStream {
-    def write(b: Int) = withStream(_ write b)
+  class Redirecter(stream: PrintStream)
+      extends PrintStream(new OutputStream {
+        def write(b: Int) = withStream(_ write b)
 
-    private def withStream(f: PrintStream => Unit) = f(redirVar.value getOrElse stream)
+        private def withStream(f: PrintStream => Unit) =
+          f(redirVar.value getOrElse stream)
 
-    override def write(b: Array[Byte]) = withStream(_ write b)
-    override def write(b: Array[Byte], off: Int, len: Int) = withStream(_.write(b, off, len))
-    override def flush = withStream(_.flush)
-    override def close = withStream(_.close)
-  })
+        override def write(b: Array[Byte]) = withStream(_ write b)
+        override def write(b: Array[Byte], off: Int, len: Int) =
+          withStream(_.write(b, off, len))
+        override def flush = withStream(_.flush)
+        override def close = withStream(_.close)
+      })
 
   // this supports thread-safe nested output redirects
   def withRedirected[T](newstream: PrintStream)(func: => T): T = {
@@ -775,7 +853,9 @@ object Output {
 final class TestTranscript {
   private[this] val buf = ListBuffer[String]()
 
-  def add(action: String): this.type = { buf += action ; this }
-  def append(text: String): Unit = { val s = buf.last ; buf.trimEnd(1) ; buf += (s + text) }
+  def add(action: String): this.type = { buf += action; this }
+  def append(text: String): Unit = {
+    val s = buf.last; buf.trimEnd(1); buf += (s + text)
+  }
   def toList = buf.toList
 }

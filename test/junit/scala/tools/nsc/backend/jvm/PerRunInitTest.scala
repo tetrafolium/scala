@@ -12,48 +12,59 @@ import scala.tools.nsc.backend.jvm.PostProcessorFrontendAccess.PostProcessorFron
 import scala.tools.nsc.reporters.StoreReporter
 
 class PerRunInitTestMap extends PerRunInitTest {
-  type Data =  mutable.Map[String, String]
+  type Data = mutable.Map[String, String]
   override def newData(): Data = underTest.recordPerRunCache(mutable.Map.empty)
-  override def dontClear(data: Data): Unit = underTest.global.perRunCaches.unrecordCache(data)
+  override def dontClear(data: Data): Unit =
+    underTest.global.perRunCaches.unrecordCache(data)
 
-  override def add(id: Int, data: Data): Unit = data.put(s"key $id", s"value $id")
+  override def add(id: Int, data: Data): Unit =
+    data.put(s"key $id", s"value $id")
 
   override def sizeOf(data: Data): Int = data.size
 
 }
 class PerRunInitTestSet extends PerRunInitTest {
-  type Data =  mutable.Set[String]
+  type Data = mutable.Set[String]
   override def newData(): Data = underTest.recordPerRunCache(mutable.Set.empty)
-  override def dontClear(data: Data): Unit = underTest.global.perRunCaches.unrecordCache(data)
+  override def dontClear(data: Data): Unit =
+    underTest.global.perRunCaches.unrecordCache(data)
 
   override def add(id: Int, data: Data): Unit = data += s"value $id"
 
   override def sizeOf(data: Data): Int = data.size
 }
 class PerRunInitTestJMap extends PerRunInitTest {
-  type Data =  java.util.Map[String, String]
-  override def newData(): Data = underTest.recordPerRunJavaMapCache(new util.HashMap[String,String]())
-  override def dontClear(data: Data): Unit = underTest.global.perRunCaches.unrecordCache(JavaClearable.forMap(data))
+  type Data = java.util.Map[String, String]
+  override def newData(): Data =
+    underTest.recordPerRunJavaMapCache(new util.HashMap[String, String]())
+  override def dontClear(data: Data): Unit =
+    underTest.global.perRunCaches.unrecordCache(JavaClearable.forMap(data))
 
-  override def add(id: Int, data: Data): Unit = data.put(s"key $id", s"value $id")
+  override def add(id: Int, data: Data): Unit =
+    data.put(s"key $id", s"value $id")
 
   override def sizeOf(data: Data): Int = data.size
 }
 class PerRunInitTestJSet extends PerRunInitTest {
-  type Data =  java.util.Set[String]
-  override def newData(): Data = underTest.recordPerRunJavaCache(new util.HashSet[String]())
-  override def dontClear(data: Data): Unit = underTest.global.perRunCaches.unrecordCache(JavaClearable.forCollection(data))
+  type Data = java.util.Set[String]
+  override def newData(): Data =
+    underTest.recordPerRunJavaCache(new util.HashSet[String]())
+  override def dontClear(data: Data): Unit =
+    underTest.global.perRunCaches
+      .unrecordCache(JavaClearable.forCollection(data))
 
   override def add(id: Int, data: Data): Unit = data.add(s"value $id")
 
   override def sizeOf(data: Data): Int = data.size
 }
 class PerRunInitTestJCMap extends PerRunInitTestJMap {
-  override def newData(): Data = underTest.recordPerRunJavaMapCache(new java.util.concurrent.ConcurrentHashMap[String,String]())
+  override def newData(): Data =
+    underTest.recordPerRunJavaMapCache(
+      new java.util.concurrent.ConcurrentHashMap[String, String]())
 }
 abstract class PerRunInitTest {
   type Data >: Null <: AnyRef
-  var underTest : PostProcessorFrontendAccessImpl = _
+  var underTest: PostProcessorFrontendAccessImpl = _
   @Before def init() = {
     def global = {
       def showError(s: String) = throw new Exception(s)
@@ -69,7 +80,7 @@ abstract class PerRunInitTest {
   }
 
   def newData(): Data
-  def dontClear(data:Data): Unit
+  def dontClear(data: Data): Unit
 
   def add(id: Int, data: Data): Unit
 
@@ -121,7 +132,5 @@ abstract class PerRunInitTest {
     clearCaches()
     assertEquals(s"$data", 1, sizeOf(data))
   }
-
-
 
 }

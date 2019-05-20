@@ -19,9 +19,9 @@ import scala.reflect.internal.util.Statistics
 trait BackendStats {
   self: Statistics =>
 
-  val bcodeTimer      = newTimer("time in backend", "jvm")
-  val bcodeInitTimer  = newSubTimer("bcode initialization", bcodeTimer)
-  val bcodeGenStat    = newSubTimer("code generation", bcodeTimer)
-  val methodOptTimer  = newSubTimer("intra-method optimizations", bcodeTimer)
+  val bcodeTimer = newTimer("time in backend", "jvm")
+  val bcodeInitTimer = newSubTimer("bcode initialization", bcodeTimer)
+  val bcodeGenStat = newSubTimer("code generation", bcodeTimer)
+  val methodOptTimer = newSubTimer("intra-method optimizations", bcodeTimer)
   val bcodeWriteTimer = newSubTimer("classfile writing", bcodeTimer)
 }

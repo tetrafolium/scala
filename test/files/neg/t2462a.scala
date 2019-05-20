@@ -1,5 +1,6 @@
 class Lst[+A] {
-  def map[B, That](f: A => B)(implicit bf: collection.BuildFrom[List[A], B, That]): That = ???
+  def map[B, That](f: A => B)(
+      implicit bf: collection.BuildFrom[List[A], B, That]): That = ???
 }
 
 object Test {

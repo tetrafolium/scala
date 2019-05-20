@@ -1,4 +1,3 @@
-
 final class Foo[T](val t: T) extends AnyVal
 
 @res.Res(`type` = classOf[Foo[_]])

@@ -7,29 +7,41 @@ object Test extends InteractiveTest {
 
   override def runDefaultTests(): Unit = {
     def resolveTypeTagHyperlink(): Unit = {
-      val sym = compiler.askForResponse(() => compiler.currentRun.runDefinitions.TypeTagClass).get.swap.getOrElse(???)
+      val sym = compiler
+        .askForResponse(() => compiler.currentRun.runDefinitions.TypeTagClass)
+        .get
+        .swap
+        .getOrElse(???)
       val r = new Response[Position]
       compiler.askLinkPos(sym, new BatchSourceFile("", source), r)
       r.get
     }
 
     def checkTypeTagSymbolConsistent(): Unit = {
-      compiler.askForResponse {
-        () => {
+      compiler.askForResponse { () =>
+        {
           val runDefinitions = currentRun.runDefinitions
           import runDefinitions._
           import Predef._
-          assert(TypeTagsClass.map(sym => getMemberClass(sym, tpnme.TypeTag)) == TypeTagClass)
-          assert(TypeTagsClass.map(sym => getMemberClass(sym, tpnme.WeakTypeTag)) == WeakTypeTagClass)
-          assert(TypeTagsClass.map(sym => getMemberModule(sym, nme.WeakTypeTag)) == WeakTypeTagModule)
-          assert(getMemberMethod(ReflectPackage, nme.materializeClassTag) == materializeClassTag)
-          assert(ReflectApiPackage.map(sym => getMemberMethod(sym, nme.materializeWeakTypeTag)) == materializeWeakTypeTag)
-          assert(ReflectApiPackage.map(sym => getMemberMethod(sym, nme.materializeTypeTag)) == materializeTypeTag)
+          assert(
+            TypeTagsClass
+              .map(sym => getMemberClass(sym, tpnme.TypeTag)) == TypeTagClass)
+          assert(TypeTagsClass.map(sym =>
+            getMemberClass(sym, tpnme.WeakTypeTag)) == WeakTypeTagClass)
+          assert(
+            TypeTagsClass
+              .map(sym => getMemberModule(sym, nme.WeakTypeTag)) == WeakTypeTagModule)
+          assert(
+            getMemberMethod(ReflectPackage, nme.materializeClassTag) == materializeClassTag)
+          assert(ReflectApiPackage.map(sym =>
+            getMemberMethod(sym, nme.materializeWeakTypeTag)) == materializeWeakTypeTag)
+          assert(ReflectApiPackage.map(sym =>
+            getMemberMethod(sym, nme.materializeTypeTag)) == materializeTypeTag)
           ()
         }
       }.get match {
         case Right(t) => t.printStackTrace
-        case Left(_) =>
+        case Left(_)  =>
       }
     }
     resolveTypeTagHyperlink()

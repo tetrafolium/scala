@@ -15,14 +15,14 @@ package scala.tools.partest
 import scala.tools.nsc._
 import settings.ScalaVersion
 import scala.reflect.internal.Reporter
-import scala.reflect.internal.util.{ SourceFile, BatchSourceFile }
+import scala.reflect.internal.util.{SourceFile, BatchSourceFile}
 import reporters.ConsoleReporter
 import scala.tools.cmd.CommandLineParser
 
 /** A class for testing code which is embedded as a string.
- *  It allows for more complete control over settings, compiler
- *  configuration, sequence of events, etc. than does partest.
- */
+  *  It allows for more complete control over settings, compiler
+  *  configuration, sequence of events, etc. than does partest.
+  */
 abstract class DirectTest extends App {
   // The program being tested in some fashion
   def code: String
@@ -30,7 +30,7 @@ abstract class DirectTest extends App {
   def show(): Unit
 
   // the test file or dir, and output directory
-  def testPath   = SFile(sys.props("partest.test-path"))
+  def testPath = SFile(sys.props("partest.test-path"))
   def testOutput = Directory(sys.props("partest.output"))
 
   // override to add additional settings with strings
@@ -47,21 +47,25 @@ abstract class DirectTest extends App {
   }
   // new compiler
   def newCompiler(args: String*): Global = {
-    val settings = newSettings((CommandLineParser tokenize ("-d \"" + testOutput.path + "\" " + extraSettings)) ++ args.toList)
+    val settings = newSettings(
+      (CommandLineParser tokenize ("-d \"" + testOutput.path + "\" " + extraSettings)) ++ args.toList)
     newCompiler(settings)
   }
 
-  def newCompiler(settings: Settings): Global = Global(settings, reporter(settings))
+  def newCompiler(settings: Settings): Global =
+    Global(settings, reporter(settings))
 
   def reporter(settings: Settings): Reporter = new ConsoleReporter(settings)
 
-  private def newSourcesWithExtension(ext: String)(codes: String*): List[BatchSourceFile] =
+  private def newSourcesWithExtension(ext: String)(
+      codes: String*): List[BatchSourceFile] =
     codes.toList.zipWithIndex map {
       case (src, idx) => new BatchSourceFile(s"newSource${idx + 1}.$ext", src)
     }
 
-  def newJavaSources(codes: String*) = newSourcesWithExtension("java")(codes: _*)
-  def newSources(codes: String*)     = newSourcesWithExtension("scala")(codes: _*)
+  def newJavaSources(codes: String*) =
+    newSourcesWithExtension("java")(codes: _*)
+  def newSources(codes: String*) = newSourcesWithExtension("scala")(codes: _*)
 
   def compileString(global: Global)(sourceCode: String): Boolean = {
     withRun(global)(_ compileSources newSources(sourceCode))
@@ -79,7 +83,8 @@ abstract class DirectTest extends App {
     }
   }
 
-  def compilationUnits(global: Global)(sourceCodes: String*): List[global.CompilationUnit] = {
+  def compilationUnits(global: Global)(
+      sourceCodes: String*): List[global.CompilationUnit] = {
     val units = sourceFilesToCompiledUnits(global)(newSources(sourceCodes: _*))
     if (global.reporter.hasErrors) {
       global.reporter.flush()
@@ -98,20 +103,25 @@ abstract class DirectTest extends App {
 
   /**  Constructor/main body  **/
   try show()
-  catch { case t: Exception => println(t.getMessage) ; t.printStackTrace ; sys.exit(1) }
+  catch {
+    case t: Exception => println(t.getMessage); t.printStackTrace; sys.exit(1)
+  }
 
   /** Debugger interest only below this line **/
-  protected def isDebug       = (sys.props contains "partest.debug") || (sys.env contains "PARTEST_DEBUG")
-  protected def debugSettings = sys.props.getOrElse("partest.debug.settings", "")
+  protected def isDebug =
+    (sys.props contains "partest.debug") || (sys.env contains "PARTEST_DEBUG")
+  protected def debugSettings =
+    sys.props.getOrElse("partest.debug.settings", "")
 
   final def log(msg: => Any): Unit = {
     if (isDebug) Console.err println msg
   }
 
   /**
-   * Run a test only if the current java version is at least the version specified.
-   */
-  def testUnderJavaAtLeast[A](version: String)(yesRun: =>A) = new TestUnderJavaAtLeast(version, { yesRun })
+    * Run a test only if the current java version is at least the version specified.
+    */
+  def testUnderJavaAtLeast[A](version: String)(yesRun: => A) =
+    new TestUnderJavaAtLeast(version, { yesRun })
 
   class TestUnderJavaAtLeast[A](version: String, yesRun: => A) {
     val javaVersion = System.getProperty("java.specification.version")
@@ -122,13 +132,15 @@ abstract class DirectTest extends App {
     val shouldRun = executingJavaVersion >= requiredJavaVersion
     val preamble = if (shouldRun) "Attempting" else "Doing fallback for"
 
-    def logInfo() = log(s"$preamble java $version specific test under java version $javaVersion")
- 
-   /*
-    * If the current java version is at least 'version' then 'yesRun' is evaluated
-    * otherwise 'fallback' is 
-    */
-    def otherwise(fallback: =>A): A = {
+    def logInfo() =
+      log(
+        s"$preamble java $version specific test under java version $javaVersion")
+
+    /*
+     * If the current java version is at least 'version' then 'yesRun' is evaluated
+     * otherwise 'fallback' is
+     */
+    def otherwise(fallback: => A): A = {
       logInfo()
       if (shouldRun) yesRun else fallback
     }

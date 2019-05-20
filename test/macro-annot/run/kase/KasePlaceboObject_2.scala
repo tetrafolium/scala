@@ -56,7 +56,9 @@ class KasePlaceboObject {
     @kase object CPostLocalPostcomp
     @placebo class CPostLocalPostcomp
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |CPreToplevelNocomp
       |CPreToplevelPrecomp
       |CPreToplevelPostcomp
@@ -69,7 +71,8 @@ class KasePlaceboObject {
       |CPostLocalNocomp
       |CPostLocalPrecomp
       |CPostLocalPostcomp
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 

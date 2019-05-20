@@ -45,4 +45,3 @@ object Test {
     assert(f.get(o) != null) // scala/bug#9365
   }
 }
-

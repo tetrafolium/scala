@@ -11,11 +11,13 @@ class PlaceboAssortedZoo {
 class PlaceboAssorted {
   def assertEquals(a: Any, b: Any): Unit = { assert(a == b, s"$a != $b") }
 
-  def combo = { nested ; local }
+  def combo = { nested; local }
 
   // @Test
   def nested: Unit = {
-    assertEquals(typeOf[PlaceboAssortedZoo].decls.sorted.map(_.toString).mkString("\n"), """
+    assertEquals(
+      typeOf[PlaceboAssortedZoo].decls.sorted.map(_.toString).mkString("\n"),
+      """
       |constructor PlaceboAssortedZoo
       |method foo
       |type T
@@ -25,7 +27,8 @@ class PlaceboAssorted {
       |variable baz
       |variable baz
       |lazy value bax
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 
   // @Test

@@ -19,28 +19,33 @@ object ListMapBuilderProperties extends Properties("immutable.ListMapBuilder") {
     case object Clear extends Transform
   }
 
-
-
   val transformGen: Gen[List[Transform]] =
-    listOf(oneOf(
-      Arbitrary.arbitrary[(K, V)].map(Transform.AddOne),
-      Arbitrary.arbitrary[List[(K, V)]].map(Transform.AddAllList),
-      Arbitrary.arbitrary[Map[K, V]].map(Transform.AddAllMap),
-      const(Transform.Clear)
-    ))
+    listOf(
+      oneOf(
+        Arbitrary.arbitrary[(K, V)].map(Transform.AddOne),
+        Arbitrary.arbitrary[List[(K, V)]].map(Transform.AddAllList),
+        Arbitrary.arbitrary[Map[K, V]].map(Transform.AddAllMap),
+        const(Transform.Clear)
+      ))
 
-  def interpret(transforms: Seq[Transform], builder: () => collection.mutable.Builder[(K, V), Map[K, V]]): Map[K, V] =
-    transforms.foldLeft(builder()) {
-      case (b, Transform.AddOne(kv)) => b.addOne(kv)
-      case (b, Transform.AddAllList(kvs)) => b.addAll(kvs)
-      case (b, Transform.AddAllMap(kvs)) => b.addAll(kvs)
-      case (b, Transform.Clear) => b.clear(); b
-    }.result()
+  def interpret(
+      transforms: Seq[Transform],
+      builder: () => collection.mutable.Builder[(K, V), Map[K, V]]): Map[K, V] =
+    transforms
+      .foldLeft(builder()) {
+        case (b, Transform.AddOne(kv))      => b.addOne(kv)
+        case (b, Transform.AddAllList(kvs)) => b.addAll(kvs)
+        case (b, Transform.AddAllMap(kvs))  => b.addAll(kvs)
+        case (b, Transform.Clear)           => b.clear(); b
+      }
+      .result()
 
-
-  property("Multiple transforms on ListMapBuilder give same result as HashMapBuilder") =
+  property(
+    "Multiple transforms on ListMapBuilder give same result as HashMapBuilder") =
     forAll(transformGen) { transforms: Seq[Transform] =>
-      interpret(transforms, () => ListMap.newBuilder) ?= interpret(transforms, () => HashMap.newBuilder)
-  }
+      interpret(transforms, () => ListMap.newBuilder) ?= interpret(
+        transforms,
+        () => HashMap.newBuilder)
+    }
 
 }

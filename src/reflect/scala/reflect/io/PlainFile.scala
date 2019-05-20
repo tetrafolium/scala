@@ -17,14 +17,15 @@ package io
 /** ''Note:  This library is considered experimental and should not be used unless you know what you are doing.'' */
 class PlainDirectory(givenPath: Directory) extends PlainFile(givenPath) {
   override def isDirectory = true
-  override def iterator = givenPath.list filter (_.exists) map (x => new PlainFile(x))
+  override def iterator =
+    givenPath.list filter (_.exists) map (x => new PlainFile(x))
   override def delete(): Unit = givenPath.deleteRecursively()
 }
 
 /** This class implements an abstract file backed by a File.
- *
- * ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
- */
+  *
+  * ''Note:  This library is considered experimental and should not be used unless you know what you are doing.''
+  */
 class PlainFile(val givenPath: Path) extends AbstractFile {
   assert(path ne null)
 
@@ -75,14 +76,15 @@ class PlainFile(val givenPath: Path) extends AbstractFile {
   }
 
   /**
-   * Returns the abstract file in this abstract directory with the
-   * specified name. If there is no such file, returns null. The
-   * argument "directory" tells whether to look for a directory or
-   * or a regular file.
-   */
+    * Returns the abstract file in this abstract directory with the
+    * specified name. If there is no such file, returns null. The
+    * argument "directory" tells whether to look for a directory or
+    * or a regular file.
+    */
   def lookupName(name: String, directory: Boolean): AbstractFile = {
     val child = givenPath / name
-    if ((child.isDirectory && directory) || (child.isFile && !directory)) new PlainFile(child)
+    if ((child.isDirectory && directory) || (child.isFile && !directory))
+      new PlainFile(child)
     else null
   }
 
@@ -95,27 +97,29 @@ class PlainFile(val givenPath: Path) extends AbstractFile {
     else if (givenPath.isDirectory) givenPath.toDirectory.deleteRecursively()
 
   /** Returns a plain file with the given name. It does not
-   *  check that it exists.
-   */
+    *  check that it exists.
+    */
   def lookupNameUnchecked(name: String, directory: Boolean): AbstractFile =
     new PlainFile(givenPath / name)
 }
 
-private[scala] class PlainNioFile(nioPath: java.nio.file.Path) extends AbstractFile {
+private[scala] class PlainNioFile(nioPath: java.nio.file.Path)
+    extends AbstractFile {
   import java.nio.file._
 
   assert(nioPath ne null)
 
   /** Returns the underlying File if any and null otherwise. */
-  override def file: java.io.File = try {
-    nioPath.toFile
-  } catch {
-    case _: UnsupportedOperationException => null
-  }
+  override def file: java.io.File =
+    try {
+      nioPath.toFile
+    } catch {
+      case _: UnsupportedOperationException => null
+    }
 
   override lazy val canonicalPath = super.canonicalPath
 
-  override def underlyingSource  = Some(this)
+  override def underlyingSource = Some(this)
 
   private val fpath = nioPath.toAbsolutePath.toString
 
@@ -163,17 +167,19 @@ private[scala] class PlainNioFile(nioPath: java.nio.file.Path) extends AbstractF
     */
   def lookupName(name: String, directory: Boolean): AbstractFile = {
     val child = nioPath.resolve(name)
-    if ((Files.isDirectory(child) && directory) || (Files.isRegularFile(child) && !directory)) new PlainNioFile(child)
+    if ((Files.isDirectory(child) && directory) || (Files.isRegularFile(child) && !directory))
+      new PlainNioFile(child)
     else null
   }
 
   /** Does this abstract file denote an existing file? */
-  def create(): Unit = if (!exists)  Files.createFile(nioPath)
+  def create(): Unit = if (!exists) Files.createFile(nioPath)
 
   /** Delete the underlying file or directory (recursively). */
   def delete(): Unit =
     if (Files.isRegularFile(nioPath)) Files.deleteIfExists(nioPath)
-    else if (Files.isDirectory(nioPath)) new Directory(nioPath.toFile).deleteRecursively()
+    else if (Files.isDirectory(nioPath))
+      new Directory(nioPath.toFile).deleteRecursively()
 
   /** Returns a plain file with the given name. It does not
     *  check that it exists.

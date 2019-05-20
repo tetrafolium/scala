@@ -1,4 +1,3 @@
-
 // scalac: -Xsource:2.13
 
 object Test {
@@ -13,20 +12,18 @@ object Test {
 
   type MaybeMaybe[A] = MaybeT[Maybe, A]
 
-
   // Typeclass
 
   trait Monad[F[_]]
-
 
   // Instances
 
   implicit val monadId: Monad[Id] = ???
 
-  implicit def monadMaybeT[F[_]: Monad]: Monad[({ type λ[A] = MaybeT[F, A] })#λ] = ???
+  implicit def monadMaybeT[F[_]: Monad]
+    : Monad[({ type λ[A] = MaybeT[F, A] })#λ] = ???
 
   implicit val monadOption: Monad[Option] = ???
-
 
   // Implicit search tests
 

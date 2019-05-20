@@ -32,19 +32,23 @@ class IndexedSeqEqualsBenchmark {
   var valueNotEqualLength: IndexedSeq[Any] = _
 
   @Setup(Level.Trial) def init(): Unit = {
-    def toSeq[T](data: Array[T], typeStr: String):IndexedSeq[T] = typeStr match {
-      case "Vector" => data.to(Vector)
-      case "ArraySeq" =>
-        ArraySeq.unsafeWrapArray(data.clone)
-    }
+    def toSeq[T](data: Array[T], typeStr: String): IndexedSeq[T] =
+      typeStr match {
+        case "Vector" => data.to(Vector)
+        case "ArraySeq" =>
+          ArraySeq.unsafeWrapArray(data.clone)
+      }
 
     val data = Array.tabulate(size)(_.toString)
     value = toSeq(data, type1)
     valueEqual = toSeq(data, type2)
 
     valueNotEqualLength = valueEqual + "xx"
-    valueNotEqualFirst = if (value.isEmpty) valueEqual else valueEqual.updated(0, "xx")
-    valueNotEqualLast = if (value.isEmpty) valueEqual else valueEqual.updated(valueEqual.length - 1, "xx")
+    valueNotEqualFirst =
+      if (value.isEmpty) valueEqual else valueEqual.updated(0, "xx")
+    valueNotEqualLast =
+      if (value.isEmpty) valueEqual
+      else valueEqual.updated(valueEqual.length - 1, "xx")
   }
   @Benchmark def equal = value == valueEqual
 //  @Benchmark def notEqualLength = value == valueNotEqualLength

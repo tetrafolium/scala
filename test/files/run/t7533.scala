@@ -27,7 +27,8 @@ object Test extends App {
   def test[T: TypeTag] = {
     val sym = typeOf[T].typeSymbol
     println(s"=======$sym=======")
-    def printAbstract(sym: Symbol) = println(s"$sym => ${if (sym.isAbstract) "abstract" else "concrete"}")
+    def printAbstract(sym: Symbol) =
+      println(s"$sym => ${if (sym.isAbstract) "abstract" else "concrete"}")
     printAbstract(sym)
     sym.info.decls.sorted.foreach(printAbstract)
   }

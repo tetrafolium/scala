@@ -10,46 +10,56 @@ import scala.util.Try
 @RunWith(classOf[JUnit4])
 class StringParsersTest {
 
-  def doubleOK(str: String): Unit = assertTrue(
-    s"str.toDouble <> str.toDoubleOption for $str",
-    (str.toDoubleOption, Try(str.toDouble).toOption) match {
-      case (Some(d1), Some(d2)) => d1.isNaN && d2.isNaN || d1 == d2
-      case (o1, o2) => o1 == o2
-    })
+  def doubleOK(str: String): Unit =
+    assertTrue(
+      s"str.toDouble <> str.toDoubleOption for $str",
+      (str.toDoubleOption, Try(str.toDouble).toOption) match {
+        case (Some(d1), Some(d2)) => d1.isNaN && d2.isNaN || d1 == d2
+        case (o1, o2)             => o1 == o2
+      }
+    )
 
-  def floatOK(str: String): Unit = assertTrue(
-    s"str.toFloat <> str.toFloatOption for $str",
-    (str.toFloatOption, Try(str.toFloat).toOption) match {
-      case (Some(f1), Some(f2)) if f1.isNaN && f2.isNaN => true
-      case (o1, o2) => o1 == o2
-    })
+  def floatOK(str: String): Unit =
+    assertTrue(
+      s"str.toFloat <> str.toFloatOption for $str",
+      (str.toFloatOption, Try(str.toFloat).toOption) match {
+        case (Some(f1), Some(f2)) if f1.isNaN && f2.isNaN => true
+        case (o1, o2)                                     => o1 == o2
+      }
+    )
 
-  def byteOK(str: String): Unit = assertTrue(
-    s"str.toByte <> str.toByteOption for $str",
-    str.toByteOption == Try(str.toByte).toOption)
+  def byteOK(str: String): Unit =
+    assertTrue(s"str.toByte <> str.toByteOption for $str",
+               str.toByteOption == Try(str.toByte).toOption)
 
-  def shortOK(str: String): Unit = assertTrue(
-    s"str.toShort <> str.toShortOption for $str",
-    str.toShortOption == Try(str.toShort).toOption)
+  def shortOK(str: String): Unit =
+    assertTrue(s"str.toShort <> str.toShortOption for $str",
+               str.toShortOption == Try(str.toShort).toOption)
 
-  def intOK(str: String): Unit = assertTrue(
-    s"str.toInt <> str.toIntOption for $str",
-    str.toIntOption == Try(str.toInt).toOption)
+  def intOK(str: String): Unit =
+    assertTrue(s"str.toInt <> str.toIntOption for $str",
+               str.toIntOption == Try(str.toInt).toOption)
 
-  def longOK(str: String): Unit = assertTrue(
-    s"str.toLong <> str.toLongOption for $str",
-    str.toLongOption == Try(str.toLong).toOption)
+  def longOK(str: String): Unit =
+    assertTrue(s"str.toLong <> str.toLongOption for $str",
+               str.toLongOption == Try(str.toLong).toOption)
 
   val forAllExamples = List("", "+", "-", "0", "-0", "+0", "1", "-1", "+1")
 
   val nearOverflow = for {
-    b <- List(Byte.MinValue, Byte.MaxValue, Short.MinValue, Short.MaxValue, Int.MinValue, Int.MaxValue)
+    b <- List(Byte.MinValue,
+              Byte.MaxValue,
+              Short.MinValue,
+              Short.MaxValue,
+              Int.MinValue,
+              Int.MaxValue)
     l = b.toLong
     d <- (-10 to 10)
     ii <- List(l + d)
   } yield ii.toString
 
-  val noLongOverflow = List(Long.MinValue, Long.MinValue + 1, Long.MaxValue, Long.MaxValue - 1)
+  val noLongOverflow =
+    List(Long.MinValue, Long.MinValue + 1, Long.MaxValue, Long.MaxValue - 1)
 
   val longOverUnderflow = List("9223372036854775808", "-9223372036854775809")
 
@@ -296,21 +306,26 @@ class StringParsersTest {
   def longTest: Unit = (forAllExamples ::: longNearOverflow).foreach(longOK)
 
   @Test
-  def nullByte: Unit = assertThrows[NullPointerException](nullstring.toByteOption)
+  def nullByte: Unit =
+    assertThrows[NullPointerException](nullstring.toByteOption)
 
   @Test
-  def nullShort: Unit = assertThrows[NullPointerException](nullstring.toShortOption)
+  def nullShort: Unit =
+    assertThrows[NullPointerException](nullstring.toShortOption)
 
   @Test
   def nullInt: Unit = assertThrows[NullPointerException](nullstring.toIntOption)
-  
-  @Test
-  def nullLong: Unit = assertThrows[NullPointerException](nullstring.toLongOption)
 
   @Test
-  def nullFloat: Unit = assertThrows[NullPointerException](nullstring.toFloatOption)
+  def nullLong: Unit =
+    assertThrows[NullPointerException](nullstring.toLongOption)
 
   @Test
-  def nullDouble: Unit = assertThrows[NullPointerException](nullstring.toDoubleOption)
+  def nullFloat: Unit =
+    assertThrows[NullPointerException](nullstring.toFloatOption)
+
+  @Test
+  def nullDouble: Unit =
+    assertThrows[NullPointerException](nullstring.toDoubleOption)
 
 }

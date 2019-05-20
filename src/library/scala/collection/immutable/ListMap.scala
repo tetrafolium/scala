@@ -44,7 +44,7 @@ import scala.runtime.Statics.releaseFence
   * @define willNotTerminateInf
   */
 sealed class ListMap[K, +V]
-  extends AbstractMap[K, V]
+    extends AbstractMap[K, V]
     with SeqMap[K, V]
     with StrictOptimizedMapOps[K, V, ListMap, ListMap[K, V]]
     with DefaultSerializable {
@@ -58,7 +58,8 @@ sealed class ListMap[K, +V]
   override def knownSize: Int = 0
   def get(key: K): Option[V] = None
 
-  def updated[V1 >: V](key: K, value: V1): ListMap[K, V1] = new ListMap.Node[K, V1](key, value, this)
+  def updated[V1 >: V](key: K, value: V1): ListMap[K, V1] =
+    new ListMap.Node[K, V1](key, value, this)
 
   def removed(key: K): ListMap[K, V] = this
 
@@ -82,9 +83,12 @@ sealed class ListMap[K, +V]
     res
   }
 
-  private[immutable] def key: K = throw new NoSuchElementException("key of empty map")
-  private[immutable] def value: V = throw new NoSuchElementException("value of empty map")
-  private[immutable] def next: ListMap[K, V] = throw new NoSuchElementException("next of empty map")
+  private[immutable] def key: K =
+    throw new NoSuchElementException("key of empty map")
+  private[immutable] def value: V =
+    throw new NoSuchElementException("value of empty map")
+  private[immutable] def next: ListMap[K, V] =
+    throw new NoSuchElementException("next of empty map")
 
   override protected[this] def className = "ListMap"
 
@@ -105,13 +109,14 @@ sealed class ListMap[K, +V]
   */
 @SerialVersionUID(3L)
 object ListMap extends MapFactory[ListMap] {
+
   /**
     * Represents an entry in the `ListMap`.
     */
   private[immutable] final class Node[K, V](
-    override private[immutable] val key: K,
-    private[immutable] var _value: V,
-    private[immutable] var _init: ListMap[K, V]
+      override private[immutable] val key: K,
+      private[immutable] var _value: V,
+      private[immutable] var _init: ListMap[K, V]
   ) extends ListMap[K, V] {
 
     releaseFence()
@@ -138,14 +143,16 @@ object ListMap extends MapFactory[ListMap] {
 
     override def get(k: K): Option[V] = getInternal(this, k)
 
-    @tailrec private[this] def getInternal(cur: ListMap[K, V], k: K): Option[V] =
+    @tailrec private[this] def getInternal(cur: ListMap[K, V],
+                                           k: K): Option[V] =
       if (cur.isEmpty) None
       else if (k == cur.key) Some(cur.value)
       else getInternal(cur.next, k)
 
     override def contains(k: K): Boolean = containsInternal(this, k)
 
-    @tailrec private[this] def containsInternal(cur: ListMap[K, V], k: K): Boolean =
+    @tailrec private[this] def containsInternal(cur: ListMap[K, V],
+                                                k: K): Boolean =
       if (cur.isEmpty) false
       else if (k == cur.key) true
       else containsInternal(cur.next, k)
@@ -162,7 +169,8 @@ object ListMap extends MapFactory[ListMap] {
         while (curr.nonEmpty && !found) {
           if (k == curr.key) {
             found = true
-            isDifferent = v.asInstanceOf[AnyRef] ne curr.value.asInstanceOf[AnyRef]
+            isDifferent = v.asInstanceOf[AnyRef] ne curr.value
+              .asInstanceOf[AnyRef]
           }
           index += 1
           curr = curr.init
@@ -201,10 +209,14 @@ object ListMap extends MapFactory[ListMap] {
       }
     }
 
-    @tailrec private[this] def removeInternal(k: K, cur: ListMap[K, V], acc: List[ListMap[K, V]]): ListMap[K, V] =
+    @tailrec private[this] def removeInternal(
+        k: K,
+        cur: ListMap[K, V],
+        acc: List[ListMap[K, V]]): ListMap[K, V] =
       if (cur.isEmpty) acc.last
-      else if (k == cur.key) acc.foldLeft(cur.next) { (t, h) => new Node(h.key, h.value, t) }
-      else removeInternal(k, cur.next, cur :: acc)
+      else if (k == cur.key) acc.foldLeft(cur.next) { (t, h) =>
+        new Node(h.key, h.value, t)
+      } else removeInternal(k, cur.next, cur :: acc)
 
     override def removed(k: K): ListMap[K, V] = removeInternal(k, this, Nil)
 
@@ -222,7 +234,7 @@ object ListMap extends MapFactory[ListMap] {
   def from[K, V](it: collection.IterableOnce[(K, V)]): ListMap[K, V] =
     it match {
       case lm: ListMap[K, V] => lm
-      case _ => (newBuilder[K, V] ++= it).result()
+      case _                 => (newBuilder[K, V] ++= it).result()
     }
 
   /** Returns a new ListMap builder
@@ -232,13 +244,15 @@ object ListMap extends MapFactory[ListMap] {
     * @tparam K the map key type
     * @tparam V the map value type
     */
-  def newBuilder[K, V]: ReusableBuilder[(K, V), ListMap[K, V]] = new ListMapBuilder[K, V]
+  def newBuilder[K, V]: ReusableBuilder[(K, V), ListMap[K, V]] =
+    new ListMapBuilder[K, V]
 }
 
 /** Builder for ListMap.
   * $multipleResults
   */
-private[immutable] final class ListMapBuilder[K, V] extends mutable.ReusableBuilder[(K, V), ListMap[K, V]] {
+private[immutable] final class ListMapBuilder[K, V]
+    extends mutable.ReusableBuilder[(K, V), ListMap[K, V]] {
   private[this] var isAliased: Boolean = false
   private[this] var underlying: ListMap[K, V] = ListMap.empty
 
@@ -256,7 +270,9 @@ private[immutable] final class ListMapBuilder[K, V] extends mutable.ReusableBuil
   override def addOne(elem: (K, V)): this.type = addOne(elem._1, elem._2)
 
   @tailrec
-  private[this] def insertValueAtKeyReturnFound(m: ListMap[K, V], key: K, value: V): Boolean = m match {
+  private[this] def insertValueAtKeyReturnFound(m: ListMap[K, V],
+                                                key: K,
+                                                value: V): Boolean = m match {
     case n: ListMap.Node[K, V] =>
       if (n.key == key) {
         n._value = value
@@ -289,7 +305,8 @@ private[immutable] final class ListMapBuilder[K, V] extends mutable.ReusableBuil
       while (iter.hasNext) {
         val next = iter.next()
         if (!insertValueAtKeyReturnFound(underlying, next._1, next._2)) {
-          newUnderlying = new ListMap.Node[K, V](next._1, next._2, newUnderlying)
+          newUnderlying =
+            new ListMap.Node[K, V](next._1, next._2, newUnderlying)
         }
       }
       underlying = newUnderlying

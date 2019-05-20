@@ -19,10 +19,7 @@ import java.lang.String
 
 /** Base trait for set collections.
   */
-trait Set[A]
-  extends Iterable[A]
-    with SetOps[A, Set, Set[A]]
-    with Equals {
+trait Set[A] extends Iterable[A] with SetOps[A, Set, Set[A]] with Equals {
 
   def canEqual(that: Any) = true
 
@@ -42,10 +39,11 @@ trait Set[A]
 
   def empty: IterableCC[A] = iterableFactory.empty
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix: String = "Set"
 
-  override def toString(): String = super[Iterable].toString() // Because `Function1` overrides `toString` too
+  override def toString(): String =
+    super[Iterable].toString() // Because `Function1` overrides `toString` too
 }
 
 /** Base trait for set operations
@@ -54,8 +52,8 @@ trait Set[A]
   * @define Coll `Set`
   */
 trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
-  extends IterableOps[A, CC, C]
-     with (A => Boolean) {
+    extends IterableOps[A, CC, C]
+    with (A => Boolean) {
 
   def contains(elem: A): Boolean
 
@@ -65,8 +63,11 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
     *  @param elem the element to test for membership.
     *  @return  `true` if `elem` is contained in this set, `false` otherwise.
     */
-  @deprecatedOverriding("This method should be final, but is not due to scala/bug#10853", "2.13.0")
-  /*@`inline` final*/ def apply(elem: A): Boolean = this.contains(elem)
+  @deprecatedOverriding(
+    "This method should be final, but is not due to scala/bug#10853",
+    "2.13.0")
+  /*@`inline` final*/
+  def apply(elem: A): Boolean = this.contains(elem)
 
   /** Tests whether this set is a subset of another set.
     *
@@ -118,8 +119,9 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
     *
     *  @author Eastsun
     */
-  private class SubsetsItr(elms: IndexedSeq[A], len: Int) extends AbstractIterator[C] {
-    private[this] val idxs = Array.range(0, len+1)
+  private class SubsetsItr(elms: IndexedSeq[A], len: Int)
+      extends AbstractIterator[C] {
+    private[this] val idxs = Array.range(0, len + 1)
     private[this] var _hasNext = true
     idxs(len) = elms.size
 
@@ -133,13 +135,13 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
       val result = buf.result()
 
       var i = len - 1
-      while (i >= 0 && idxs(i) == idxs(i+1)-1) i -= 1
+      while (i >= 0 && idxs(i) == idxs(i + 1) - 1) i -= 1
 
       if (i < 0) _hasNext = false
       else {
         idxs(i) += 1
-        for (j <- (i+1) until len)
-          idxs(j) = idxs(j-1) + 1
+        for (j <- (i + 1) until len)
+          idxs(j) = idxs(j - 1) + 1
       }
 
       result
@@ -155,7 +157,7 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
   def intersect(that: Set[A]): C = this.filter(that)
 
   /** Alias for `intersect` */
-  @`inline` final def & (that: Set[A]): C = intersect(that)
+  @`inline` final def &(that: Set[A]): C = intersect(that)
 
   /** Computes the difference of this set and another set.
     *
@@ -166,16 +168,19 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
   def diff(that: Set[A]): C
 
   /** Alias for `diff` */
-  @`inline` final def &~ (that: Set[A]): C = this diff that
+  @`inline` final def &~(that: Set[A]): C = this diff that
 
   @deprecated("Consider requiring an immutable Set", "2.13.0")
-  def -- (that: IterableOnce[A]): C = fromSpecific(coll.toSet.removedAll(that))
+  def --(that: IterableOnce[A]): C = fromSpecific(coll.toSet.removedAll(that))
 
-  @deprecated("Consider requiring an immutable Set or fall back to Set.diff", "2.13.0")
-  def - (elem: A): C = diff(Set(elem))
+  @deprecated("Consider requiring an immutable Set or fall back to Set.diff",
+              "2.13.0")
+  def -(elem: A): C = diff(Set(elem))
 
-  @deprecated("Use &- with an explicit collection argument instead of - with varargs", "2.13.0")
-  def - (elem1: A, elem2: A, elems: A*): C = diff(elems.toSet + elem1 + elem2)
+  @deprecated(
+    "Use &- with an explicit collection argument instead of - with varargs",
+    "2.13.0")
+  def -(elem1: A, elem2: A, elems: A*): C = diff(elems.toSet + elem1 + elem2)
 
   // The implicit dummy parameter is necessary to avoid erased signature clashes
   // between this `concat` and the polymorphic one defined in `IterableOps`.
@@ -194,19 +199,29 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
     *  @param that     the collection containing the elements to add.
     *  @return a new $coll with the given elements added, omitting duplicates.
     */
-  def concat(that: collection.IterableOnce[A])(implicit dummy: DummyImplicit): C = fromSpecific(that match {
-    case that: collection.Iterable[A] => new View.Concat(toIterable, that)
-    case _ => iterator.concat(that.iterator)
-  })
+  def concat(that: collection.IterableOnce[A])(
+      implicit dummy: DummyImplicit): C =
+    fromSpecific(that match {
+      case that: collection.Iterable[A] => new View.Concat(toIterable, that)
+      case _                            => iterator.concat(that.iterator)
+    })
 
-  @deprecated("Consider requiring an immutable Set or fall back to Set.union", "2.13.0")
-  def + (elem: A): C = fromSpecific(new View.Appended(toIterable, elem))
+  @deprecated("Consider requiring an immutable Set or fall back to Set.union",
+              "2.13.0")
+  def +(elem: A): C = fromSpecific(new View.Appended(toIterable, elem))
 
-  @deprecated("Use ++ with an explicit collection argument instead of + with varargs", "2.13.0")
-  def + (elem1: A, elem2: A, elems: A*): C = fromSpecific(new View.Concat(new View.Appended(new View.Appended(toIterable, elem1), elem2), elems))
+  @deprecated(
+    "Use ++ with an explicit collection argument instead of + with varargs",
+    "2.13.0")
+  def +(elem1: A, elem2: A, elems: A*): C =
+    fromSpecific(
+      new View.Concat(
+        new View.Appended(new View.Appended(toIterable, elem1), elem2),
+        elems))
 
   /** Alias for `concat` */
-  @`inline` final def ++ (that: collection.IterableOnce[A])(implicit dummy: DummyImplicit): C = concat(that)
+  @`inline` final def ++(that: collection.IterableOnce[A])(
+      implicit dummy: DummyImplicit): C = concat(that)
 
   /** Computes the union between of set and another set.
     *
@@ -217,7 +232,7 @@ trait SetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
   @`inline` final def union(that: Set[A]): C = concat(that)
 
   /** Alias for `union` */
-  @`inline` final def | (that: Set[A]): C = concat(that)
+  @`inline` final def |(that: Set[A]): C = concat(that)
 
   /** The empty set of the same type as this set
     * @return  an empty set of type `C`.

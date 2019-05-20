@@ -45,9 +45,9 @@ final case class Body(blocks: Seq[Block]) {
       case _                 => Nil
     }
     (blocks flatMap { summaryInBlock(_) }).toList match {
-      case Nil => None
+      case Nil           => None
       case inline :: Nil => Some(inline)
-      case inlines => Some(Chain(inlines))
+      case inlines       => Some(Chain(inlines))
     }
   }
 }
@@ -62,8 +62,13 @@ final case class UnorderedList(items: Seq[Block]) extends Block
 final case class OrderedList(items: Seq[Block], style: String) extends Block
 final case class DefinitionList(items: SortedMap[Inline, Block]) extends Block
 final case class HorizontalRule() extends Block
-final case class Table(header: Row, columnOptions: Seq[ColumnOption], rows: Seq[Row]) extends Block
-final case class ColumnOption(option: Char) { require(option == 'L' || option == 'C' || option == 'R') }
+final case class Table(header: Row,
+                       columnOptions: Seq[ColumnOption],
+                       rows: Seq[Row])
+    extends Block
+final case class ColumnOption(option: Char) {
+  require(option == 'L' || option == 'C' || option == 'R')
+}
 object ColumnOption {
   val ColumnOptionLeft = ColumnOption('L')
   val ColumnOptionCenter = ColumnOption('C')
@@ -86,13 +91,16 @@ final case class Monospace(text: Inline) extends Inline
 final case class Text(text: String) extends Inline
 abstract class EntityLink(val title: Inline) extends Inline { def link: LinkTo }
 object EntityLink {
-  def apply(title: Inline, linkTo: LinkTo) = new EntityLink(title) { def link: LinkTo = linkTo }
-  def unapply(el: EntityLink): Option[(Inline, LinkTo)] = Some((el.title, el.link))
+  def apply(title: Inline, linkTo: LinkTo) = new EntityLink(title) {
+    def link: LinkTo = linkTo
+  }
+  def unapply(el: EntityLink): Option[(Inline, LinkTo)] =
+    Some((el.title, el.link))
 }
 final case class HtmlTag(data: String) extends Inline {
   private val (isEnd, tagName) = data match {
     case HtmlTag.Pattern(s1, s2) =>
-      (! s1.isEmpty, Some(s2.toLowerCase))
+      (!s1.isEmpty, Some(s2.toLowerCase))
     case _ =>
       (false, None)
   }
@@ -102,7 +110,8 @@ final case class HtmlTag(data: String) extends Inline {
   }
 
   def close = tagName collect {
-    case name if !HtmlTag.TagsNotToClose(name) && !data.endsWith(s"</$name>") => HtmlTag(s"</$name>")
+    case name if !HtmlTag.TagsNotToClose(name) && !data.endsWith(s"</$name>") =>
+      HtmlTag(s"</$name>")
   }
 }
 object HtmlTag {

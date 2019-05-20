@@ -2,7 +2,7 @@ class C {
   // this always worked
   // during isApplicableToMethod will use formalTypes to eliminate the repeated param in the formal types,
   // but we keep the repeated marker in the arguments -- here's a debug log:
-/*
+  /*
 isCompatibleArgs false (List(Int*), List(Int))
 isAsSpecific false: (xs: Int*)Int >> (x: Int)Int?
  --> the repeated case is not more specific than the single-arg case because
@@ -23,7 +23,7 @@ isCompatibleArgs false (List(Int*), List(Int))
 isAsSpecific false: (xs: Int*)Int >> (x: Int)Int?
 inferMethodAlternative applicable List(method foo, method foo) --> ranked: List(method foo)
 
- */
+   */
 
   def foo(xs: Int*): Int = xs.toSeq.head
   def foo(x: Int): Int = x
@@ -33,7 +33,7 @@ inferMethodAlternative applicable List(method foo, method foo) --> ranked: List(
   // but there was a bug in the polymorphic case of isApplicableToMethod
   // (adjustTypeArgs would remove the incompatibility in applying something
   //  expecting type T to a T*, as the latter would be turned into Seq[T])
-/*
+  /*
 isAsSpecific false: [T](xs: T*)T >> [T](x: T)T?
 isAsSpecific true: [T](x: T)T >> [T](xs: T*)T?
 isAsSpecific true: [T](x: T)T >> [T](xs: T*)T?
@@ -41,7 +41,7 @@ isAsSpecific false: [T](xs: T*)T >> [T](x: T)T?
 isAsSpecific true: [T](x: T)T >> [T](xs: T*)T?
 isAsSpecific false: [T](xs: T*)T >> [T](x: T)T?
 inferMethodAlternative applicable List(method fooT, method fooT) --> ranked: List(method fooT)
- */
+   */
   def fooT[T](xs: T*): T = xs.toSeq.head
   def fooT[T](x: T): T = x
   fooT(2)

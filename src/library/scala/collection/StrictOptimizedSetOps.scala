@@ -20,7 +20,7 @@ package scala.collection
   * @tparam C  Collection type
   */
 trait StrictOptimizedSetOps[A, +CC[_], +C <: SetOps[A, CC, C]]
-  extends SetOps[A, CC, C]
+    extends SetOps[A, CC, C]
     with StrictOptimizedIterableOps[A, CC, C] {
 
   override def concat(that: IterableOnce[A])(implicit dummy: DummyImplicit): C =

@@ -2,7 +2,8 @@ import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
 object Macros {
-  def impl[T](c: Context)(implicit ttag: c.WeakTypeTag[T]): c.Expr[List[String]] = {
+  def impl[T](c: Context)(
+      implicit ttag: c.WeakTypeTag[T]): c.Expr[List[String]] = {
     import c.universe._;
     val ttpe = ttag.tpe
     val tsym = ttpe.typeSymbol.asClass

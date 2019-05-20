@@ -21,8 +21,10 @@ object Test extends App {
     for (x <- xs) print(s"$x "); println
     for (x <- xs;
          if x % 2 == 0) print(s"$x "); println
-    for {x <- xs
-         if x % 2 == 0} print(s"$x "); println
+    for {
+      x <- xs
+      if x % 2 == 0
+    } print(s"$x "); println
     var n = 0
     for (_ <- xs) n += 1; println(n)
     for ((x, y) <- xs zip ys) print(s"$x "); println
@@ -32,15 +34,19 @@ object Test extends App {
     for (x <- it) print(s"$x "); println
     for (x <- it;
          if x % 2 == 0) print(s"$x "); println
-    for {x <- it
-         if x % 2 == 0} print(s"$x "); println
+    for {
+      x <- it
+      if x % 2 == 0
+    } print(s"$x "); println
 
     // arrays
     for (x <- ar) print(s"$x "); println
     for (x <- ar;
          if x.toInt > 97) print(s"$x "); println
-    for {x <- ar
-         if x.toInt > 97} print(s"$x "); println
+    for {
+      x <- ar
+      if x.toInt > 97
+    } print(s"$x "); println
 
   }
 
@@ -63,14 +69,18 @@ object Test extends App {
          if x % 2 == 0) print(s"$x "); println
     for (x <- it
          if x % 2 == 0) print(s"$x "); println
-    for {x <- it
-         if x % 2 == 0} print(s"$x "); println
+    for {
+      x <- it
+      if x % 2 == 0
+    } print(s"$x "); println
     for (x <- it;
          y = 2
          if x % y == 0) print(s"$x "); println
-    for {x <- it
-         y = 2
-         if x % y == 0} print(s"$x "); println
+    for {
+      x <- it
+      y = 2
+      if x % y == 0
+    } print(s"$x "); println
 
     // arrays
     for (x <- ar) print(s"$x "); println

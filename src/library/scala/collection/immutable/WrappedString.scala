@@ -30,15 +30,19 @@ import mutable.{Builder, StringBuilder}
   *  @define coll wrapped string
   */
 @SerialVersionUID(3L)
-final class WrappedString(private val self: String) extends AbstractSeq[Char] with IndexedSeq[Char]
-  with IndexedSeqOps[Char, IndexedSeq, WrappedString]
-  with Serializable {
+final class WrappedString(private val self: String)
+    extends AbstractSeq[Char]
+    with IndexedSeq[Char]
+    with IndexedSeqOps[Char, IndexedSeq, WrappedString]
+    with Serializable {
 
   def apply(i: Int): Char = self.charAt(i)
 
-  override protected def fromSpecific(coll: scala.collection.IterableOnce[Char]): WrappedString =
+  override protected def fromSpecific(
+      coll: scala.collection.IterableOnce[Char]): WrappedString =
     WrappedString.fromSpecific(coll)
-  override protected def newSpecificBuilder: Builder[Char, WrappedString] = WrappedString.newBuilder
+  override protected def newSpecificBuilder: Builder[Char, WrappedString] =
+    WrappedString.newBuilder
 
   override def slice(from: Int, until: Int): WrappedString = {
     val start = if (from < 0) 0 else from
@@ -52,7 +56,8 @@ final class WrappedString(private val self: String) extends AbstractSeq[Char] wi
   override def toString = self
   override def view: StringView = new StringView(self)
 
-  override def startsWith[B >: Char](that: IterableOnce[B], offset: Int = 0): Boolean =
+  override def startsWith[B >: Char](that: IterableOnce[B],
+                                     offset: Int = 0): Boolean =
     that match {
       case s: WrappedString => self.startsWith(s.self, offset)
       case _                => super.startsWith(that, offset)
@@ -75,13 +80,15 @@ final class WrappedString(private val self: String) extends AbstractSeq[Char] wi
       case _       => super.lastIndexOf(elem, end)
     }
 
-  override def indexOfSlice[B >: Char](that: collection.Seq[B], from: Int = 0): Int =
+  override def indexOfSlice[B >: Char](that: collection.Seq[B],
+                                       from: Int = 0): Int =
     that match {
       case s: WrappedString => self.indexOfSlice(s.self, from)
       case _                => super.indexOfSlice(that, from)
     }
 
-  override def lastIndexOfSlice[B >: Char](that: collection.Seq[B], end: Int = length - 1): Int =
+  override def lastIndexOfSlice[B >: Char](that: collection.Seq[B],
+                                           end: Int = length - 1): Int =
     that match {
       case s: WrappedString => self.lastIndexOfSlice(s, end)
       case _                => super.lastIndexOfSlice(that, end)
@@ -93,10 +100,11 @@ final class WrappedString(private val self: String) extends AbstractSeq[Char] wi
   override def copyToArray[B >: Char](xs: Array[B], start: Int, len: Int): Int =
     (xs: Any) match {
       case chs: Array[Char] =>
-        val copied = IterableOnce.elemsToCopyToArray(length, chs.length, start, len)
+        val copied =
+          IterableOnce.elemsToCopyToArray(length, chs.length, start, len)
         self.getChars(0, copied, chs, start)
         copied
-      case _                => super.copyToArray(xs, start, len)
+      case _ => super.copyToArray(xs, start, len)
     }
 
   override def appendedAll[B >: Char](suffix: IterableOnce[B]): IndexedSeq[B] =
@@ -125,7 +133,7 @@ object WrappedString extends SpecificIterableFactory[Char, WrappedString] {
   def fromSpecific(it: IterableOnce[Char]): WrappedString = {
     val b = newBuilder
     val s = it.knownSize
-    if(s >= 0) b.sizeHint(s)
+    if (s >= 0) b.sizeHint(s)
     b ++= it
     b.result()
   }

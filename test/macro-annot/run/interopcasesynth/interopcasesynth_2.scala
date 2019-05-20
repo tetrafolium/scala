@@ -1,4 +1,3 @@
-
 @identity case class InteropIdentity(x: Int)
 @placebo case class InteropPlacebo(x: Int)
 

@@ -20,20 +20,22 @@ object O {
   @elidable(FINEST) def f1() = assert(false, "Should have been elided.")
   @elidable(INFO) def f2() = assert(false, "Should have been elided.")
   @elidable(SEVERE) def f3() = println("Good for me, I was not elided. O.f3")
-  @elidable(INFO) def f4: Unit = assert(false, "Should have been elided (no parens).")
+  @elidable(INFO) def f4: Unit =
+    assert(false, "Should have been elided (no parens).")
 }
 
 object Test {
   @elidable(FINEST) def f1() = assert(false, "Should have been elided.")
   @elidable(INFO) def f2() = assert(false, "Should have been elided.")
   @elidable(SEVERE) def f3() = println("Good for me, I was not elided. Test.f3")
-  @elidable(INFO) def f4: Unit = assert(false, "Should have been elided (no parens).")
+  @elidable(INFO) def f4: Unit =
+    assert(false, "Should have been elided (no parens).")
 
   @elidable(FINEST) def f5() = {}
   @elidable(FINEST) def f6() = true
-  @elidable(FINEST) def f7() = 1:Byte
-  @elidable(FINEST) def f8() = 1:Short
-  @elidable(FINEST) def f9() = 1:Char
+  @elidable(FINEST) def f7() = 1: Byte
+  @elidable(FINEST) def f8() = 1: Short
+  @elidable(FINEST) def f9() = 1: Char
   @elidable(FINEST) def fa() = 1
   @elidable(FINEST) def fb() = 1L
   @elidable(FINEST) def fc() = 1.0f
@@ -69,7 +71,7 @@ object Test {
     println(fe())
 
     // this one won't show up in the output because a call to f1 is elidable when accessed through T
-    (c:T).f1()
+    (c: T).f1()
 
     // Test whether the method definitions are still available.
     List("Test", "Test$", "O", "O$", "C", "T") foreach { className =>
@@ -78,8 +80,9 @@ object Test {
       }
     }
     List("Test", "Test$") foreach { className =>
-      List("f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe") foreach { methodName =>
-        Class.forName(className).getMethod(methodName)
+      List("f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe") foreach {
+        methodName =>
+          Class.forName(className).getMethod(methodName)
       }
     }
   }

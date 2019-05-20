@@ -1,10 +1,18 @@
 package scala.concurrent
 
 import scala.concurrent.duration._
-import java.util.concurrent.{ TimeUnit, Executor, ThreadPoolExecutor, ExecutorService, ForkJoinPool, CountDownLatch, LinkedBlockingQueue }
+import java.util.concurrent.{
+  TimeUnit,
+  Executor,
+  ThreadPoolExecutor,
+  ExecutorService,
+  ForkJoinPool,
+  CountDownLatch,
+  LinkedBlockingQueue
+}
 import org.openjdk.jmh.infra.Blackhole
 import org.openjdk.jmh.annotations._
-import scala.util.{ Try, Success, Failure }
+import scala.util.{Try, Success, Failure}
 import scala.annotation.tailrec
 
 @State(Scope.Benchmark)
@@ -12,7 +20,14 @@ import scala.annotation.tailrec
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 1000)
 @Measurement(iterations = 10000)
-@Fork(value = 1, jvmArgsAppend = Array("-Xmx1G", "-Xms1G", "-server", "-XX:+AggressiveOpts", "-XX:+UseCompressedOops", "-XX:+AlwaysPreTouch", "-XX:+UseCondCardMark"))
+@Fork(value = 1,
+      jvmArgsAppend = Array("-Xmx1G",
+                            "-Xms1G",
+                            "-server",
+                            "-XX:+AggressiveOpts",
+                            "-XX:+UseCompressedOops",
+                            "-XX:+AlwaysPreTouch",
+                            "-XX:+UseCondCardMark"))
 @Threads(value = 1)
 abstract class AbstractBaseFutureBenchmark {
   // fjp = ForkJoinPool, fix = FixedThreadPool, fie = FutureInternalExecutor, gbl = GlobalEC
@@ -35,34 +50,53 @@ abstract class AbstractBaseFutureBenchmark {
   def startup: Unit = {
     executionContext = pool match {
       case "fjp" =>
-        val fjp = new ForkJoinPool(threads) with ExecutionContext with BatchingExecutor {
-          final override def submitForExecution(runnable: Runnable): Unit = super[ForkJoinPool].execute(runnable)
+        val fjp = new ForkJoinPool(threads) with ExecutionContext
+        with BatchingExecutor {
+          final override def submitForExecution(runnable: Runnable): Unit =
+            super[ForkJoinPool].execute(runnable)
           final override def execute(runnable: Runnable): Unit =
-            if ((!runnable.isInstanceOf[impl.Promise.Transformation[_,_]] || runnable.asInstanceOf[impl.Promise.Transformation[_,_]].benefitsFromBatching) && runnable.isInstanceOf[Batchable])
+            if ((!runnable
+                  .isInstanceOf[impl.Promise.Transformation[_, _]] || runnable
+                  .asInstanceOf[impl.Promise.Transformation[_, _]]
+                  .benefitsFromBatching) && runnable.isInstanceOf[Batchable])
               submitAsyncBatched(runnable)
             else
               submitForExecution(runnable)
-          override final def reportFailure(t: Throwable) = t.printStackTrace(System.err)
+          override final def reportFailure(t: Throwable) =
+            t.printStackTrace(System.err)
         }
         executorService = fjp // we want to close this
         fjp
       case "fix" =>
-        val fix = new ThreadPoolExecutor(threads, threads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable]()) with ExecutionContext with BatchingExecutor {
-          final override def submitForExecution(runnable: Runnable): Unit = super[ThreadPoolExecutor].execute(runnable)
+        val fix = new ThreadPoolExecutor(threads,
+                                         threads,
+                                         0L,
+                                         TimeUnit.MILLISECONDS,
+                                         new LinkedBlockingQueue[Runnable]())
+        with ExecutionContext with BatchingExecutor {
+          final override def submitForExecution(runnable: Runnable): Unit =
+            super[ThreadPoolExecutor].execute(runnable)
           final override def execute(runnable: Runnable): Unit =
-            if ((!runnable.isInstanceOf[impl.Promise.Transformation[_,_]] || runnable.asInstanceOf[impl.Promise.Transformation[_,_]].benefitsFromBatching) && runnable.isInstanceOf[Batchable])
+            if ((!runnable
+                  .isInstanceOf[impl.Promise.Transformation[_, _]] || runnable
+                  .asInstanceOf[impl.Promise.Transformation[_, _]]
+                  .benefitsFromBatching) && runnable.isInstanceOf[Batchable])
               submitAsyncBatched(runnable)
             else
               submitForExecution(runnable)
-          override final def reportFailure(t: Throwable) = t.printStackTrace(System.err)
+          override final def reportFailure(t: Throwable) =
+            t.printStackTrace(System.err)
         }
         executorService = fix // we want to close this
         fix
       case "gbl" =>
         // make sure we set the global ec to use the number of threads the bench wants
-        System.setProperty("scala.concurrent.context.minThreads", threads.toString)
-        System.setProperty("scala.concurrent.context.numThreads", threads.toString)
-        System.setProperty("scala.concurrent.context.maxThreads", threads.toString)
+        System.setProperty("scala.concurrent.context.minThreads",
+                           threads.toString)
+        System.setProperty("scala.concurrent.context.numThreads",
+                           threads.toString)
+        System.setProperty("scala.concurrent.context.maxThreads",
+                           threads.toString)
         ExecutionContext.global
       case "fie" =>
         scala.concurrent.Future.InternalCallbackExecutor
@@ -74,7 +108,8 @@ abstract class AbstractBaseFutureBenchmark {
     executorService = executorService match {
       case null => null
       case some =>
-        try some.shutdown() finally some.awaitTermination(1, TimeUnit.MINUTES)
+        try some.shutdown()
+        finally some.awaitTermination(1, TimeUnit.MINUTES)
         null
     }
 }
@@ -95,8 +130,11 @@ abstract class OpFutureBenchmark extends AbstractBaseFutureBenchmark {
 }
 
 class NoopFutureBenchmark extends OpFutureBenchmark {
-  @tailrec private[this] final def next(i: Int, bh: Blackhole,f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, bh, f) } else {  bh.consume(f); f }
+  @tailrec private[this] final def next(
+      i: Int,
+      bh: Blackhole,
+      f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, bh, f) } else { bh.consume(f); f }
 
   @Benchmark final def pre(bh: Blackhole): Boolean =
     await(next(recursion, bh, pre_s_p.future)(executionContext))
@@ -112,8 +150,9 @@ class NoopFutureBenchmark extends OpFutureBenchmark {
 class MapFutureBenchmark extends OpFutureBenchmark {
   private[this] final val transformationFun = (r: Result) => r
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.map(transformationFun)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.map(transformationFun)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -129,8 +168,11 @@ class MapFutureBenchmark extends OpFutureBenchmark {
 class FilterFutureBenchmark extends OpFutureBenchmark {
   private[this] final val transformationFun = (r: Result) => true
 
-  @tailrec private[this] final def next(from: Int, to: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (from < to) { next(from + 1, to, f.filter(transformationFun)) } else { f }
+  @tailrec private[this] final def next(from: Int, to: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (from < to) { next(from + 1, to, f.filter(transformationFun)) } else {
+      f
+    }
 
   @Benchmark final def pre(): Boolean =
     await(next(0, recursion, pre_s_p.future)(executionContext))
@@ -146,8 +188,9 @@ class FilterFutureBenchmark extends OpFutureBenchmark {
 class TransformFutureBenchmark extends OpFutureBenchmark {
   private[this] final val transformationFun = (t: Try[Result]) => t
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.transform(transformationFun)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.transform(transformationFun)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -161,10 +204,12 @@ class TransformFutureBenchmark extends OpFutureBenchmark {
 }
 
 class TransformWithFutureBenchmark extends OpFutureBenchmark {
-  private[this] final val transformationFun = (t: Try[Result]) => Future.fromTry(t)
+  private[this] final val transformationFun = (t: Try[Result]) =>
+    Future.fromTry(t)
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.transformWith(transformationFun)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.transformWith(transformationFun)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -178,10 +223,14 @@ class TransformWithFutureBenchmark extends OpFutureBenchmark {
 }
 
 class FlatMapFutureBenchmark extends OpFutureBenchmark {
-  private[this] final val transformationFun = (t: Result) => Future.successful(t)
+  private[this] final val transformationFun = (t: Result) =>
+    Future.successful(t)
 
-  @tailrec private[this] final def next(from: Int, to: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (from < to) { next(from + 1, to, f.flatMap(transformationFun)) } else { f }
+  @tailrec private[this] final def next(from: Int, to: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (from < to) { next(from + 1, to, f.flatMap(transformationFun)) } else {
+      f
+    }
 
   @Benchmark final def pre(): Boolean =
     await(next(0, recursion, pre_s_p.future)(executionContext))
@@ -195,10 +244,12 @@ class FlatMapFutureBenchmark extends OpFutureBenchmark {
 }
 
 class RecoverFutureBenchmark extends OpFutureBenchmark {
-  private[this] final val recoverFunStdlib: PartialFunction[Throwable, Result] = { case _ => aFailure.get }
+  private[this] final val recoverFunStdlib
+    : PartialFunction[Throwable, Result] = { case _ => aFailure.get }
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.recover(recoverFunStdlib)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.recover(recoverFunStdlib)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_f_p.future)(executionContext))
@@ -212,10 +263,12 @@ class RecoverFutureBenchmark extends OpFutureBenchmark {
 }
 
 class RecoverWithFutureBenchmark extends OpFutureBenchmark {
-  private[this] final val recoverWithFunStdlib: PartialFunction[Throwable, Future[Result]] = { case _ => pre_f_p.future }
+  private[this] final val recoverWithFunStdlib
+    : PartialFunction[Throwable, Future[Result]] = { case _ => pre_f_p.future }
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.recoverWith(recoverWithFunStdlib)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.recoverWith(recoverWithFunStdlib)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_f_p.future)(executionContext))
@@ -228,12 +281,12 @@ class RecoverWithFutureBenchmark extends OpFutureBenchmark {
   }
 }
 
-
 class ZipWithFutureBenchmark extends OpFutureBenchmark {
   private[this] final val transformationFun = (t1: Result, t2: Result) => t2
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.zipWith(f)(transformationFun)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.zipWith(f)(transformationFun)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -247,10 +300,13 @@ class ZipWithFutureBenchmark extends OpFutureBenchmark {
 }
 
 class AndThenFutureBenchmark extends OpFutureBenchmark {
-  private[this] final val effect: PartialFunction[Try[Result], Unit] = { case t: Try[Result] => () }
-  
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.andThen(effect)) } else { f }
+  private[this] final val effect: PartialFunction[Try[Result], Unit] = {
+    case t: Try[Result] => ()
+  }
+
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, f.andThen(effect)) } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -265,14 +321,27 @@ class AndThenFutureBenchmark extends OpFutureBenchmark {
 
 class VariousFutureBenchmark extends OpFutureBenchmark {
   private[this] final val mapFun: Result => Result = _.toUpperCase
-  private[this] final val flatMapFun: Result => Future[Result] = r => Future.successful(r)
+  private[this] final val flatMapFun: Result => Future[Result] = r =>
+    Future.successful(r)
   private[this] final val filterFun: Result => Boolean = _ ne null
-  private[this] final val transformFun: Try[Result] => Try[Result] = _ => throw null
-  private[this] final val recoverFun: PartialFunction[Throwable, Result] = { case _ => "OK" }
-  private[this] final val keepLeft: (Result, Result) => Result = (a,b) => a
+  private[this] final val transformFun: Try[Result] => Try[Result] = _ =>
+    throw null
+  private[this] final val recoverFun: PartialFunction[Throwable, Result] = {
+    case _ => "OK"
+  }
+  private[this] final val keepLeft: (Result, Result) => Result = (a, b) => a
 
-  @tailrec private[this] final def next(i: Int, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, f.map(mapFun).flatMap(flatMapFun).filter(filterFun).zipWith(f)(keepLeft).transform(transformFun).recover(recoverFun)) } else { f }
+  @tailrec private[this] final def next(i: Int, f: Future[Result])(
+      implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) {
+      next(i - 1,
+           f.map(mapFun)
+             .flatMap(flatMapFun)
+             .filter(filterFun)
+             .zipWith(f)(keepLeft)
+             .transform(transformFun)
+             .recover(recoverFun))
+    } else { f }
 
   @Benchmark final def pre(): Boolean =
     await(next(recursion, pre_s_p.future)(executionContext))
@@ -287,7 +356,7 @@ class VariousFutureBenchmark extends OpFutureBenchmark {
 
 class LoopFutureBenchmark extends OpFutureBenchmark {
   private[this] val depth = 50
-  private[this] val size  = 2000
+  private[this] val size = 2000
 
   final def pre_loop(i: Int)(implicit ec: ExecutionContext): Future[Int] =
     if (i % depth == 0) Future.successful(i + 1).flatMap(pre_loop)
@@ -298,8 +367,6 @@ class LoopFutureBenchmark extends OpFutureBenchmark {
     if (i % depth == 0) Future(i + 1).flatMap(post_loop)
     else if (i < size) post_loop(i + 1).flatMap(i => Future(i))
     else Future(i)
-
-
   @Benchmark final def pre(): Boolean = {
     implicit val ec = executionContext
     await(pre_s_p.future.flatMap(s => pre_loop(recursion).map(_ => s)))
@@ -317,13 +384,17 @@ class LoopFutureBenchmark extends OpFutureBenchmark {
 class SequenceFutureBenchmark extends OpFutureBenchmark {
   @Benchmark final def pre(): Boolean = {
     implicit val ec = executionContext
-    await(Future.sequence(1 to recursion map { _ => pre_s_p.future }))
+    await(Future.sequence(1 to recursion map { _ =>
+      pre_s_p.future
+    }))
   }
 
   @Benchmark final def post(): Boolean = {
     implicit val ec = executionContext
     val post_p = Promise[Result]()
-    val f = Future.sequence(1 to recursion map { _ => post_p.future })
+    val f = Future.sequence(1 to recursion map { _ =>
+      post_p.future
+    })
     post_p.complete(aSuccess)
     await(f)
   }
@@ -332,21 +403,28 @@ class SequenceFutureBenchmark extends OpFutureBenchmark {
 class FirstCompletedOfFutureBenchmark extends OpFutureBenchmark {
   @Benchmark final def pre(): Boolean = {
     implicit val ec = executionContext
-    await(Future.firstCompletedOf(1 to recursion map { _ => pre_s_p.future }))
+    await(Future.firstCompletedOf(1 to recursion map { _ =>
+      pre_s_p.future
+    }))
   }
 
   @Benchmark final def post(): Boolean = {
     implicit val ec = executionContext
     val post_p = Promise[Result]()
-    val f = Future.firstCompletedOf(1 to recursion map { _ => post_p.future })
+    val f = Future.firstCompletedOf(1 to recursion map { _ =>
+      post_p.future
+    })
     post_p.complete(aSuccess)
     await(f)
   }
 }
 
 class CompleteFutureBenchmark extends OpFutureBenchmark {
-  @tailrec private[this] final def next(i: Int, p: Promise[Result], r: Try[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, { p.tryComplete(r); p }, r) } else { p.future }
+  @tailrec private[this] final def next(
+      i: Int,
+      p: Promise[Result],
+      r: Try[Result])(implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, { p.tryComplete(r); p }, r) } else { p.future }
 
   @Benchmark final def success(): Boolean = {
     val f = next(recursion, Promise[Result](), aSuccess)(executionContext)
@@ -360,8 +438,11 @@ class CompleteFutureBenchmark extends OpFutureBenchmark {
 }
 
 class CompleteWithFutureBenchmark extends OpFutureBenchmark {
-  @tailrec private[this] final def next(i: Int, p: Promise[Result], f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, { p.tryCompleteWith(f); p }, f) } else { p.future }
+  @tailrec private[this] final def next(
+      i: Int,
+      p: Promise[Result],
+      f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, { p.tryCompleteWith(f); p }, f) } else { p.future }
 
   @Benchmark final def success(): Boolean = {
     val f = next(recursion, Promise[Result](), pre_s_p.future)(executionContext)
@@ -375,12 +456,19 @@ class CompleteWithFutureBenchmark extends OpFutureBenchmark {
 }
 
 class CallbackFutureBenchmark extends OpFutureBenchmark {
-  final class Callback(recursion: Int) extends CountDownLatch(recursion) with Function1[Try[Result], Unit] {
-    override def apply(t:Try[Result]): Unit = this.countDown()
+  final class Callback(recursion: Int)
+      extends CountDownLatch(recursion)
+      with Function1[Try[Result], Unit] {
+    override def apply(t: Try[Result]): Unit = this.countDown()
   }
 
-  @tailrec private[this] final def next(i: Int, callback: Callback, f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
-      if (i > 0) { next(i - 1, callback, { f.onComplete(callback); f }) } else { f }
+  @tailrec private[this] final def next(
+      i: Int,
+      callback: Callback,
+      f: Future[Result])(implicit ec: ExecutionContext): Future[Result] =
+    if (i > 0) { next(i - 1, callback, { f.onComplete(callback); f }) } else {
+      f
+    }
 
   @Benchmark final def pre(): Unit = {
     val callback = new Callback(recursion)

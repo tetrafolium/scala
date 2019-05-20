@@ -3,8 +3,16 @@ package scala.sys.process
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.junit.Test
-import java.io.{InputStream, OutputStream, PipedInputStream, PipedOutputStream, ByteArrayInputStream,
-  ByteArrayOutputStream, IOException, Closeable}
+import java.io.{
+  InputStream,
+  OutputStream,
+  PipedInputStream,
+  PipedOutputStream,
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  IOException,
+  Closeable
+}
 import java.lang.reflect.InvocationTargetException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,7 +33,10 @@ class PipedProcessTest {
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = false)
     val b = new ProcessMock(error = false)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false), new ProcessBuilderMock(b, error = false), io, false)
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false),
+                                   new ProcessBuilderMock(b, error = false),
+                                   io,
+                                   false)
     val f = Future(p.callRunAndExitValue(source, sink))
     waitForIt(readyOrNot(f), label = "normallyEnd")
     assertEquals(Some(0), Await.result(f, TestDuration.Standard))
@@ -39,14 +50,18 @@ class PipedProcessTest {
   def shouldSyncRunAndExitValue(): Unit = {
     val io = BasicIO(false, ProcessLogger(_ => ()))
     val source = new PipeSourceMock {
-      override def runloop(src: InputStream, dst: OutputStream) = Thread.sleep(5) //used to simulate the block
+      override def runloop(src: InputStream, dst: OutputStream) =
+        Thread.sleep(5) //used to simulate the block
     }
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = false)
     val b = new ProcessMock(error = false)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false), new ProcessBuilderMock(b, error = false), io, false) {
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false),
+                                   new ProcessBuilderMock(b, error = false),
+                                   io,
+                                   false) {
       override def newSource = source
-      override def newSink   = sink
+      override def newSink = sink
     }
 
     //p.exitValue()
@@ -63,7 +78,10 @@ class PipedProcessTest {
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = false)
     val b = new ProcessMock(error = false)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false), new ProcessBuilderMock(b, error = true), io, false)
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false),
+                                   new ProcessBuilderMock(b, error = true),
+                                   io,
+                                   false)
     val f = Future {
       ignoring(classOf[IOException]) {
         p.callRunAndExitValue(source, sink)
@@ -84,7 +102,10 @@ class PipedProcessTest {
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = false)
     val b = new ProcessMock(error = false)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = true), new ProcessBuilderMock(b, error = false), io, false)
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = true),
+                                   new ProcessBuilderMock(b, error = false),
+                                   io,
+                                   false)
     val f = Future {
       ignoring(classOf[IOException]) {
         p.callRunAndExitValue(source, sink)
@@ -105,7 +126,10 @@ class PipedProcessTest {
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = true)
     val b = new ProcessMock(error = false)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false), new ProcessBuilderMock(b, error = false), io, false)
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false),
+                                   new ProcessBuilderMock(b, error = false),
+                                   io,
+                                   false)
     val f = Future {
       p.callRunAndExitValue(source, sink)
     }
@@ -124,7 +148,10 @@ class PipedProcessTest {
     val sink = new PipeSinkMock
     val a = new ProcessMock(error = false)
     val b = new ProcessMock(error = true)
-    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false), new ProcessBuilderMock(b, error = false), io, false)
+    val p = new PipedProcessesMock(new ProcessBuilderMock(a, error = false),
+                                   new ProcessBuilderMock(b, error = false),
+                                   io,
+                                   false)
     val f = Future {
       p.callRunAndExitValue(source, sink)
     }
@@ -139,8 +166,7 @@ class PipedProcessTest {
 @RunWith(classOf[JUnit4])
 class PipeSourceSinkTest {
   def throwsIOException(f: => Unit) = {
-    try { f; false }
-    catch { case _: IOException => true }
+    try { f; false } catch { case _: IOException => true }
   }
 
   class PipeSink extends Process.PipeSink("TestPipeSink") {
@@ -168,7 +194,9 @@ class PipeSourceSinkTest {
     override def close() = closed = true
   }
   class DebugOutputStream extends ByteArrayOutputStream with CloseChecking
-  class DebugInputStream(s: String) extends ByteArrayInputStream(s.getBytes()) with CloseChecking
+  class DebugInputStream(s: String)
+      extends ByteArrayInputStream(s.getBytes())
+      with CloseChecking
   class DebugInfinityInputStream extends InputStream with CloseChecking {
     def read() = 1
   }
@@ -271,7 +299,8 @@ class ProcessMock(error: Boolean) extends Process {
   def destroy(): Unit = { destroyCount += 1 }
 }
 
-class ProcessBuilderMock(process: Process, error: Boolean) extends ProcessBuilder.AbstractBuilder {
+class ProcessBuilderMock(process: Process, error: Boolean)
+    extends ProcessBuilder.AbstractBuilder {
   override def run(io: ProcessIO): Process = {
     if (error) {
       throw new IOException()
@@ -284,20 +313,27 @@ class PipeSinkMock extends Process.PipeSink("PipeSinkMock") {
   var releaseCount = 0
   // no work to do
   override def runloop(src: InputStream, dst: OutputStream) = BasicIO close dst
-  override def release(): Unit = { releaseCount += 1 ; super.release() }
+  override def release(): Unit = { releaseCount += 1; super.release() }
 }
 
 class PipeSourceMock extends Process.PipeSource("PipeSourceMock") {
   var releaseCount = 0
   // no work to do
   override def runloop(src: InputStream, dst: OutputStream) = BasicIO close src
-  override def release(): Unit = { releaseCount += 1 ; super.release() }
+  override def release(): Unit = { releaseCount += 1; super.release() }
 }
 
-class PipedProcessesMock(a: ProcessBuilder, b: ProcessBuilder, defaultIO: ProcessIO, toError: Boolean)
-  extends Process.PipedProcesses(a, b, defaultIO, toError) {
-  def callRunAndExitValue(source: Process.PipeSource, sink: Process.PipeSink) = {
-    val m = classOf[Process.PipedProcesses].getDeclaredMethod("runAndExitValue", classOf[Process.PipeSource], classOf[Process.PipeSink])
+class PipedProcessesMock(a: ProcessBuilder,
+                         b: ProcessBuilder,
+                         defaultIO: ProcessIO,
+                         toError: Boolean)
+    extends Process.PipedProcesses(a, b, defaultIO, toError) {
+  def callRunAndExitValue(source: Process.PipeSource,
+                          sink: Process.PipeSink) = {
+    val m = classOf[Process.PipedProcesses].getDeclaredMethod(
+      "runAndExitValue",
+      classOf[Process.PipeSource],
+      classOf[Process.PipeSink])
     m.setAccessible(true)
     try m.invoke(this, source, sink).asInstanceOf[Option[Int]]
     catch {

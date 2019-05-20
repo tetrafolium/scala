@@ -1,7 +1,7 @@
 package scala.tools.nsc
 package typechecker
 
-import org.junit.{ After, Before, Test }
+import org.junit.{After, Before, Test}
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 

@@ -18,18 +18,18 @@ package util
 import java.lang.System.{lineSeparator => EOL}
 
 /** This object provides utility methods to extract elements
- *  from Strings.
- *
- *  @author Martin Odersky
- *  @version 1.0
- */
+  *  from Strings.
+  *
+  *  @author Martin Odersky
+  *  @version 1.0
+  */
 trait StringOps {
-  def oempty(xs: String*)        = xs filterNot (x => x == null || x == "")
+  def oempty(xs: String*) = xs filterNot (x => x == null || x == "")
   def ojoin(xs: String*): String = oempty(xs: _*) mkString " "
   def longestCommonPrefix(xs: List[String]): String = xs match {
     case Nil      => ""
     case w :: Nil => w
-    case _        =>
+    case _ =>
       def lcp(ss: List[String]): String = {
         val w :: ws = ss
         if (w == "") ""
@@ -38,18 +38,20 @@ trait StringOps {
       }
       lcp(xs)
   }
+
   /** Like String#trim, but trailing whitespace only.
-   */
+    */
   def trimTrailingSpace(s: String): String = {
     var end = s.length
-    while (end > 0 && s.charAt(end - 1).isWhitespace)
-      end -= 1
+    while (end > 0 && s.charAt(end - 1).isWhitespace) end -= 1
 
     if (end == s.length) s
     else s.substring(0, end)
   }
+
   /** Breaks the string into lines and strips each line before reassembling. */
-  def trimAllTrailingSpace(s: String): String = s.linesIterator.map(trimTrailingSpace).mkString(EOL)
+  def trimAllTrailingSpace(s: String): String =
+    s.linesIterator.map(trimTrailingSpace).mkString(EOL)
 
   def decompose(str: String, sep: Char): List[String] = {
     def ws(start: Int): List[String] =
@@ -65,16 +67,20 @@ trait StringOps {
 
   def words(str: String): List[String] = decompose(str, ' ')
 
-  def splitWhere(str: String, f: Char => Boolean, doDropIndex: Boolean = false): Option[(String, String)] =
+  def splitWhere(str: String,
+                 f: Char => Boolean,
+                 doDropIndex: Boolean = false): Option[(String, String)] =
     splitAt(str, str indexWhere f, doDropIndex)
 
-  def splitAt(str: String, idx: Int, doDropIndex: Boolean = false): Option[(String, String)] =
+  def splitAt(str: String,
+              idx: Int,
+              doDropIndex: Boolean = false): Option[(String, String)] =
     if (idx == -1) None
     else Some((str take idx, str drop (if (doDropIndex) idx + 1 else idx)))
 
   /** Returns a string meaning "n elements".
-   *  Don't try an element such as "index" with irregular plural.
-   */
+    *  Don't try an element such as "index" with irregular plural.
+    */
   def countElementsAsString(n: Int, element: String): String =
     n match {
       case 0 => s"no ${element}s"
@@ -83,8 +89,8 @@ trait StringOps {
     }
 
   /** Turns a count into a friendly English description if n<=4.
-   *  Otherwise, a scary math representation.
-   */
+    *  Otherwise, a scary math representation.
+    */
   def countAsString(n: Int): String =
     n match {
       case 0 => "none"

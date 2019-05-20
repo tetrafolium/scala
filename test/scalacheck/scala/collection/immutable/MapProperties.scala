@@ -11,19 +11,34 @@ import org.scalacheck.commands.Commands
 import scala.collection.mutable
 import scala.util.{Success, Try}
 
-object MapProperties extends Properties("immutable.Map builder implementations"){
+object MapProperties
+    extends Properties("immutable.Map builder implementations") {
 
   type K = String
   type V = String
   type T = (K, V)
 
-  property("ListMap builder stateful testing") = new MapBuilderStateProperties(HashMap.empty[K, V], ListMap.newBuilder[K, V]).property()
-  property("SortedMap builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[K, V], SortedMap.newBuilder[K, V]).property()
-  property("HashMap builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[K, V], HashMap.newBuilder[K, V]).property()
-  property("Map builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[K, V], Map.newBuilder[K, V]).property()
-  property("VectorMap builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[K, V], VectorMap.newBuilder[K, V]).property()
-  property("IntMap builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[Int, Long], IntMap.newBuilder[Long]).property()
-  property("LongMap builder stateful testing") = new MapBuilderStateProperties(ListMap.empty[Long, Int], LongMap.newBuilder[Int]).property()
+  property("ListMap builder stateful testing") =
+    new MapBuilderStateProperties(HashMap.empty[K, V], ListMap.newBuilder[K, V])
+      .property()
+  property("SortedMap builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[K, V],
+                                  SortedMap.newBuilder[K, V]).property()
+  property("HashMap builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[K, V], HashMap.newBuilder[K, V])
+      .property()
+  property("Map builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[K, V], Map.newBuilder[K, V])
+      .property()
+  property("VectorMap builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[K, V],
+                                  VectorMap.newBuilder[K, V]).property()
+  property("IntMap builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[Int, Long],
+                                  IntMap.newBuilder[Long]).property()
+  property("LongMap builder stateful testing") =
+    new MapBuilderStateProperties(ListMap.empty[Long, Int],
+                                  LongMap.newBuilder[Int]).property()
 
 }
 
@@ -51,8 +66,10 @@ object MapProperties extends Properties("immutable.Map builder implementations")
   * @tparam M the type of map under test
   */
 class MapBuilderStateProperties[K, V, ControlMap <: Map[K, V], M <: Map[K, V]](
-  newEmptyControlMap: => ControlMap,
-  newBuilder: => mutable.Builder[(K, V), M])(implicit tupleGen: Arbitrary[(K, V)]) extends Commands {
+    newEmptyControlMap: => ControlMap,
+    newBuilder: => mutable.Builder[(K, V), M])(
+    implicit tupleGen: Arbitrary[(K, V)])
+    extends Commands {
 
   override type State = ControlMap
   override type Sut = mutable.Builder[(K, V), M]
@@ -60,9 +77,9 @@ class MapBuilderStateProperties[K, V, ControlMap <: Map[K, V], M <: Map[K, V]](
   override def genInitialState: Gen[ControlMap] = newEmptyControlMap
 
   override def canCreateNewSut(
-                                newState: State,
-                                initSuts: scala.Iterable[State],
-                                runningSuts: scala.Iterable[mutable.Builder[(K, V), M]]) = true
+      newState: State,
+      initSuts: scala.Iterable[State],
+      runningSuts: scala.Iterable[mutable.Builder[(K, V), M]]) = true
 
   override def newSut(state: ControlMap) = newBuilder.addAll(state)
 
@@ -89,7 +106,8 @@ class MapBuilderStateProperties[K, V, ControlMap <: Map[K, V], M <: Map[K, V]](
   }
   case object Result extends Command {
     override type Result = M
-    override def postCondition(state: ControlMap, result: Try[Result]) = result == Success(state)
+    override def postCondition(state: ControlMap, result: Try[Result]) =
+      result == Success(state)
     override def run(sut: mutable.Builder[(K, V), M]) = sut.result()
     override def nextState(state: ControlMap) = state
     override def preCondition(state: ControlMap) = true

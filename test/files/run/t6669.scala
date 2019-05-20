@@ -14,20 +14,26 @@ object Test extends App {
   //val currentLocationCpFragment = File.pathSeparator + "."
 
   // let's assume dirs don't normally have dots
-  def hasCurrentDir(s: String): Boolean = s.linesIterator.next.split("[ ,:;]").exists(_.endsWith("."))
+  def hasCurrentDir(s: String): Boolean =
+    s.linesIterator.next.split("[ ,:;]").exists(_.endsWith("."))
 
   // now make sure we saw the '.' in the classpath
   val msg1 = baos.toString()
-  assert(hasCurrentDir(msg1), s"Did not see '.' in the default class path. Full results were:\n$msg1")
+  assert(
+    hasCurrentDir(msg1),
+    s"Did not see '.' in the default class path. Full results were:\n$msg1")
 
   // then test again with a user specified classpath
   baos.reset
 
   (scala.Console withOut ps) {
-    scala.tools.scalap.Main.main(Array("-verbose", "-cp", "whatever", "java.lang.Object"))
+    scala.tools.scalap.Main
+      .main(Array("-verbose", "-cp", "whatever", "java.lang.Object"))
   }
 
   // now make sure we did not see the '.' in the classpath
   val msg2 = baos.toString()
-  assert(!hasCurrentDir(msg2), s"Did see '.' in the user specified class path. Full results were:\n$msg2")
+  assert(
+    !hasCurrentDir(msg2),
+    s"Did see '.' in the user specified class path. Full results were:\n$msg2")
 }

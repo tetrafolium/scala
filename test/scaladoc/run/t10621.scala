@@ -9,9 +9,9 @@ object Test extends ScaladocModelTest {
     import access._
 
     val pkg = root._package("test")
-    val baseTrait    = pkg._trait("BaseTrait")
-    val baseClass    = pkg._class("BaseClass")
-    val test         = pkg._class("Test")
+    val baseTrait = pkg._trait("BaseTrait")
+    val baseClass = pkg._class("BaseClass")
+    val test = pkg._class("Test")
 
     def printBoth(supr: DocTemplateEntity, name: String) = {
       println(supr._member(name).comment.map(_.body))

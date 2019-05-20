@@ -1,4 +1,3 @@
-
 package top {
   package middle {
     class C {

@@ -5,7 +5,7 @@ object Test {
 
   val func1 = (x: A) => { x != "x" }
 
-  val func2  = (x: A) => { x != "x" }: Boolean
+  val func2 = (x: A) => { x != "x" }: Boolean
 
   val func3: Function1[A, Boolean] = (x) => { x != "x" }
 

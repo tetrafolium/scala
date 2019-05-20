@@ -11,10 +11,11 @@ class FileUtilsTest {
     val fileTest = File.createTempFile("FileUtilsTest", "t1")
     val fileExpected = File.createTempFile("FileUtilsTest", "t2")
 
-    val sTest = FileUtils.newAsyncBufferedWriter(new FileWriter(fileTest), false)
+    val sTest =
+      FileUtils.newAsyncBufferedWriter(new FileWriter(fileTest), false)
     val sExpected = new BufferedWriter(new FileWriter(fileExpected))
 
-    def writeBoth(s:String, asChars: Boolean) = {
+    def writeBoth(s: String, asChars: Boolean) = {
       if (asChars) {
         sTest.write(s.toCharArray)
         sExpected.write(s.toCharArray)
@@ -33,7 +34,7 @@ class FileUtilsTest {
     sTest.close()
     sExpected.close()
 
-    assertEquals(fileExpected.length(),fileTest.length())
+    assertEquals(fileExpected.length(), fileTest.length())
 
     val expIn = new BufferedReader(new FileReader(fileExpected))
     val testIn = new BufferedReader(new FileReader(fileTest))
@@ -64,14 +65,14 @@ class FileUtilsTest {
       val sExpected = new BufferedWriter(new FileWriter(fileExpected))
 
       val t1 = System.nanoTime()
-      List.tabulate(10000) {i =>
+      List.tabulate(10000) { i =>
         sTest.write(s"line $i text;")
         sTest.newLine
       }
       val t2 = System.nanoTime()
       sTest.close()
       val t3 = System.nanoTime()
-      List.tabulate(10000) {i =>
+      List.tabulate(10000) { i =>
         sExpected.write(s"line $i text;")
         sExpected.newLine
       }

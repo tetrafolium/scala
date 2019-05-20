@@ -15,8 +15,6 @@ import org.openjdk.jmh.infra._
 class SetBenchmark {
 
   var base: Set[String] = _
-
-
   @Setup(Level.Trial) def initKeys(): Unit = {
     base = Set("a", "b", "c", "d")
   }

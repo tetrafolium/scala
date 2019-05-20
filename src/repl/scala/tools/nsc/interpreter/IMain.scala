@@ -21,10 +21,21 @@ import PartialFunction.cond
 import scala.language.implicitConversions
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.reflect.internal.{FatalError, Flags, MissingRequirementError, NoPhase}
+import scala.reflect.internal.{
+  FatalError,
+  Flags,
+  MissingRequirementError,
+  NoPhase
+}
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.{ClassTag, classTag}
-import scala.reflect.internal.util.{AbstractFileClassLoader, BatchSourceFile, ListOfNil, Position, SourceFile}
+import scala.reflect.internal.util.{
+  AbstractFileClassLoader,
+  BatchSourceFile,
+  ListOfNil,
+  Position,
+  SourceFile
+}
 import scala.tools.nsc.{Global, Settings}
 import scala.tools.nsc.interpreter.StdReplTags.tagOfStdReplVals
 import scala.tools.nsc.io.AbstractFile
@@ -37,7 +48,6 @@ import scala.tools.nsc.util.{stackTraceString, stringFromWriter}
 import scala.tools.nsc.interpreter.Results.{Error, Incomplete, Result, Success}
 import scala.tools.nsc.util.Exceptional.rootCause
 import scala.util.control.NonFatal
-
 
 /** An interpreter for Scala code.
   *
@@ -71,16 +81,23 @@ import scala.util.control.NonFatal
   *  @author Moez A. Abdel-Gawad
   *  @author Lex Spoon
   */
-class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoader], compilerSettings: Settings, val reporter: ReplReporter)
-  extends Repl with Imports with PresentationCompilation with Closeable {
+class IMain(val settings: Settings,
+            parentClassLoaderOverride: Option[ClassLoader],
+            compilerSettings: Settings,
+            val reporter: ReplReporter)
+    extends Repl
+    with Imports
+    with PresentationCompilation
+    with Closeable {
 
-  def this(interpreterSettings: Settings, reporter: ReplReporter) = this(interpreterSettings, None, interpreterSettings, reporter)
+  def this(interpreterSettings: Settings, reporter: ReplReporter) =
+    this(interpreterSettings, None, interpreterSettings, reporter)
 
   import reporter.{debug => repldbg}
 
-  private var bindExceptions                  = true        // whether to bind the lastException variable
-  private var _executionWrapper               = ""          // code to be wrapped around all lines
-  private var label                           = "<console>" // compilation unit name for reporting
+  private var bindExceptions = true // whether to bind the lastException variable
+  private var _executionWrapper = "" // code to be wrapped around all lines
+  private var label = "<console>" // compilation unit name for reporting
 
   /** We're going to go to some trouble to initialize the compiler asynchronously.
     *  It's critical that nothing call into it until it's been initialized or we will
@@ -89,17 +106,20 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     *  use a lazy val to ensure that any attempt to use the compiler object waits
     *  on the future.
     */
-  private var _classLoader: AbstractFileClassLoader = null  // active classloader
-  private var _runtimeClassLoader: URLClassLoader = null    // wrapper exposing addURL
+  private var _classLoader: AbstractFileClassLoader = null // active classloader
+  private var _runtimeClassLoader
+    : URLClassLoader = null // wrapper exposing addURL
 
   def compilerClasspath: Seq[java.net.URL] = (
     if (_initializeComplete) global.classPath.asURLs
-    else new PathResolver(settings, global.closeableRegistry).resultAsURLs  // the compiler's classpath
-    )
+    else
+      new PathResolver(settings, global.closeableRegistry).resultAsURLs // the compiler's classpath
+  )
 
   // Run the code body with the given boolean settings flipped to true.
   def withoutWarnings[T](body: => T): T =
-    reporter.withoutPrintingResults(IMain.withSuppressedSettings(settings, global)(body))
+    reporter.withoutPrintingResults(
+      IMain.withSuppressedSettings(settings, global)(body))
 
   def withSuppressedSettings(body: => Unit): Unit =
     IMain.withSuppressedSettings(settings, global)(body)
@@ -108,7 +128,8 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   override def withLabel[A](temp: String)(body: => A): A = {
     val saved = label
     label = temp
-    try body finally label = saved
+    try body
+    finally label = saved
   }
 
   override def visibleSettings: SettingSet = settings.visibleSettings
@@ -118,7 +139,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     ok && rest.isEmpty
   }
 
-  object replOutput extends ReplOutput(settings.Yreploutdir) { }
+  object replOutput extends ReplOutput(settings.Yreploutdir) {}
 
   // Used in a test case.
   def showDirectory: String = {
@@ -128,7 +149,6 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   }
 
   lazy val isClassBased: Boolean = settings.Yreplclassbased.value
-
 
   override def initializeComplete = _initializeComplete
   private[this] var _initializeComplete = false
@@ -149,7 +169,8 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       val run = new compiler.Run()
       assert(run.typerPhase != NoPhase, "REPL requires a typer phase.")
       IMain.withSuppressedSettings(compilerSettings, compiler) {
-        run compileSources List(new BatchSourceFile("<init>", "class $repl_$init { }"))
+        run compileSources List(
+          new BatchSourceFile("<init>", "class $repl_$init { }"))
       }
 
       // there shouldn't be any errors yet; just in case, print them if we're debugging
@@ -159,27 +180,28 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       compiler.reporter = reporter
       _initializeComplete = true
       compiler
-    }
-    catch AbstractOrMissingHandler()
+    } catch AbstractOrMissingHandler()
   }
 
   import global._
-  import definitions.{ ObjectClass, termMember, dropNullaryMethod}
+  import definitions.{ObjectClass, termMember, dropNullaryMethod}
 
   override def classPathString = global.classPath.asClassPathString
 
   lazy val runtimeMirror = ru.runtimeMirror(classLoader)
 
-  private def noFatal(body: => Symbol): Symbol = try body catch { case _: FatalError => NoSymbol }
+  private def noFatal(body: => Symbol): Symbol =
+    try body
+    catch { case _: FatalError => NoSymbol }
 
-  def getClassIfDefined(path: String)  = (
+  def getClassIfDefined(path: String) = (
     noFatal(runtimeMirror staticClass path)
       orElse noFatal(rootMirror staticClass path)
-    )
+  )
   def getModuleIfDefined(path: String) = (
     noFatal(runtimeMirror staticModule path)
       orElse noFatal(rootMirror staticModule path)
-    )
+  )
 
   implicit class ReplTypeOps(tp: Type) {
     def andAlso(fn: Type => Type): Type = if (tp eq NoType) tp else fn(tp)
@@ -211,26 +233,26 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   } with MemberHandlers
   import memberHandlers._
 
-
-  override def quietRun(code: String): Result = reporter.withoutPrintingResults(interpret(code))
+  override def quietRun(code: String): Result =
+    reporter.withoutPrintingResults(interpret(code))
 
   /** takes AnyRef because it may be binding a Throwable or an Exceptional */
   private def withLastExceptionLock[T](body: => T, alt: => T): T = {
     assert(bindExceptions, "withLastExceptionLock called incorrectly.")
     bindExceptions = false
 
-    try reporter.withoutPrintingResults(body) catch { case NonFatal(t) =>
-      repldbg("withLastExceptionLock: " + rootCause(t))
-      reporter.trace(stackTraceString(rootCause(t)))
-      alt
+    try reporter.withoutPrintingResults(body)
+    catch {
+      case NonFatal(t) =>
+        repldbg("withLastExceptionLock: " + rootCause(t))
+        reporter.trace(stackTraceString(rootCause(t)))
+        alt
     } finally bindExceptions = true
   }
 
   def executionWrapper = _executionWrapper
   def setExecutionWrapper(code: String) = _executionWrapper = code
   override def clearExecutionWrapper() = _executionWrapper = ""
-
-
 
   /**
     * Adds all specified jars to the compile and runtime classpaths.
@@ -249,10 +271,10 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   /** Parent classloader.  Overridable. */
   protected def parentClassLoader: ClassLoader = {
     // might be null if we're on the boot classpath
-    parentClassLoaderOverride.
-      orElse(settings.explicitParentLoader).
-      orElse(Option(replClass.getClassLoader())).
-      getOrElse(ClassLoader.getSystemClassLoader)
+    parentClassLoaderOverride
+      .orElse(settings.explicitParentLoader)
+      .orElse(Option(replClass.getClassLoader()))
+      .getOrElse(ClassLoader.getSystemClassLoader)
   }
 
   /* A single class loader is used for all commands interpreted by this Interpreter.
@@ -267,7 +289,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
        - Objects, classes, and methods cannot be rebound.  Instead, definitions
          shadow the old ones, and old code objects refer to the old
          definitions.
-  */
+   */
   def resetClassLoader() = {
     repldbg("Setting new classloader: was " + _classLoader)
     _classLoader = null
@@ -288,7 +310,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       case s if nme.keywords(newTermName(s)) => s"`$s`"
       case s                                 => s
     } mkString "."
-    )
+  )
   def readRootPath(readPath: String) = getModuleIfDefined(readPath)
 
   abstract class PhaseDependentOps {
@@ -296,7 +318,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
     def path(name: => Name): String = shift(path(symbolOfName(name)))
     def path(sym: Symbol): String = backticked(shift(sym.fullName))
-    def sig(sym: Symbol): String  = shift(sym.defString)
+    def sig(sym: Symbol): String = shift(sym.defString)
   }
   object typerOp extends PhaseDependentOps {
     def shift[T](op: => T): T = exitingTyper(op)
@@ -306,8 +328,11 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   }
 
   override def originalPath(name: String): String = originalPath(TermName(name))
-  def originalPath(name: Name): String   = translateOriginalPath(typerOp path name)
-  def originalPath(sym: Symbol): String  = translateOriginalPath(typerOp path sym)
+  def originalPath(name: Name): String =
+    translateOriginalPath(typerOp path name)
+  def originalPath(sym: Symbol): String =
+    translateOriginalPath(typerOp path sym)
+
   /** For class based repl mode we use an .INSTANCE accessor. */
   val readInstanceName = if (isClassBased) ".INSTANCE" else ""
   def translateOriginalPath(p: String): String = {
@@ -316,10 +341,11 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       p.replaceFirst(readName, readName + readInstanceName)
     } else p
   }
-  def flatPath(sym: Symbol): String      = flatOp shift sym.javaClassName
+  def flatPath(sym: Symbol): String = flatOp shift sym.javaClassName
 
   override def translatePath(path: String): Option[String] = {
-    val sym = if (path endsWith "$") symbolOfTerm(path.init) else symbolOfIdent(path)
+    val sym =
+      if (path endsWith "$") symbolOfTerm(path.init) else symbolOfIdent(path)
     sym.toOption map flatPath
   }
 
@@ -330,40 +356,49 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   def translateSimpleResource(path: String): Option[String] = {
     if (!(path contains '/') && (path endsWith ".class")) {
       val name = path stripSuffix ".class"
-      val sym = if (name endsWith "$") symbolOfTerm(name.init) else symbolOfIdent(name)
+      val sym =
+        if (name endsWith "$") symbolOfTerm(name.init) else symbolOfIdent(name)
       def pathOf(s: String) = s"${s.replace('.', '/')}.class"
       sym.toOption map (s => pathOf(flatPath(s)))
     } else {
       None
     }
   }
-  override def translateEnclosingClass(n: String): Option[String] = symbolOfTerm(n).enclClass.toOption map flatPath
+  override def translateEnclosingClass(n: String): Option[String] =
+    symbolOfTerm(n).enclClass.toOption map flatPath
 
   /** If unable to find a resource foo.class, try taking foo as a symbol in scope
     *  and use its java class name as a resource to load.
     *
     *  $intp.classLoader classBytes "Bippy" or $intp.classLoader getResource "Bippy.class" just work.
     */
-  private class TranslatingClassLoader(parent: ClassLoader) extends AbstractFileClassLoader(replOutput.dir, parent) {
-    override protected def findAbstractFile(name: String): AbstractFile = super.findAbstractFile(name) match {
-      case null if _initializeComplete => translateSimpleResource(name).map(super.findAbstractFile).orNull
-      case file => file
-    }
+  private class TranslatingClassLoader(parent: ClassLoader)
+      extends AbstractFileClassLoader(replOutput.dir, parent) {
+    override protected def findAbstractFile(name: String): AbstractFile =
+      super.findAbstractFile(name) match {
+        case null if _initializeComplete =>
+          translateSimpleResource(name).map(super.findAbstractFile).orNull
+        case file => file
+      }
   }
   private def makeClassLoader(): AbstractFileClassLoader =
     new TranslatingClassLoader({
-      _runtimeClassLoader = new URLClassLoader(compilerClasspath, parentClassLoader)
+      _runtimeClassLoader =
+        new URLClassLoader(compilerClasspath, parentClassLoader)
       _runtimeClassLoader
     })
 
-  def allDefinedNames: List[Name]  = exitingTyper(replScope.toList.map(_.name).sorted)
+  def allDefinedNames: List[Name] =
+    exitingTyper(replScope.toList.map(_.name).sorted)
   def unqualifiedIds: List[String] = allDefinedNames.map(_.decode).sorted
 
   /** Most recent tree handled which wasn't wholly synthetic. */
   private def mostRecentlyHandledTree: Option[Tree] = {
     prevRequests.reverse foreach { req =>
       req.handlers.reverse foreach {
-        case x: MemberDefHandler if x.definesValue && !isInternalTermName(x.name) => return Some(x.member)
+        case x: MemberDefHandler
+            if x.definesValue && !isInternalTermName(x.name) =>
+          return Some(x.member)
         case _ => ()
       }
     }
@@ -403,12 +438,17 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     // enough to just redefine them together but that may not always
     // be what people want so I'm waiting until I can do it better.
     exitingTyper {
-      req.defines filterNot (s => req.defines contains s.companionSymbol) foreach { newSym =>
-        val oldSym = replScope lookup newSym.name.companionName
-        if (Seq(oldSym, newSym).permutations exists { case Seq(s1, s2) => s1.isClass && s2.isModule }) {
-          replwarn(s"warning: previously defined $oldSym is not a companion to $newSym.")
-          replwarn("Companions must be defined together; you may wish to use :paste mode for this.")
-        }
+      req.defines filterNot (s => req.defines contains s.companionSymbol) foreach {
+        newSym =>
+          val oldSym = replScope lookup newSym.name.companionName
+          if (Seq(oldSym, newSym).permutations exists {
+                case Seq(s1, s2) => s1.isClass && s2.isModule
+              }) {
+            replwarn(
+              s"warning: previously defined $oldSym is not a companion to $newSym.")
+            replwarn(
+              "Companions must be defined together; you may wish to use :paste mode for this.")
+          }
       }
     }
     exitingTyper {
@@ -447,11 +487,14 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     prevRequestList collectFirst { case r if r.defines contains sym => r }
   }
 
-  private[interpreter] def requestFromLine(input: String, synthetic: Boolean = false): Either[Result, Request] =
+  private[interpreter] def requestFromLine(
+      input: String,
+      synthetic: Boolean = false): Either[Result, Request] =
     parse(input) flatMap {
       case (Nil, _) => Left(Error)
       case (trees, firstXmlPos) =>
-        executingRequest = new Request(input, trees, firstXmlPos, synthetic = synthetic)
+        executingRequest =
+          new Request(input, trees, firstXmlPos, synthetic = synthetic)
         reporter.currentRequest = executingRequest
         Right(executingRequest)
     }
@@ -470,8 +513,10 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     *  The return value is whether the line was interpreter successfully,
     *  e.g. that there were no parse errors.
     */
-  override def interpret(line: String): Result = interpret(line, synthetic = false)
-  def interpretSynthetic(line: String): Result = interpret(line, synthetic = true)
+  override def interpret(line: String): Result =
+    interpret(line, synthetic = false)
+  def interpretSynthetic(line: String): Result =
+    interpret(line, synthetic = true)
   override def interpret(line: String, synthetic: Boolean): Result = {
     def loadAndRunReq(req: Request) = classLoader.asContext {
       val res = req.loadAndRun // TODO: move classLoader.asContext into loadAndRun ?
@@ -509,23 +554,26 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     *  @param value     the object value to bind to it
     *  @return          an indication of whether the binding succeeded
     */
-  override def bind(name: String, boundType: String, value: Any, modifiers: List[String] = Nil): Result = {
+  override def bind(name: String,
+                    boundType: String,
+                    value: Any,
+                    modifiers: List[String] = Nil): Result = {
     val bindRep = new ReadEvalPrint()
     bindRep.compile(s"""
                        |object ${bindRep.evalName} {
                        |  var value: $boundType = _
                        |  def set(x: _root_.scala.Any) = value = x.asInstanceOf[$boundType]
                        |}
-      """.stripMargin
-    )
+      """.stripMargin)
     bindRep.callEither("set", value) match {
       case Left(ex) =>
         repldbg(s"Set failed in bind($name, $boundType, $value)")
         repldbg(stackTraceString(ex))
         Error
       case Right(_) =>
-        val mods = if (modifiers.isEmpty) "" else modifiers.mkString("", " ", " ")
-        val line = s"${mods}val $name = ${ bindRep.evalPath }.value"
+        val mods =
+          if (modifiers.isEmpty) "" else modifiers.mkString("", " ", " ")
+        val line = s"${mods}val $name = ${bindRep.evalPath}.value"
         repldbg(s"Interpreting: $line")
         interpret(line)
     }
@@ -536,22 +584,26 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       directlyBoundNames += newTermName(name)
     result
   }
-  def directBind(p: NamedParam): Result                                    = directBind(p.name, p.tpe, p.value)
-  def directBind[T: ru.TypeTag : ClassTag](name: String, value: T): Result = directBind((name, value))
+  def directBind(p: NamedParam): Result = directBind(p.name, p.tpe, p.value)
+  def directBind[T: ru.TypeTag: ClassTag](name: String, value: T): Result =
+    directBind((name, value))
 
-  def namedParam[T: ru.TypeTag : ClassTag](name: String, value: T): NamedParam = NamedParam[T](name, value)
+  def namedParam[T: ru.TypeTag: ClassTag](name: String, value: T): NamedParam =
+    NamedParam[T](name, value)
 
   def rebind(p: NamedParam): Result = {
-    val name     = p.name
-    val newType  = p.tpe
+    val name = p.name
+    val newType = p.tpe
     val tempName = freshInternalVarName()
 
     quietRun(s"val $tempName = $name")
     quietRun(s"val $name = $tempName.asInstanceOf[$newType]")
   }
-  override def quietBind(p: NamedParam): Result                               = reporter.withoutPrintingResults(bind(p))
-  override def bind(p: NamedParam): Result                                    = bind(p.name, p.tpe, p.value)
-  def bind[T: ru.TypeTag : ClassTag](name: String, value: T): Result = bind((name, value))
+  override def quietBind(p: NamedParam): Result =
+    reporter.withoutPrintingResults(bind(p))
+  override def bind(p: NamedParam): Result = bind(p.name, p.tpe, p.value)
+  def bind[T: ru.TypeTag: ClassTag](name: String, value: T): Result =
+    bind((name, value))
 
   /** Reset this interpreter, forgetting all user-specified requests. */
   override def reset(): Unit = {
@@ -573,7 +625,9 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     }
   }
 
-  override lazy val power = new Power(this, new StdReplVals(this))(tagOfStdReplVals, classTag[StdReplVals])
+  override lazy val power = new Power(this, new StdReplVals(this))(
+    tagOfStdReplVals,
+    classTag[StdReplVals])
 
   /** Here is where we:
     *
@@ -587,10 +641,10 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     def this() = this(freshLineId())
 
     val packageName = sessionNames.line + lineId
-    val readName    = sessionNames.read
-    val evalName    = sessionNames.eval
-    val printName   = sessionNames.print
-    val resultName  = sessionNames.result
+    val readName = sessionNames.read
+    val evalName = sessionNames.eval
+    val printName = sessionNames.print
+    val resultName = sessionNames.result
 
     def bindError(t: Throwable) = {
       import scala.tools.nsc.util.StackTraceOps
@@ -609,7 +663,9 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       val stackTrace = unwrapped.stackTracePrefixString(!isWrapperCode(_))
 
       withLastExceptionLock[String]({
-        directBind[Throwable]("lastException", unwrapped)(StdReplTags.tagOfThrowable, classTag[Throwable])
+        directBind[Throwable]("lastException", unwrapped)(
+          StdReplTags.tagOfThrowable,
+          classTag[Throwable])
         stackTrace
       }, stackTrace)
     }
@@ -618,11 +674,12 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     // object and we can do that much less wrapping.
     def packageDecl = "package " + packageName
 
-    def pathToInstance(name: String)   = packageName + "." + name + readInstanceName
-    def pathTo(name: String)   = packageName + "." + name
+    def pathToInstance(name: String) =
+      packageName + "." + name + readInstanceName
+    def pathTo(name: String) = packageName + "." + name
     def packaged(code: String) = packageDecl + "\n\n" + code
 
-    def readPathInstance  = pathToInstance(readName)
+    def readPathInstance = pathToInstance(readName)
     def readPath = pathTo(readName)
     def evalPath = pathTo(evalName)
 
@@ -639,10 +696,12 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       try Right(call(name, args: _*))
       catch { case ex: Throwable => Left(ex) }
 
-    class EvalException(msg: String, cause: Throwable) extends RuntimeException(msg, cause) { }
+    class EvalException(msg: String, cause: Throwable)
+        extends RuntimeException(msg, cause) {}
 
     private def evalError(path: String, ex: Throwable) =
-      throw new EvalException("Failed to load '" + path + "': " + ex.getMessage, ex)
+      throw new EvalException("Failed to load '" + path + "': " + ex.getMessage,
+                              ex)
 
     private def load(path: String): Class[_] = {
       try Class.forName(path, true, classLoader)
@@ -664,37 +723,45 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       val accessPath = fullAccessPath.stripPrefix(readPath)
       val readRoot = readRootPath(readPath) // the outermost wrapper
       (accessPath split '.').foldLeft(readRoot: Symbol) {
-        case (sym, "")    => sym
-        case (sym, name)  => exitingTyper(termMember(sym, name))
+        case (sym, "")   => sym
+        case (sym, name) => exitingTyper(termMember(sym, name))
       }
     }
+
     /** We get a bunch of repeated warnings for reasons I haven't
       *  entirely figured out yet.  For now, squash.
       */
     private def updateRecentWarnings(run: Run): Unit = {
-      def loop(xs: List[(Position, String)]): List[(Position, String)] = xs match {
-        case Nil                  => Nil
-        case ((pos, msg)) :: rest =>
-          val filtered = rest filter { case (pos0, msg0) =>
-            (msg != msg0) || (pos.lineContent.trim != pos0.lineContent.trim) || {
-              // same messages and same line content after whitespace removal
-              // but we want to let through multiple warnings on the same line
-              // from the same run.  The untrimmed line will be the same since
-              // there's no whitespace indenting blowing it.
-              (pos.lineContent == pos0.lineContent)
+      def loop(xs: List[(Position, String)]): List[(Position, String)] =
+        xs match {
+          case Nil => Nil
+          case ((pos, msg)) :: rest =>
+            val filtered = rest filter {
+              case (pos0, msg0) =>
+                (msg != msg0) || (pos.lineContent.trim != pos0.lineContent.trim) || {
+                  // same messages and same line content after whitespace removal
+                  // but we want to let through multiple warnings on the same line
+                  // from the same run.  The untrimmed line will be the same since
+                  // there's no whitespace indenting blowing it.
+                  (pos.lineContent == pos0.lineContent)
+                }
             }
-          }
-          ((pos, msg)) :: loop(filtered)
-      }
-      val warnings = loop(run.reporting.allConditionalWarnings.map{ case (pos, (msg, since@_)) => (pos, msg) })
+            ((pos, msg)) :: loop(filtered)
+        }
+      val warnings = loop(run.reporting.allConditionalWarnings.map {
+        case (pos, (msg, since @ _)) => (pos, msg)
+      })
       if (warnings.nonEmpty)
         mostRecentWarnings = warnings
     }
-    private def evalMethod(name: String) = evalClass.getMethods filter (_.getName == name) match {
-      case Array()       => null
-      case Array(method) => method
-      case xs            => throw new IllegalStateException(s"Internal error: eval object $evalClass, ${xs.mkString("\n", "\n", "")}")
-    }
+    private def evalMethod(name: String) =
+      evalClass.getMethods filter (_.getName == name) match {
+        case Array()       => null
+        case Array(method) => method
+        case xs =>
+          throw new IllegalStateException(
+            s"Internal error: eval object $evalClass, ${xs.mkString("\n", "\n", "")}")
+      }
 
     def compile(code: String): Boolean =
       compile(new CompilationUnit(new BatchSourceFile(label, packaged(code))))
@@ -714,11 +781,20 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   }
 
   /** One line of code submitted by the user for interpretation */
-  class Request(val line: String, origTrees: List[Tree], firstXmlPos: Position = NoPosition, generousImports: Boolean = false, synthetic: Boolean = false) extends ReplRequest {
-    def defines    = defHandlers flatMap (_.definedSymbols)
-    def definesTermNames: List[String] = defines collect { case s: TermSymbol => s.decodedName.toString }
-    def imports    = importedSymbols
-    def value      = Some(handlers.last) filter (h => h.definesValue) map (h => definedSymbols(h.definesTerm.get)) getOrElse NoSymbol
+  class Request(val line: String,
+                origTrees: List[Tree],
+                firstXmlPos: Position = NoPosition,
+                generousImports: Boolean = false,
+                synthetic: Boolean = false)
+      extends ReplRequest {
+    def defines = defHandlers flatMap (_.definedSymbols)
+    def definesTermNames: List[String] = defines collect {
+      case s: TermSymbol => s.decodedName.toString
+    }
+    def imports = importedSymbols
+    def value =
+      Some(handlers.last) filter (h => h.definesValue) map (h =>
+        definedSymbols(h.definesTerm.get)) getOrElse NoSymbol
     val lineRep = new ReadEvalPrint()
 
     def eval: Either[Throwable, AnyRef] = lineRep.evalEither
@@ -726,28 +802,31 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     // The source file contents only has the code originally input by the user,
     // with unit's body holding the synthetic trees.
     // When emitting errors, be careful not to refer to the synthetic code
-    private val unit = new CompilationUnit(new BatchSourceFile(if (synthetic) "<synthetic>" else label, line))
+    private val unit = new CompilationUnit(
+      new BatchSourceFile(if (synthetic) "<synthetic>" else label, line))
     // a dummy position used for synthetic trees (needed for pres compiler to locate the trees for user input)
     private val wholeUnit = Position.range(unit.source, 0, 0, line.length)
 
     private def storeInVal(tree: Tree): Tree = {
-      val resName = newTermName(if (synthetic) freshInternalVarName() else freshUserVarName())
+      val resName = newTermName(
+        if (synthetic) freshInternalVarName() else freshUserVarName())
       atPos(tree.pos.makeTransparent)(ValDef(NoMods, resName, TypeTree(), tree))
     }
 
     // Wrap last tree in a valdef to give user a nice handle for it (`resN`)
     val trees: List[Tree] =
       origTrees.init :+ (origTrees.last match {
-        case tree@(_: Assign) => tree
-        case tree@(_: RefTree | _: TermTree) => storeInVal(tree)
-        case tree => tree
+        case tree @ (_: Assign)                => tree
+        case tree @ (_: RefTree | _: TermTree) => storeInVal(tree)
+        case tree                              => tree
       })
 
     /** handlers for each tree in this request */
-    val handlers: List[MemberHandler] = trees map (memberHandlers chooseHandler _)
+    val handlers
+      : List[MemberHandler] = trees map (memberHandlers chooseHandler _)
     val definesClass = handlers.exists {
       case _: ClassHandler => true
-      case _ => false
+      case _               => false
     }
 
     def defHandlers = handlers collect { case x: MemberDefHandler => x }
@@ -763,7 +842,6 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       case _                => Nil
     }
 
-
     /** The path of the value that contains the user code. */
     def fullAccessPath = s"${lineRep.readPathInstance}$accessPath"
 
@@ -773,9 +851,12 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     /** Code to import bound names from previous lines - accessPath is code to
       * append to objectName to access anything bound by request.
       */
-    lazy val ComputedImports(headerPreamble, importsPreamble, importsTrailer, accessPath) =
-      exitingTyper(importsCode(referencedNames.toSet, this, definesClass, generousImports))
-
+    lazy val ComputedImports(headerPreamble,
+                             importsPreamble,
+                             importsTrailer,
+                             accessPath) =
+      exitingTyper(
+        importsCode(referencedNames.toSet, this, definesClass, generousImports))
 
     private val USER_CODE_PLACEHOLDER = newTermName("$user_code_placeholder$")
     private object spliceUserCode extends Transformer {
@@ -786,7 +867,8 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
         finally parents = parents.tail
       }
 
-      override def transformStats(stats: List[Tree], exprOwner: Symbol): List[Tree] =
+      override def transformStats(stats: List[Tree],
+                                  exprOwner: Symbol): List[Tree] =
         stats flatMap {
           case Ident(USER_CODE_PLACEHOLDER) =>
             parents.foreach(p => p.setPos(wholeUnit))
@@ -797,7 +879,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
     private def parseSynthetic(code: String): List[Tree] = {
       val stats = newUnitParser(code, "<synthetic>").parseStats()
-      stats foreach {_.foreach(t => t.pos = t.pos.makeTransparent)}
+      stats foreach { _.foreach(t => t.pos = t.pos.makeTransparent) }
       stats
     }
 
@@ -813,21 +895,35 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       // (have to parse importsPreamble + ... + importsTrailer at once)
       // This will be simplified when we stop wrapping to begin with.
       val syntheticStats =
-        parseSynthetic(importsPreamble + s"`$USER_CODE_PLACEHOLDER`" + importsTrailer)
+        parseSynthetic(
+          importsPreamble + s"`$USER_CODE_PLACEHOLDER`" + importsTrailer)
 
       // don't use empty list of parents, since that triggers a rangepos bug in typer (the synthetic typer tree violates overlapping invariant)
-      val parents = List(atPos(wholeUnit.focus)(if (isClassBased) gen.rootScalaDot(tpnme.Serializable) else gen.rootScalaDot(tpnme.AnyRef)))
+      val parents = List(
+        atPos(wholeUnit.focus)(
+          if (isClassBased) gen.rootScalaDot(tpnme.Serializable)
+          else gen.rootScalaDot(tpnme.AnyRef)))
 
-      val wrapperTempl = gen.mkTemplate(parents, noSelfType, NoMods, ListOfNil, syntheticStats, superPos = wholeUnit.focus)
+      val wrapperTempl = gen.mkTemplate(parents,
+                                        noSelfType,
+                                        NoMods,
+                                        ListOfNil,
+                                        syntheticStats,
+                                        superPos = wholeUnit.focus)
 
-      stats += (
-        if (isClassBased) ClassDef(Modifiers(Flags.SEALED), readName.toTypeName, Nil, wrapperTempl)
-        else ModuleDef(NoMods, readName, wrapperTempl))
+      stats += (if (isClassBased)
+                  ClassDef(Modifiers(Flags.SEALED),
+                           readName.toTypeName,
+                           Nil,
+                           wrapperTempl)
+                else ModuleDef(NoMods, readName, wrapperTempl))
 
       if (isClassBased)
         stats += q"""object $readName { val INSTANCE = new ${tq"""${readName.toTypeName}"""} }"""
 
-      val unspliced = PackageDef(atPos(wholeUnit.focus)(Ident(lineRep.packageName)), stats.toList)
+      val unspliced = PackageDef(
+        atPos(wholeUnit.focus)(Ident(lineRep.packageName)),
+        stats.toList)
       unit.body = spliceUserCode.transform(unspliced)
       unit.encounteredXml(firstXmlPos)
 
@@ -840,37 +936,43 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     // Secret bookcase entrance for repl debuggers: end the line
     // with "// show" and see what's going on.
     private def showCode(code: => String) =
-      if (reporter.isDebug || (label == "<console>" && line.contains("// show")))
-        reporter.withoutUnwrapping(reporter.withoutTruncating(reporter.echo(code)))
-
+      if (reporter.isDebug || (label == "<console>" && line.contains(
+            "// show")))
+        reporter.withoutUnwrapping(
+          reporter.withoutTruncating(reporter.echo(code)))
 
     // used for import wrapping (this will go away entirely when we use the more direct approach)
     def wrapperDef(iw: String) =
       if (isClassBased) s"sealed class $iw extends _root_.java.io.Serializable"
       else s"object $iw"
 
-    import nme.{ INTERPRETER_IMPORT_WRAPPER => iw }
+    import nme.{INTERPRETER_IMPORT_WRAPPER => iw}
+
     /** Like postamble for an import wrapper. */
     def postwrap: String =
       if (isClassBased) s"val $iw = new $iw"
       else ""
 
-
-    private def mkResultUnit(contributors: List[MemberHandler]): CompilationUnit = {
+    private def mkResultUnit(
+        contributors: List[MemberHandler]): CompilationUnit = {
       // The symbol defined by the last member handler
       val resValSym = value
 
       val extractionCode = stringFromWriter { code =>
-        code.println(s"""
+        code.println(
+          s"""
            |${lineRep.packageDecl} {
            |object ${lineRep.evalName} {
-           |  ${if (resValSym != NoSymbol) s"lazy val ${lineRep.resultName} = ${originalPath(resValSym)}" else ""}
+           |  ${if (resValSym != NoSymbol)
+               s"lazy val ${lineRep.resultName} = ${originalPath(resValSym)}"
+             else ""}
            |  lazy val ${lineRep.printName}: _root_.java.lang.String = $executionWrapper {
            |    $fullAccessPath
            |""".stripMargin)
         if (contributors.lengthCompare(1) > 0) {
           code.println("val sb = new _root_.scala.StringBuilder")
-          contributors foreach (x => code.println(s"""sb.append("" ${x.resultExtractionCode(this)})"""))
+          contributors foreach (x =>
+            code.println(s"""sb.append("" ${x.resultExtractionCode(this)})"""))
           code.println("sb.toString")
         } else {
           code.print(""""" """) // start with empty string
@@ -880,13 +982,12 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
         code.println(s"""
            |  }
            |}}""".stripMargin)
-        }
+      }
 
       showCode(extractionCode)
 
       new CompilationUnit(new BatchSourceFile("<synthetic>", extractionCode))
     }
-
 
     /** Compile the object file.  Returns whether the compilation succeeded.
       *  If all goes well, the "types" map is computed. */
@@ -921,33 +1022,41 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     lazy val resultSymbol = {
       val sym = lineRep.resolvePathToSymbol(fullAccessPath)
       // plow through the INSTANCE member when -Yrepl-class-based
-      if (sym.isTerm && sym.nameString == "INSTANCE") sym.typeSignature.typeSymbol else sym
+      if (sym.isTerm && sym.nameString == "INSTANCE")
+        sym.typeSignature.typeSymbol
+      else sym
     }
 
-    def applyToResultMember[T](name: Name, f: Symbol => T) = exitingTyper(f(resultSymbol.info.nonPrivateDecl(name)))
+    def applyToResultMember[T](name: Name, f: Symbol => T) =
+      exitingTyper(f(resultSymbol.info.nonPrivateDecl(name)))
 
     /* typeOf lookup with encoding */
-    def lookupTypeOf(name: Name) = typeOf.getOrElse(name, typeOf(global.encode(name.toString)))
+    def lookupTypeOf(name: Name) =
+      typeOf.getOrElse(name, typeOf(global.encode(name.toString)))
 
     private def typeMap[T](f: Type => T) =
-      mapFrom[Name, Name, T](termNames ++ typeNames)(x => f(cleanMemberDecl(resultSymbol, x)))
+      mapFrom[Name, Name, T](termNames ++ typeNames)(x =>
+        f(cleanMemberDecl(resultSymbol, x)))
 
     /** Types of variables defined by this request. */
     lazy val compilerTypeOf = typeMap[Type](x => x) withDefaultValue NoType
+
     /** String representations of same. */
-    lazy val typeOf         = typeMap[String](tp => exitingTyper(tp.toString))
+    lazy val typeOf = typeMap[String](tp => exitingTyper(tp.toString))
 
     lazy val definedSymbols = (
       termNames.map(x => x -> applyToResultMember(x, x => x)) ++
         typeNames.map(x => x -> compilerTypeOf(x).typeSymbolDirect)
-      ).toMap[Name, Symbol] withDefaultValue NoSymbol
+    ).toMap[Name, Symbol] withDefaultValue NoSymbol
 
-    lazy val typesOfDefinedTerms = mapFrom[Name, Name, Type](termNames)(x => applyToResultMember(x, _.tpe))
+    lazy val typesOfDefinedTerms =
+      mapFrom[Name, Name, Type](termNames)(x => applyToResultMember(x, _.tpe))
 
     /** load and run the code using reflection */
     def loadAndRun: Either[String, String] = {
-      try   { Right("" + (lineRep call sessionNames.print)) }
-      catch { case ex: Throwable => Left(lineRep.bindError(ex)) }
+      try { Right("" + (lineRep call sessionNames.print)) } catch {
+        case ex: Throwable => Left(lineRep.bindError(ex))
+      }
     }
 
     override def toString = s"Request(line=$line, ${trees.size} trees)"
@@ -961,24 +1070,28 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     */
   override def mostRecentVar: String =
     if (mostRecentlyHandledTree.isEmpty) ""
-    else "" + (mostRecentlyHandledTree.get match {
-      case x: ValOrDefDef           => x.name
-      case Assign(Ident(name), _)   => name
-      case ModuleDef(_, name, _)    => name
-      case _                        => naming.mostRecentVar
-    })
+    else
+      "" + (mostRecentlyHandledTree.get match {
+        case x: ValOrDefDef         => x.name
+        case Assign(Ident(name), _) => name
+        case ModuleDef(_, name, _)  => name
+        case _                      => naming.mostRecentVar
+      })
 
   private var mostRecentWarnings: List[(global.Position, String)] = Nil
-  override def lastWarnings: List[(global.Position, String)] = mostRecentWarnings
+  override def lastWarnings: List[(global.Position, String)] =
+    mostRecentWarnings
 
-  private lazy val importToGlobal  = global mkImporter ru
+  private lazy val importToGlobal = global mkImporter ru
   private lazy val importToRuntime = ru.internal createImporter global
   private lazy val javaMirror = ru.rootMirror match {
     case x: ru.JavaMirror => x
     case _                => null
   }
-  private implicit def importFromRu(sym: ru.Symbol): Symbol = importToGlobal importSymbol sym
-  private implicit def importToRu(sym: Symbol): ru.Symbol   = importToRuntime importSymbol sym
+  private implicit def importFromRu(sym: ru.Symbol): Symbol =
+    importToGlobal importSymbol sym
+  private implicit def importToRu(sym: Symbol): ru.Symbol =
+    importToRuntime importSymbol sym
 
   def classOfTerm(id: String): Option[Class[_]] = symbolOfTerm(id) match {
     case NoSymbol => None
@@ -994,27 +1107,34 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       val pkg :: rest = (fullName split '.').toList
       val top = runtimeMirror.staticPackage(pkg)
       @annotation.tailrec
-      def loop(inst: InstanceMirror, cur: Symbol, path: List[String]): Option[Any] = {
+      def loop(inst: InstanceMirror,
+               cur: Symbol,
+               path: List[String]): Option[Any] = {
         def mirrored =
           if (inst != null) inst
-          else runtimeMirror.reflect((runtimeMirror reflectModule cur.asModule).instance)
+          else
+            runtimeMirror.reflect(
+              (runtimeMirror reflectModule cur.asModule).instance)
 
         path match {
-          case last :: Nil  =>
-            cur.typeSignature.decls.find(x => x.name.toString == last && x.isAccessor).map { m =>
-              mirrored.reflectMethod(m.asMethod).apply()
-            }
+          case last :: Nil =>
+            cur.typeSignature.decls
+              .find(x => x.name.toString == last && x.isAccessor)
+              .map { m =>
+                mirrored.reflectMethod(m.asMethod).apply()
+              }
           case next :: rest =>
             val s = cur.typeSignature.member(TermName(next))
             val i =
               if (s.isModule) {
                 if (inst == null) null
-                else runtimeMirror.reflect((inst reflectModule s.asModule).instance)
-              }
-              else if (s.isAccessor) {
-                runtimeMirror.reflect(mirrored.reflectMethod(s.asMethod).apply())
-              }
-              else {
+                else
+                  runtimeMirror.reflect(
+                    (inst reflectModule s.asModule).instance)
+              } else if (s.isAccessor) {
+                runtimeMirror.reflect(
+                  mirrored.reflectMethod(s.asMethod).apply())
+              } else {
                 assert(false, originalPath(s))
                 inst
               }
@@ -1024,7 +1144,9 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       }
       loop(null, top, rest)
     }
-    Option(symbolOfTerm(id)).filter(_.exists).flatMap(s => Trying(value(originalPath(s))).toOption.flatten)
+    Option(symbolOfTerm(id))
+      .filter(_.exists)
+      .flatMap(s => Trying(value(originalPath(s))).toOption.flatten)
   }
 
   /** It's a bit of a shotgun approach, but for now we will gain in
@@ -1033,12 +1155,14 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     *  lose this and run only from exitingTyper as soon as I figure out
     *  exactly where a flat name is sneaking in when calculating imports.
     */
-  def tryTwice(op: => Symbol): Symbol = exitingTyper(op) orElse exitingFlatten(op)
+  def tryTwice(op: => Symbol): Symbol =
+    exitingTyper(op) orElse exitingFlatten(op)
 
-  def symbolOfIdent(id: String): Symbol  = symbolOfType(id) orElse symbolOfTerm(id)
-  def symbolOfType(id: String): Symbol   = tryTwice(replScope lookup TypeName(id))
-  def symbolOfTerm(id: String): Symbol   = tryTwice(replScope lookup TermName(id))
-  def symbolOfName(id: Name): Symbol     = replScope lookup id
+  def symbolOfIdent(id: String): Symbol =
+    symbolOfType(id) orElse symbolOfTerm(id)
+  def symbolOfType(id: String): Symbol = tryTwice(replScope lookup TypeName(id))
+  def symbolOfTerm(id: String): Symbol = tryTwice(replScope lookup TermName(id))
+  def symbolOfName(id: Name): Symbol = replScope lookup id
 
   def runtimeClassAndTypeOfTerm(id: String): Option[(Class[_], Type)] = {
     // Sadly isAnonymousClass does not return true for scala anonymous
@@ -1046,13 +1170,12 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     // jvm's many assumptions.
     def isScalaAnonymous(clazz: Class[_]) =
       try clazz.isAnonymousClass || (clazz.getName contains "$anon$")
-      catch { case _: java.lang.InternalError => false }  // good ol' "Malformed class name"
-
+      catch { case _: java.lang.InternalError => false } // good ol' "Malformed class name"
 
     def supers(clazz: Class[_]): List[Class[_]] = {
       def loop(x: Class[_]): List[Class[_]] = x.getSuperclass match {
-        case null   => List(x)
-        case sc     => x :: (x.getInterfaces.toList flatMap loop) ++ loop(sc)
+        case null => List(x)
+        case sc   => x :: (x.getInterfaces.toList flatMap loop) ++ loop(sc)
       }
       loop(clazz).distinct
     }
@@ -1066,8 +1189,8 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
   def runtimeTypeOfTerm(id: String): Type = {
     typeOfTerm(id) andAlso { tpe =>
-      val clazz      = classOfTerm(id) getOrElse { return NoType }
-      val staticSym  = tpe.typeSymbol
+      val clazz = classOfTerm(id) getOrElse { return NoType }
+      val staticSym = tpe.typeSymbol
       val runtimeSym = getClassIfDefined(clazz.getName)
 
       if ((runtimeSym != NoSymbol) && (runtimeSym != staticSym) && (runtimeSym isSubClass staticSym))
@@ -1090,7 +1213,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
   object exprTyper extends {
     val repl: IMain.this.type = IMain.this
-  } with ExprTyper { }
+  } with ExprTyper {}
 
   /** Parse a line into and return parsing result (error, incomplete or success with list of trees) */
   def parse(line: String): Either[Result, (List[Tree], Position)] = {
@@ -1103,8 +1226,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       else if (reporter.hasWarnings && settings.fatalWarnings) {
         currentRun.reporting.summarizeErrors()
         Left(Error)
-      }
-      else if (isIncomplete) Left(Incomplete)
+      } else if (isIncomplete) Left(Incomplete)
       else Right((trees, unit.firstXmlPos))
     }
   }
@@ -1117,7 +1239,7 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
       !reporter.hasErrors && {
         tree match {
           case PackageDef(Ident(id), _) => id != nme.EMPTY_PACKAGE_NAME
-          case _ => false
+          case _                        => false
         }
       }
     }
@@ -1128,14 +1250,16 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   def typeOfExpression(expr: String, silent: Boolean = true): Type =
     exprTyper.typeOfExpression(expr, silent)
 
-  private def getterToResultTp(sym: Symbol) = if (sym.isGetter) sym.info.resultType else sym.info
+  private def getterToResultTp(sym: Symbol) =
+    if (sym.isGetter) sym.info.resultType else sym.info
 
-  override def implicitsCommandInternal(line: String): (List[String], String) = {
+  override def implicitsCommandInternal(
+      line: String): (List[String], String) = {
     val implicits = collection.mutable.ListBuffer.empty[String]
 
     // If an argument is given, only show a source with that
     // in its name somewhere.
-    val args     = line split "\\s+"
+    val args = line split "\\s+"
     val filtered = intp.implicitSymbolsBySource filter {
       case (source, syms) =>
         (args contains "-v") || {
@@ -1150,7 +1274,9 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
         // This groups the members by where the symbol is defined
         val byOwner = syms groupBy (_.owner)
-        val sortedOwners = byOwner.toList sortBy { case (owner, _) => exitingTyper(source.info.baseClasses indexOf owner) }
+        val sortedOwners = byOwner.toList sortBy {
+          case (owner, _) => exitingTyper(source.info.baseClasses indexOf owner)
+        }
 
         sortedOwners foreach {
           case (owner, members) =>
@@ -1164,12 +1290,13 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
               val xss = (
                 (big sortBy (_._1.toString) map (_._2)) :+
                   (small flatMap (_._2))
-                )
+              )
 
               xss map (xs => xs sortBy (_.name.toString))
             }
 
-            val ownerMessage = if (owner == source) " defined in " else " inherited from "
+            val ownerMessage =
+              if (owner == source) " defined in " else " inherited from "
             implicits += "  /* " + members.size + ownerMessage + owner.fullName + " */"
 
             memberGroups foreach { group =>
@@ -1181,23 +1308,23 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     }
 
     (implicits.toList,
-      if (filtered.nonEmpty)
-        "" // collected in implicits
-      else if (global.settings.nopredef || global.settings.noimports)
-        "No implicits have been imported."
-      else
-        "No implicits have been imported other than those in Predef."
-    )
+     if (filtered.nonEmpty)
+       "" // collected in implicits
+     else if (global.settings.nopredef || global.settings.noimports)
+       "No implicits have been imported."
+     else
+       "No implicits have been imported other than those in Predef.")
   }
 
-  override def kindCommandInternal(typeString: String, verbose: Boolean): String = {
+  override def kindCommandInternal(typeString: String,
+                                   verbose: Boolean): String = {
     import scala.util.control.Exception.catching
     val catcher = catching(classOf[MissingRequirementError],
-      classOf[ScalaReflectionException])
+                           classOf[ScalaReflectionException])
 
     def kindMsg(tpe: Type, kind: Kind, verbose: Boolean): String = {
       val msg = exitingTyper(tpe.toString) + "'s kind is " + kind.scalaNotation
-      if (verbose) msg +"\n"+ kind.starNotation +"\n"+ kind.description
+      if (verbose) msg + "\n" + kind.starNotation + "\n" + kind.description
       else msg
     }
 
@@ -1211,12 +1338,13 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
           val kind = exitingTyper {
             val sym = tpe.typeSymbol.asClass
             val owner = sym.owner
-            val kind0 = intp.global.inferKind(NoPrefix)(TypeRef(pre, sym, Nil), owner)
+            val kind0 =
+              intp.global.inferKind(NoPrefix)(TypeRef(pre, sym, Nil), owner)
             kind0 match {
               case TypeConKind(bounds, kargs) if args.size == kargs.size =>
                 TypeConKind(bounds, (args.toList zip kargs.toList) flatMap {
                   case (WildcardType, karg) => List(karg)
-                  case _ => Nil
+                  case _                    => Nil
                 })
               case k => k
             }
@@ -1240,43 +1368,55 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
     *  -l label with case class parameter names
     *  -c complete - leave nothing out
     */
-  override def typeCommandInternal(expr: String, verbose: Boolean): (String, String) = {
+  override def typeCommandInternal(expr: String,
+                                   verbose: Boolean): (String, String) = {
     symbolOfLine(expr) match {
       case NoSymbol => ("", "")
-      case sym => exitingTyper {
-        (getterToResultTp(sym).toString, if (verbose) deconstruct.show(getterToResultTp(sym)).toString else "")
-      }
+      case sym =>
+        exitingTyper {
+          (getterToResultTp(sym).toString,
+           if (verbose) deconstruct.show(getterToResultTp(sym)).toString
+           else "")
+        }
     }
 
   }
 
   def importsCommandInternal(tokens: List[String]): List[String] = {
-    val handlers  = languageWildcardHandlers ++ importHandlers
+    val handlers = languageWildcardHandlers ++ importHandlers
 
     handlers.filterNot(_.importedSymbols.isEmpty).zipWithIndex map {
       case (handler, idx) =>
         val (types, terms) = handler.importedSymbols partition (_.name.isTypeName)
-        val imps           = handler.implicitSymbols
-        val found          = tokens filter (handler importsSymbolNamed _)
-        val typeMsg        = if (types.isEmpty) "" else types.size + " types"
-        val termMsg        = if (terms.isEmpty) "" else terms.size + " terms"
-        val implicitMsg    = if (imps.isEmpty) "" else imps.size + " are implicit"
-        val foundMsg       = if (found.isEmpty) "" else found.mkString(" // imports: ", ", ", "")
-        val statsMsg       = List(typeMsg, termMsg, implicitMsg) filterNot (_ == "") mkString ("(", ", ", ")")
+        val imps = handler.implicitSymbols
+        val found = tokens filter (handler importsSymbolNamed _)
+        val typeMsg = if (types.isEmpty) "" else types.size + " types"
+        val termMsg = if (terms.isEmpty) "" else terms.size + " terms"
+        val implicitMsg = if (imps.isEmpty) "" else imps.size + " are implicit"
+        val foundMsg =
+          if (found.isEmpty) "" else found.mkString(" // imports: ", ", ", "")
+        val statsMsg = List(typeMsg, termMsg, implicitMsg) filterNot (_ == "") mkString ("(", ", ", ")")
 
         f"${idx + 1}%2d) ${handler.importString}%-30s $statsMsg$foundMsg"
     }
   }
 
-  protected def onlyTerms(xs: List[Name]): List[TermName] = xs collect { case x: TermName => x }
-  protected def onlyTypes(xs: List[Name]): List[TypeName] = xs collect { case x: TypeName => x }
+  protected def onlyTerms(xs: List[Name]): List[TermName] = xs collect {
+    case x: TermName => x
+  }
+  protected def onlyTypes(xs: List[Name]): List[TypeName] = xs collect {
+    case x: TypeName => x
+  }
 
   def definedTerms = onlyTerms(allDefinedNames) filterNot isInternalTermName
-  def definedTypes: List[String]      = onlyTypes(allDefinedNames) map (_.toString)
-  def definedSymbolList = prevRequestList flatMap (_.defines) filterNot (s => isInternalTermName(s.name))
+  def definedTypes: List[String] = onlyTypes(allDefinedNames) map (_.toString)
+  def definedSymbolList =
+    prevRequestList flatMap (_.defines) filterNot (s =>
+      isInternalTermName(s.name))
 
   // Terms with user-given names (i.e. not res0 and not synthetic)
-  override def namedDefinedTerms: List[String] = definedTerms filterNot (x => isUserVarName("" + x) || directlyBoundNames(x)) map (_.toString)
+  override def namedDefinedTerms: List[String] =
+    definedTerms filterNot (x => isUserVarName("" + x) || directlyBoundNames(x)) map (_.toString)
 
   private var _replScope: Scope = _
   private def resetReplScope(): Unit = {
@@ -1290,13 +1430,13 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
   }
 
   private var executingRequest: Request = _
-  private val prevRequests       = mutable.ListBuffer[Request]()
+  private val prevRequests = mutable.ListBuffer[Request]()
   private val directlyBoundNames = mutable.Set[Name]()
 
-  def allHandlers     = prevRequestList flatMap (_.handlers)
-  def lastRequest     = if (prevRequests.isEmpty) null else prevRequests.last
+  def allHandlers = prevRequestList flatMap (_.handlers)
+  def lastRequest = if (prevRequests.isEmpty) null else prevRequests.last
   def prevRequestList = prevRequests.toList
-  def importHandlers  = allHandlers collect { case x: ImportHandler => x }
+  def importHandlers = allHandlers collect { case x: ImportHandler => x }
 
   def symbolDefString(sym: Symbol): String = {
     TypeStrings.quieter(
@@ -1315,14 +1455,17 @@ class IMain(val settings: Settings, parentClassLoaderOverride: Option[ClassLoade
 
 /** Utility methods for the Interpreter. */
 object IMain {
+
   /** Dummy identifier fragment inserted at the cursor before presentation compilation.
-   *  Needed to support completion of `global.def<TAB>`.
-   */
+    *  Needed to support completion of `global.def<TAB>`.
+    */
   final val DummyCursorFragment = "_CURSOR_"
 
   /** Temporarily suppress some noisy settings.
-   */
-  private[interpreter] def withSuppressedSettings[A](settings: Settings, global: => Global)(body: => A): A = {
+    */
+  private[interpreter] def withSuppressedSettings[A](
+      settings: Settings,
+      global: => Global)(body: => A): A = {
     import settings.{reporter => _, _}
     val wasWarning = !nowarn
     val noisy = List(Xprint, Ytyperdebug, browse)
@@ -1336,9 +1479,9 @@ object IMain {
       if (wasWarning) nowarn.value = true
       try body
       finally {
-        Xprint.value       = current._1
-        Ytyperdebug.value  = current._2
-        browse.value       = current._3
+        Xprint.value = current._1
+        Ytyperdebug.value = current._2
+        browse.value = current._3
         if (wasWarning) nowarn.value = false
         // ctl-D in repl can result in no compiler
         val g = global

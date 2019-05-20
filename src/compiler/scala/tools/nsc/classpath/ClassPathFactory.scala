@@ -19,14 +19,17 @@ import FileUtils.AbstractFileOps
 import scala.tools.nsc.util.ClassPath
 
 /**
- * Provides factory methods for classpath. When creating classpath instances for a given path,
- * it uses proper type of classpath depending on a types of particular files containing sources or classes.
- */
-class ClassPathFactory(settings: Settings, closeableRegistry: CloseableRegistry) {
+  * Provides factory methods for classpath. When creating classpath instances for a given path,
+  * it uses proper type of classpath depending on a types of particular files containing sources or classes.
+  */
+class ClassPathFactory(settings: Settings,
+                       closeableRegistry: CloseableRegistry) {
+
   /**
     * Create a new classpath based on the abstract file.
     */
-  def newClassPath(file: AbstractFile): ClassPath = ClassPathFactory.newClassPath(file, settings, closeableRegistry)
+  def newClassPath(file: AbstractFile): ClassPath =
+    ClassPathFactory.newClassPath(file, settings, closeableRegistry)
 
   /**
     * Creators for sub classpaths which preserve this context.
@@ -37,10 +40,11 @@ class ClassPathFactory(settings: Settings, closeableRegistry: CloseableRegistry)
       dir <- Option(AbstractFile getDirectory file)
     } yield createSourcePath(dir)
 
+  def expandPath(path: String, expandStar: Boolean = true): List[String] =
+    scala.tools.nsc.util.ClassPath.expandPath(path, expandStar)
 
-  def expandPath(path: String, expandStar: Boolean = true): List[String] = scala.tools.nsc.util.ClassPath.expandPath(path, expandStar)
-
-  def expandDir(extdir: String): List[String] = scala.tools.nsc.util.ClassPath.expandDir(extdir)
+  def expandDir(extdir: String): List[String] =
+    scala.tools.nsc.util.ClassPath.expandDir(extdir)
 
   def contentsOfDirsInPath(path: String): List[ClassPath] =
     for {
@@ -55,7 +59,9 @@ class ClassPathFactory(settings: Settings, closeableRegistry: CloseableRegistry)
   def classesInPath(path: String) = classesInPathImpl(path, expand = false)
 
   def classesInManifest(useManifestClassPath: Boolean) =
-    if (useManifestClassPath) scala.tools.nsc.util.ClassPath.manifests.map(url => newClassPath(AbstractFile getResources url))
+    if (useManifestClassPath)
+      scala.tools.nsc.util.ClassPath.manifests.map(url =>
+        newClassPath(AbstractFile getResources url))
     else Nil
 
   // Internal
@@ -63,7 +69,9 @@ class ClassPathFactory(settings: Settings, closeableRegistry: CloseableRegistry)
     for {
       file <- expandPath(path, expand)
       dir <- {
-        def asImage = if (file.endsWith(".jimage")) Some(AbstractFile.getFile(file)) else None
+        def asImage =
+          if (file.endsWith(".jimage")) Some(AbstractFile.getFile(file))
+          else None
         Option(AbstractFile.getDirectory(file)).orElse(asImage)
       }
     } yield newClassPath(dir)
@@ -74,18 +82,23 @@ class ClassPathFactory(settings: Settings, closeableRegistry: CloseableRegistry)
     else if (file.isDirectory)
       DirectorySourcePath(file.file)
     else
-      throw new IllegalArgumentException(s"Unsupported sourcepath element: $file")
+      throw new IllegalArgumentException(
+        s"Unsupported sourcepath element: $file")
 }
 
 object ClassPathFactory {
-  def newClassPath(file: AbstractFile, settings: Settings, closeableRegistry: CloseableRegistry): ClassPath = file match {
-    case vd: VirtualDirectory => VirtualDirectoryClassPath(vd)
-    case _ =>
-      if (file.isJarOrZip)
-        ZipAndJarClassPathFactory.create(file, settings, closeableRegistry)
-      else if (file.isDirectory)
-        DirectoryClassPath(file.file)
-      else
-        throw new IllegalArgumentException(s"Unsupported classpath element: $file")
-  }
+  def newClassPath(file: AbstractFile,
+                   settings: Settings,
+                   closeableRegistry: CloseableRegistry): ClassPath =
+    file match {
+      case vd: VirtualDirectory => VirtualDirectoryClassPath(vd)
+      case _ =>
+        if (file.isJarOrZip)
+          ZipAndJarClassPathFactory.create(file, settings, closeableRegistry)
+        else if (file.isDirectory)
+          DirectoryClassPath(file.file)
+        else
+          throw new IllegalArgumentException(
+            s"Unsupported classpath element: $file")
+    }
 }

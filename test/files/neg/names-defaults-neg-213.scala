@@ -13,6 +13,6 @@ class C {
   def t2 = {
     val x = 0
     f1(x = 1) // ok, named arg (value discard)
-    f2(x = 1) // error (no such parameter). no mention of new semantics in 2.13 
+    f2(x = 1) // error (no such parameter). no mention of new semantics in 2.13
   }
 }

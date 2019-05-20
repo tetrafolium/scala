@@ -2,9 +2,11 @@ import scala.tools.partest.ReplTest
 
 object Test extends ReplTest {
   // replace indylambda function names by <function0>
-  override def normalize(s: String) = """\$\$Lambda.*""".r.replaceAllIn(s, "<function0>")
+  override def normalize(s: String) =
+    """\$\$Lambda.*""".r.replaceAllIn(s, "<function0>")
 
-  def code = """
+  def code =
+    """
 (2)
 (2 + 2)
 ((2 + 2))

@@ -21,4 +21,3 @@ object Test extends ReplTest {
     |def x[A, B] : (A ^ B)#T = ???
     |""".stripMargin
 }
-

@@ -13,7 +13,7 @@ class Test {
         The underlying error was: type mismatch;
          found   : oops.T
          required: ops.T
-    */
+     */
     def bar() = 1 match {
       case Meh(z) => z
     }

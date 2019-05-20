@@ -7,7 +7,7 @@ object Test extends CompilerTest {
   override lazy val units: List[CompilationUnit] = {
     // This test itself does not depend on JDK8.
     javaCompilationUnits(global)(samSource) ++
-    compilationUnits(global)(useSamSource)
+      compilationUnits(global)(useSamSource)
   }
 
   private def samSource = """

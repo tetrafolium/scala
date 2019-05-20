@@ -30,8 +30,9 @@ import scala.collection.generic.DefaultSerializable
   * @define Coll mutable.TreeMap
   * @define coll mutable tree map
   */
-sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: Ordering[K])
-  extends AbstractMap[K, V]
+sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(
+    implicit val ordering: Ordering[K])
+    extends AbstractMap[K, V]
     with SortedMap[K, V]
     with SortedMapOps[K, V, TreeMap, TreeMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, TreeMap[K, V]]
@@ -78,7 +79,9 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
     else RB.valuesIterator(tree, Some(start))
   }
 
-  def addOne(elem: (K, V)): this.type = { RB.insert(tree, elem._1, elem._2); this }
+  def addOne(elem: (K, V)): this.type = {
+    RB.insert(tree, elem._1, elem._2); this
+  }
 
   def subtractOne(elem: K): this.type = { RB.delete(tree, elem); this }
 
@@ -100,7 +103,8 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
     * @param until the upper bound (exclusive) of this projection wrapped in a `Some`, or `None` if there is no upper
     *              bound.
     */
-  def rangeImpl(from: Option[K], until: Option[K]): TreeMap[K, V] = new TreeMapProjection(from, until)
+  def rangeImpl(from: Option[K], until: Option[K]): TreeMap[K, V] =
+    new TreeMapProjection(from, until)
 
   override def foreach[U](f: ((K, V)) => U): Unit = RB.foreach(tree, f)
 
@@ -120,7 +124,6 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
 
   override protected[this] def className: String = "TreeMap"
 
-
   /**
     * A ranged projection of a [[TreeMap]]. Mutations on this map affect the original map and vice versa.
     *
@@ -134,25 +137,28 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
     * @param until the upper bound (exclusive) of this projection wrapped in a `Some`, or `None` if there is no upper
     *              bound.
     */
-  private[this] final class TreeMapProjection(from: Option[K], until: Option[K]) extends TreeMap[K, V](tree) {
+  private[this] final class TreeMapProjection(from: Option[K], until: Option[K])
+      extends TreeMap[K, V](tree) {
 
     /**
       * Given a possible new lower bound, chooses and returns the most constraining one (the maximum).
       */
-    private[this] def pickLowerBound(newFrom: Option[K]): Option[K] = (from, newFrom) match {
-      case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
-      case (None, _) => newFrom
-      case _ => from
-    }
+    private[this] def pickLowerBound(newFrom: Option[K]): Option[K] =
+      (from, newFrom) match {
+        case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
+        case (None, _)               => newFrom
+        case _                       => from
+      }
 
     /**
       * Given a possible new upper bound, chooses and returns the most constraining one (the minimum).
       */
-    private[this] def pickUpperBound(newUntil: Option[K]): Option[K] = (until, newUntil) match {
-      case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
-      case (None, _) => newUntil
-      case _ => until
-    }
+    private[this] def pickUpperBound(newUntil: Option[K]): Option[K] =
+      (until, newUntil) match {
+        case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
+        case (None, _)                 => newUntil
+        case _                         => until
+      }
 
     /**
       * Returns true if the argument is inside the view bounds (between `from` and `until`).
@@ -166,34 +172,49 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
     override def rangeImpl(from: Option[K], until: Option[K]): TreeMap[K, V] =
       new TreeMapProjection(pickLowerBound(from), pickUpperBound(until))
 
-    override def get(key: K) = if (isInsideViewBounds(key)) RB.get(tree, key) else None
+    override def get(key: K) =
+      if (isInsideViewBounds(key)) RB.get(tree, key) else None
 
-    override def iterator = if (RB.size(tree) == 0) Iterator.empty else RB.iterator(tree, from, until)
-    override def keysIterator: Iterator[K] = if (RB.size(tree) == 0) Iterator.empty else RB.keysIterator(tree, from, until)
-    override def valuesIterator: Iterator[V] = if (RB.size(tree) == 0) Iterator.empty else RB.valuesIterator(tree, from, until)
-    override def keysIteratorFrom(start: K) = if (RB.size(tree) == 0) Iterator.empty else RB.keysIterator(tree, pickLowerBound(Some(start)), until)
-    override def iteratorFrom(start: K) = if (RB.size(tree) == 0) Iterator.empty else RB.iterator(tree, pickLowerBound(Some(start)), until)
-    override def valuesIteratorFrom(start: K) = if (RB.size(tree) == 0) Iterator.empty else RB.valuesIterator(tree, pickLowerBound(Some(start)), until)
+    override def iterator =
+      if (RB.size(tree) == 0) Iterator.empty else RB.iterator(tree, from, until)
+    override def keysIterator: Iterator[K] =
+      if (RB.size(tree) == 0) Iterator.empty
+      else RB.keysIterator(tree, from, until)
+    override def valuesIterator: Iterator[V] =
+      if (RB.size(tree) == 0) Iterator.empty
+      else RB.valuesIterator(tree, from, until)
+    override def keysIteratorFrom(start: K) =
+      if (RB.size(tree) == 0) Iterator.empty
+      else RB.keysIterator(tree, pickLowerBound(Some(start)), until)
+    override def iteratorFrom(start: K) =
+      if (RB.size(tree) == 0) Iterator.empty
+      else RB.iterator(tree, pickLowerBound(Some(start)), until)
+    override def valuesIteratorFrom(start: K) =
+      if (RB.size(tree) == 0) Iterator.empty
+      else RB.valuesIterator(tree, pickLowerBound(Some(start)), until)
     override def size = if (RB.size(tree) == 0) 0 else iterator.length
     override def knownSize: Int = if (RB.size(tree) == 0) 0 else -1
     override def isEmpty = RB.size(tree) == 0 || !iterator.hasNext
-    override def contains(key: K) = isInsideViewBounds(key) && RB.contains(tree, key)
+    override def contains(key: K) =
+      isInsideViewBounds(key) && RB.contains(tree, key)
 
     override def head = headOption.get
     override def headOption = {
-      val entry = if (from.isDefined) RB.minAfter(tree, from.get) else RB.min(tree)
+      val entry =
+        if (from.isDefined) RB.minAfter(tree, from.get) else RB.min(tree)
       (entry, until) match {
         case (Some(e), Some(unt)) if ordering.compare(e._1, unt) >= 0 => None
-        case _ => entry
+        case _                                                        => entry
       }
     }
 
     override def last = lastOption.get
     override def lastOption = {
-      val entry = if (until.isDefined) RB.maxBefore(tree, until.get) else RB.max(tree)
+      val entry =
+        if (until.isDefined) RB.maxBefore(tree, until.get) else RB.max(tree)
       (entry, from) match {
         case (Some(e), Some(fr)) if ordering.compare(e._1, fr) < 0 => None
-        case _ => entry
+        case _                                                     => entry
       }
     }
 
@@ -216,11 +237,12 @@ sealed class TreeMap[K, V] private (tree: RB.Tree[K, V])(implicit val ordering: 
 @SerialVersionUID(3L)
 object TreeMap extends SortedMapFactory[TreeMap] {
 
-  def from[K : Ordering, V](it: IterableOnce[(K, V)]): TreeMap[K, V] =
+  def from[K: Ordering, V](it: IterableOnce[(K, V)]): TreeMap[K, V] =
     Growable.from(empty[K, V], it)
 
-  def empty[K : Ordering, V]: TreeMap[K, V] = new TreeMap[K, V]()
+  def empty[K: Ordering, V]: TreeMap[K, V] = new TreeMap[K, V]()
 
-  def newBuilder[K: Ordering, V]: Builder[(K, V), TreeMap[K, V]] = new GrowableBuilder(empty[K, V])
+  def newBuilder[K: Ordering, V]: Builder[(K, V), TreeMap[K, V]] =
+    new GrowableBuilder(empty[K, V])
 
 }

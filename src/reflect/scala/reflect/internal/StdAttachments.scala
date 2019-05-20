@@ -18,14 +18,21 @@ trait StdAttachments {
   self: SymbolTable =>
 
   /**
-   * Common code between reflect-internal Symbol and Tree related to Attachments.
-   */
+    * Common code between reflect-internal Symbol and Tree related to Attachments.
+    */
   trait Attachable {
-    protected var rawatt: scala.reflect.macros.Attachments { type Pos = Position } = NoPosition
+    protected var rawatt
+      : scala.reflect.macros.Attachments { type Pos = Position } = NoPosition
     def attachments = rawatt
-    def setAttachments(attachments: scala.reflect.macros.Attachments { type Pos = Position }): this.type = { rawatt = attachments; this }
-    def updateAttachment[T: ClassTag](attachment: T): this.type = { rawatt = rawatt.update(attachment); this }
-    def removeAttachment[T: ClassTag]: this.type = { rawatt = rawatt.remove[T]; this }
+    def setAttachments(attachments: scala.reflect.macros.Attachments {
+      type Pos = Position
+    }): this.type = { rawatt = attachments; this }
+    def updateAttachment[T: ClassTag](attachment: T): this.type = {
+      rawatt = rawatt.update(attachment); this
+    }
+    def removeAttachment[T: ClassTag]: this.type = {
+      rawatt = rawatt.remove[T]; this
+    }
     def getAndRemoveAttachment[T: ClassTag]: Option[T] = {
       val r = attachments.get[T]
       if (r.nonEmpty) removeAttachment[T]
@@ -50,10 +57,11 @@ trait StdAttachments {
   }
 
   /** Stores the trees that give rise to a refined type to be used in reification.
-   *  Unfortunately typed `CompoundTypeTree` is lacking essential info, and the reifier cannot use `CompoundTypeTree.tpe`.
-   *  Therefore we need this hack (see `Reshape.toPreTyperTypeTree` for a detailed explanation).
-   */
-  case class CompoundTypeTreeOriginalAttachment(parents: List[Tree], stats: List[Tree])
+    *  Unfortunately typed `CompoundTypeTree` is lacking essential info, and the reifier cannot use `CompoundTypeTree.tpe`.
+    *  Therefore we need this hack (see `Reshape.toPreTyperTypeTree` for a detailed explanation).
+    */
+  case class CompoundTypeTreeOriginalAttachment(parents: List[Tree],
+                                                stats: List[Tree])
 
   /** Attached to a Function node during type checking when the expected type is a SAM type (and not a built-in FunctionN).
     *
@@ -67,32 +75,33 @@ trait StdAttachments {
     *
     * @since 2.12.0-M4
     */
-  case class SAMFunction(samTp: Type, sam: Symbol, synthCls: Symbol) extends PlainAttachment
+  case class SAMFunction(samTp: Type, sam: Symbol, synthCls: Symbol)
+      extends PlainAttachment
 
   case object DelambdafyTarget extends PlainAttachment
 
   /** When present, indicates that the host `Ident` has been created from a backquoted identifier.
-   */
+    */
   case object BackquotedIdentifierAttachment extends PlainAttachment
 
   /** A pattern binding exempt from unused warning.
-   *
-   *  Its host `Ident` has been created from a pattern2 binding, `case x @ p`.
-   *  In the absence of named parameters in patterns, allows nuanced warnings for unused variables.
-   *  Hence, `case X(x = _) =>` would not warn; for now, `case X(x @ _) =>` is documentary if x is unused.
-   */
+    *
+    *  Its host `Ident` has been created from a pattern2 binding, `case x @ p`.
+    *  In the absence of named parameters in patterns, allows nuanced warnings for unused variables.
+    *  Hence, `case X(x = _) =>` would not warn; for now, `case X(x @ _) =>` is documentary if x is unused.
+    */
   case object NoWarnAttachment extends PlainAttachment
 
   /** Indicates that a `ValDef` was synthesized from a pattern definition, `val P(x)`.
-   */
+    */
   case object PatVarDefAttachment extends PlainAttachment
 
   /** Identifies trees are either result or intermediate value of for loop desugaring.
-   */
+    */
   case object ForAttachment extends PlainAttachment
 
   /** Identifies unit constants which were inserted by the compiler (e.g. gen.mkBlock)
-   */
+    */
   case object SyntheticUnitAttachment extends PlainAttachment
 
   /** Untyped list of subpatterns attached to selector dummy. */

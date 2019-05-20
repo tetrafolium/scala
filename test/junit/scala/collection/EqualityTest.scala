@@ -30,7 +30,9 @@ class EqualityTest {
   def viewsComparisonDoesntConsumeElements(): Unit = {
     val xs = List(1, 2, 3)
     var n = 0
-    val xsView = xs.view.map { x => n += 1; x }
+    val xsView = xs.view.map { x =>
+      n += 1; x
+    }
     Assert.assertTrue(xs != xsView)
     Assert.assertTrue(xsView != xs)
     Assert.assertTrue(xs.## != xsView.##)

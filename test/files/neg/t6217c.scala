@@ -8,7 +8,7 @@ package object b {
   def g: B = c.y
   def k: B = (new a.b.A().x: Any) match {
     case b: _root_.b.B => b
-    case _ => ???
+    case _             => ???
   }
 }
 
@@ -18,7 +18,7 @@ package a {
       val x = new _root_.b.B
       def k: _root_.b.B = (x: Any) match {
         case b: _root_.b.B => b
-        case _ => ???
+        case _             => ???
       }
     }
     class C {
@@ -27,7 +27,7 @@ package a {
       def z = a._root_.X
       def v = a.b.p.Y
       def w = a._root_.p.Y
-    } 
+    }
   }
   package b.p {
     object Y

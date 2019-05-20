@@ -65,16 +65,19 @@ class CompileSocket extends CompileOutputCommon {
 
   /** The vm part of the command to start a new scala compile server */
   protected val vmCommand = Properties.scalaHome match {
-    case ""       => cmdName
-    case dirname  =>
+    case "" => cmdName
+    case dirname =>
       val trial = File(dirname) / "bin" / cmdName
       if (trial.canRead) trial.path
       else cmdName
   }
 
   /** The class name of the scala compile server */
-  protected val serverClass     = CompileServer.getClass.getName.init
-  protected def serverClassArgs = (if (verbose) List("-v") else Nil) ::: (if (fixPort > 0) List("-p", fixPort.toString) else Nil)
+  protected val serverClass = CompileServer.getClass.getName.init
+  protected def serverClassArgs =
+    (if (verbose) List("-v") else Nil) ::: (if (fixPort > 0)
+                                              List("-p", fixPort.toString)
+                                            else Nil)
 
   /* A directory holding port identification files */
   private lazy val portsDir = mkDaemonDir("fsc_port")
@@ -98,18 +101,23 @@ class CompileSocket extends CompileOutputCommon {
   def portFile(port: Int): File = portsDir / File(port.toString)
 
   /** Poll for a server port number; return -1 if none exists yet */
-  private def pollPort(): Int = if (fixPort > 0) {
-    if (portsDir.list.toList.exists(_.name == fixPort.toString)) fixPort else -1
-  } else portsDir.list.toList match {
-    case Nil      => -1
-    case x :: xs  => try x.name.toInt catch {
-      case e: Exception => x.delete() ; throw e
-    }
-  }
+  private def pollPort(): Int =
+    if (fixPort > 0) {
+      if (portsDir.list.toList.exists(_.name == fixPort.toString)) fixPort
+      else -1
+    } else
+      portsDir.list.toList match {
+        case Nil => -1
+        case x :: xs =>
+          try x.name.toInt
+          catch {
+            case e: Exception => x.delete(); throw e
+          }
+      }
 
   /** Get the port number to which a scala compile server is connected;
-   *  If no server is running yet, then create one.
-   */
+    *  If no server is running yet, then create one.
+    */
   def getPort(vmArgs: String): Int = {
     val maxPolls = 300
     val sleepTime = 25L
@@ -128,7 +136,8 @@ class CompileSocket extends CompileOutputCommon {
     }
     info("[Port number: " + port + "]")
     if (port < 0)
-      fatal(s"Could not connect to compilation daemon after $attempts attempts. To run without it, use `-nocompdaemon` or `-nc`.")
+      fatal(
+        s"Could not connect to compilation daemon after $attempts attempts. To run without it, use `-nocompdaemon` or `-nc`.")
     port
   }
 
@@ -137,7 +146,8 @@ class CompileSocket extends CompileOutputCommon {
     val file = portFile(port)
     // 128 bits of delicious randomness, suitable for printing with println over a socket,
     // and storage in a file -- see getPassword
-    val secretDigits = new BigInteger(128, new SecureRandom()).toString.getBytes("UTF-8")
+    val secretDigits =
+      new BigInteger(128, new SecureRandom()).toString.getBytes("UTF-8")
 
     try OwnerOnlyChmod.chmodFileAndWrite(file.jfile.toPath, secretDigits)
     catch chmodFailHandler(s"Cannot create file: ${file}")
@@ -150,28 +160,32 @@ class CompileSocket extends CompileOutputCommon {
     * create a new daemon if necessary.  Returns None if the connection
     * cannot be established.
     */
-  def getOrCreateSocket(vmArgs: String, create: Boolean = true, fixedPort: Int = 0): Option[Socket] = {
+  def getOrCreateSocket(vmArgs: String,
+                        create: Boolean = true,
+                        fixedPort: Int = 0): Option[Socket] = {
     fixPort = fixedPort
-    val maxMillis = 10L * 1000   // try for 10 seconds
+    val maxMillis = 10L * 1000 // try for 10 seconds
     val retryDelay = 50L
     val maxAttempts = (maxMillis / retryDelay).toInt
 
     def getsock(attempts: Int): Option[Socket] = attempts match {
-      case 0    => warn("Unable to establish connection to compilation daemon") ; None
-      case num  =>
+      case 0 =>
+        warn("Unable to establish connection to compilation daemon"); None
+      case num =>
         val port = if (create) getPort(vmArgs) else pollPort()
         if (port < 0) return None
 
         Socket.localhost(port).either match {
-          case Right(socket)  =>
+          case Right(socket) =>
             info("[Connected to compilation daemon at port %d]" format port)
             Some(socket)
-          case Left(err)      =>
+          case Left(err) =>
             info(err.toString)
-            info("[Connecting to compilation daemon at port %d failed; re-trying...]" format port)
+            info(
+              "[Connecting to compilation daemon at port %d failed; re-trying...]" format port)
 
             if (attempts % 2 == 0)
-              deletePort(port)      // 50% chance to stop trying on this port
+              deletePort(port) // 50% chance to stop trying on this port
 
             Thread sleep retryDelay // delay before retrying
             getsock(attempts - 1)
@@ -180,20 +194,25 @@ class CompileSocket extends CompileOutputCommon {
     getsock(maxAttempts)
   }
 
-  def getSocket(serverAdr: String): Option[Socket] = (
-    for ((name, portStr) <- splitWhere(serverAdr, _ == ':', doDropIndex = true) ; port <- portStr.toIntOption) yield
-      getSocket(name, port)
-  ) getOrElse fatal("Malformed server address: %s; exiting" format serverAdr)
+  def getSocket(serverAdr: String): Option[Socket] =
+    (
+      for ((name, portStr) <- splitWhere(serverAdr,
+                                         _ == ':',
+                                         doDropIndex = true);
+           port <- portStr.toIntOption) yield getSocket(name, port)
+    ) getOrElse fatal("Malformed server address: %s; exiting" format serverAdr)
 
   def getSocket(hostName: String, port: Int): Option[Socket] = {
     val sock = Socket(hostName, port).opt
-    if (sock.isEmpty) warn("Unable to establish connection to server %s:%d".format(hostName, port))
+    if (sock.isEmpty)
+      warn(
+        "Unable to establish connection to server %s:%d".format(hostName, port))
     sock
   }
 
   def getPassword(port: Int): String = {
-    val ff  = portFile(port)
-    val f   = ff.bufferedReader(Codec.UTF8)
+    val ff = portFile(port)
+    val f = ff.bufferedReader(Codec.UTF8)
 
     // allow some time for the server to start up
     def check = {
@@ -222,7 +241,8 @@ class CompileSocket extends CompileOutputCommon {
     else fatal(s"Could not create compilation daemon directory $dir")
 
     try OwnerOnlyChmod.chmod(dir.jfile.toPath)
-    catch chmodFailHandler(s"Failed to change permissions on $dir. The compilation daemon requires a secure directory; use -nc to disable the daemon.")
+    catch chmodFailHandler(
+      s"Failed to change permissions on $dir. The compilation daemon requires a secure directory; use -nc to disable the daemon.")
     dir
   }
 }

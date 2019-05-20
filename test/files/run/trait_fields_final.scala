@@ -11,7 +11,8 @@ abstract class Meh extends Foo
 
 object Test {
   def main(args: Array[String]): Unit = {
-    val setter = classOf[Meh].getDeclaredMethod("Foo$_setter_$Foo$$meh_$eq", java.lang.Boolean.TYPE)
+    val setter = classOf[Meh]
+      .getDeclaredMethod("Foo$_setter_$Foo$$meh_$eq", java.lang.Boolean.TYPE)
     val getter = classOf[Meh].getDeclaredMethod("Foo$$meh")
     import java.lang.reflect.Modifier._
     assert(isFinal(setter.getModifiers), setter)

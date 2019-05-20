@@ -32,6 +32,6 @@ object Test extends DirectTest {
 
 class C {
   def foo_:[Dummy](i: => Int): Int = i
-  def bar_:[Dummy](i:    Int): Int = i
+  def bar_:[Dummy](i: Int): Int = i
 }
 object C extends C

@@ -25,7 +25,8 @@ class GenericSignaturesTest extends BytecodeTesting {
       """.stripMargin
     val List(c, o, i, j, k) = compileClasses(code)
     assertEquals(o.name, "C$O$")
-    assertEquals(o.methods.asScala.find(_.name == "I").get.signature, "()LC<TT;>.O$I$;")
+    assertEquals(o.methods.asScala.find(_.name == "I").get.signature,
+                 "()LC<TT;>.O$I$;")
     assertEquals(k.signature, "<V:Ljava/lang/Object;>LC<TT;>.O$J<TV;>;")
   }
 
@@ -42,9 +43,8 @@ class GenericSignaturesTest extends BytecodeTesting {
       """.stripMargin
 
     val List(_, c) = compileClasses(code)
-    assertEquals(
-      List(("a", "LA<Ljava/lang/Object;>;"), ("b", null)),
-      c.fields.asScala.toList.map(f => (f.name, f.signature)).sorted)
+    assertEquals(List(("a", "LA<Ljava/lang/Object;>;"), ("b", null)),
+                 c.fields.asScala.toList.map(f => (f.name, f.signature)).sorted)
   }
 
   @Test
@@ -57,7 +57,8 @@ class GenericSignaturesTest extends BytecodeTesting {
         |}
       """.stripMargin
     val List(a, aM, c, cM) = compileClasses(code)
-    assertEquals(List(("MODULE$", null), ("key", null)),
+    assertEquals(
+      List(("MODULE$", null), ("key", null)),
       cM.fields.asScala.toList.map(f => (f.name, f.signature)).sorted)
   }
 }

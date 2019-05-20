@@ -8,7 +8,9 @@ object TestJDeps {
     val reflectJar = (packageBin in Compile in LocalProject("reflect")).value
 
     // jdeps -s -P build/pack/lib/scala-{library,reflect}.jar | grep -v build/pack | perl -pe 's/.*\((.*)\)$/$1/' | sort -u
-    val jdepsOut = scala.sys.process.Process("jdeps", Seq("-s", "-P", libraryJar.getPath, reflectJar.getPath)).lineStream
+    val jdepsOut = scala.sys.process
+      .Process("jdeps", Seq("-s", "-P", libraryJar.getPath, reflectJar.getPath))
+      .lineStream
 
     val profilePart = ".*\\((.*)\\)$".r
     val profiles = jdepsOut.collect {
@@ -16,6 +18,8 @@ object TestJDeps {
     }.toSet
 
     if (profiles != Set("compact1"))
-      throw new RuntimeException(jdepsOut.mkString("Detected dependency outside of compact1:\n", "\n", ""))
+      throw new RuntimeException(
+        jdepsOut
+          .mkString("Detected dependency outside of compact1:\n", "\n", ""))
   }
 }

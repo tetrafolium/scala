@@ -3,9 +3,11 @@ import reflect.internal.util._
 
 object Test extends DirectTest {
 
-  override def extraSettings: String = s"-usejavacp -cp ${testOutput.path} -opt:l:inline -opt-inline-from:** -Yopt-log-inline _ -d ${testOutput.path}"
+  override def extraSettings: String =
+    s"-usejavacp -cp ${testOutput.path} -opt:l:inline -opt-inline-from:** -Yopt-log-inline _ -d ${testOutput.path}"
 
-  override def code = """object Main {
+  override def code =
+    """object Main {
   @noinline def t1a(a: A_1) = a.a(): @inline
   @noinline def t1b(a: A_1) = (a.a(): @inline).apply(a, "")
 

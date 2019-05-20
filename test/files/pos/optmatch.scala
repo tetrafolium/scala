@@ -11,7 +11,6 @@ object NonZeroLong {
   def unapply(value: Long): NonZeroLong = new NonZeroLong(value)
 }
 
-
 object Foo {
   def unapply(x: Int): NonZeroLong = new NonZeroLong(1L << x)
   // public long unapply(int);

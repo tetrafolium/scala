@@ -1,13 +1,13 @@
 // scalac: -Xlog-implicits
 //
 object Test {
-	import B._, C._
+  import B._, C._
 
-	1.isEmpty
+  1.isEmpty
 }
 
 trait A {
-	implicit def i2s(i: Int): String = ""
+  implicit def i2s(i: Int): String = ""
 }
 
 object B extends A

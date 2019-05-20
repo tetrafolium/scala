@@ -25,13 +25,16 @@ class HashMapBenchmark {
   var missingKeys: Array[Any] = _
 
   @Setup(Level.Trial) def initKeys(): Unit = {
-    existingKeys = (0 to size).map(i => (i % 4) match {
-      case _ if stringsOnly => i.toString
-      case 0 => i.toString
-      case 1 => i.toChar
-      case 2 => i.toDouble
-      case 3 => i.toInt
-    }).toArray
+    existingKeys = (0 to size)
+      .map(i =>
+        (i % 4) match {
+          case _ if stringsOnly => i.toString
+          case 0                => i.toString
+          case 1                => i.toChar
+          case 2                => i.toDouble
+          case 3                => i.toInt
+      })
+      .toArray
     missingKeys = (size to 2 * size).toArray.map(_.toString)
   }
 
@@ -40,8 +43,10 @@ class HashMapBenchmark {
   var map2: collection.immutable.Map[Any, Any] = null
 
   @Setup(Level.Trial) def initialize = {
-    map = collection.immutable.Map(existingKeys.map(x => (x, x)) : _*)
-    map2 = collection.immutable.Map(existingKeys.splitAt(10)._1.map(x => (x, (x, x))) ++ missingKeys.map(x => (x, x)) : _*)
+    map = collection.immutable.Map(existingKeys.map(x => (x, x)): _*)
+    map2 = collection.immutable.Map(
+      existingKeys.splitAt(10)._1.map(x => (x, (x, x))) ++ missingKeys.map(x =>
+        (x, x)): _*)
   }
 
   @Benchmark def concat(bh: Blackhole): Unit = {

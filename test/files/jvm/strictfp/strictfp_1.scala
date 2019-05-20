@@ -3,11 +3,11 @@ package strictfp
 import annotation.strictfp
 
 class A {
-  @strictfp def foo(f: Float) = { def bar = f ; bar }
+  @strictfp def foo(f: Float) = { def bar = f; bar }
 }
 
 trait B {
-  @strictfp def foo(f: Float) = { def bar = f ; bar }
+  @strictfp def foo(f: Float) = { def bar = f; bar }
 }
 
 @strictfp class C {
@@ -27,12 +27,12 @@ class E(val f: Float) extends AnyVal {
 }
 
 @strictfp class G {
-  class I  { def foo(f: Float) = { def bar = f; bar } }
+  class I { def foo(f: Float) = { def bar = f; bar } }
   object I { def foo(f: Float) = { def bar = f; bar } }
 }
 
 @strictfp object H {
-  class I  { def foo(f: Float) = { def bar = f; bar } }
+  class I { def foo(f: Float) = { def bar = f; bar } }
   object I { def foo(f: Float) = { def bar = f; bar } }
 }
 

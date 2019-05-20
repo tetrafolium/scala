@@ -4,9 +4,9 @@ object UnapplySeqTest {
 
 object Test extends App {
   null match {
-    case UnapplySeqTest(5) => println("uh-oh")
-    case UnapplySeqTest(5, 1) => println("Matched!") // compiles
-    case UnapplySeqTest(5, xs @ _*) => println("toooo long: "+ (xs: Seq[Int]))
-    case _ => println("null matched")
+    case UnapplySeqTest(5)          => println("uh-oh")
+    case UnapplySeqTest(5, 1)       => println("Matched!") // compiles
+    case UnapplySeqTest(5, xs @ _*) => println("toooo long: " + (xs: Seq[Int]))
+    case _                          => println("null matched")
   }
 }

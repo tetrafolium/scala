@@ -1,11 +1,13 @@
 class Bad[X, Y](val v: Int) extends AnyVal {
   def vv = v
-  @annotation.tailrec final def foo[Z](a: Int)(b: String): Unit = {
+  @annotation.tailrec
+  final def foo[Z](a: Int)(b: String): Unit = {
     this.foo[Z](a)(b)
   }
 
-  @annotation.tailrec final def differentReceiver: Unit = {
-    {(); new Bad[X, Y](0)}.differentReceiver
+  @annotation.tailrec
+  final def differentReceiver: Unit = {
+    { (); new Bad[X, Y](0) }.differentReceiver
   }
 
   // The original test case fails with the new is/asInstanceOf semantics
@@ -17,16 +19,17 @@ class Bad[X, Y](val v: Int) extends AnyVal {
   //}
 
   // Replacement test case
-  @annotation.tailrec final def dependent[Z](a: Int)(b: String): Option[b.type] = {
+  @annotation.tailrec
+  final def dependent[Z](a: Int)(b: String): Option[b.type] = {
     this.dependent[Z](a)(b)
   }
 
-  @annotation.tailrec final def differentTypeArgs: Unit = {
-    {(); new Bad[String, Unit](0)}.differentTypeArgs
+  @annotation.tailrec
+  final def differentTypeArgs: Unit = {
+    { (); new Bad[String, Unit](0) }.differentTypeArgs
   }
 }
 
 class HK[M[_]](val v: Int) extends AnyVal {
   def hk[N[_]]: Unit = if (false) hk[M] else ()
 }
-

@@ -18,19 +18,30 @@ trait ExprTyper {
   val repl: IMain
 
   import repl._
-  import global.{ phase, Symbol, Type, exitingTyper, NoSymbol, NoType, NoPrefix, TypeRef, WildcardType }
+  import global.{
+    phase,
+    Symbol,
+    Type,
+    exitingTyper,
+    NoSymbol,
+    NoType,
+    NoPrefix,
+    TypeRef,
+    WildcardType
+  }
   import naming.freshInternalVarName
-  import global.definitions.{ MaxFunctionArity, NothingTpe }
+  import global.definitions.{MaxFunctionArity, NothingTpe}
 
   private def doInterpret(code: String): Result = {
     // interpret/interpretSynthetic may change the phase, which would have unintended effects on types.
     val savedPhase = phase
-    try interpretSynthetic(code) finally phase = savedPhase
+    try interpretSynthetic(code)
+    finally phase = savedPhase
   }
 
   def symbolOfLine(code: String): Symbol = {
     def asExpr(): Symbol = {
-      val name  = freshInternalVarName()
+      val name = freshInternalVarName()
       // Typing it with a lazy val would give us the right type, but runs
       // into compiler bugs with things like existentials, so we compile it
       // behind a def and strip the NullaryMethodType which wraps the expr.
@@ -41,7 +52,7 @@ trait ExprTyper {
           val sym0 = symbolOfTerm(name)
           // drop NullaryMethodType
           sym0.cloneSymbol setInfo exitingTyper(sym0.tpe_*.finalResultType)
-        case _          => NoSymbol
+        case _ => NoSymbol
       }
     }
     def asDefn(): Symbol = {
@@ -78,15 +89,16 @@ trait ExprTyper {
     try reporter.suppressOutput(symbolOfLine(expr).tpe) match {
       case NoType if !silent => symbolOfLine(expr).tpe // generate error
       case tpe               => tpe
-    }
-    finally typeOfExpressionDepth -= 1
+    } finally typeOfExpressionDepth -= 1
   }
 
   // Try typeString[Nothing], typeString[Nothing, Nothing], etc.
   def typeOfTypeString(typeString: String): Type = {
     val properTypeOpt = typeOfProperTypeString(typeString)
     def typeFromTypeString(n: Int): Option[Type] = {
-      val ts = typeString + List.fill(n)("_root_.scala.Nothing").mkString("[", ", ", "]")
+      val ts = typeString + List
+        .fill(n)("_root_.scala.Nothing")
+        .mkString("[", ", ", "]")
       val tpeOpt = typeOfProperTypeString(ts)
       tpeOpt map {
         // Type lambda is detected. Substitute Nothing with WildcardType.
@@ -99,13 +111,16 @@ trait ExprTyper {
         case tpe                     => tpe
       }
     }
-    val typeOpt = (1 to MaxFunctionArity).foldLeft(properTypeOpt){
-      (acc, n: Int) => acc orElse typeFromTypeString(n) }
+    val typeOpt = (1 to MaxFunctionArity).foldLeft(properTypeOpt) {
+      (acc, n: Int) =>
+        acc orElse typeFromTypeString(n)
+    }
     typeOpt getOrElse NoType
   }
 
   // This only works for proper types.
-  private[interpreter] def typeOfProperTypeString(typeString: String): Option[Type] = {
+  private[interpreter] def typeOfProperTypeString(
+      typeString: String): Option[Type] = {
     def asProperType(): Option[Type] = {
       val name = freshInternalVarName()
       val line = s"def $name: $typeString = ???"
@@ -115,7 +130,7 @@ trait ExprTyper {
             symbolOfTerm(name).asMethod.returnType
           }
           Some(tpe0)
-        case _          => None
+        case _ => None
       }
     }
     reporter.suppressOutput(asProperType())

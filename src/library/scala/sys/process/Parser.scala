@@ -15,15 +15,15 @@ package scala.sys.process
 import scala.annotation.tailrec
 
 /** A simple enough command line parser.
- */
+  */
 private[scala] object Parser {
   private final val DQ = '"'
   private final val SQ = '\''
 
   /** Split the line into tokens separated by whitespace or quotes.
-   *
-   *  @return either an error message or reverse list of tokens
-   */
+    *
+    *  @return either an error message or reverse list of tokens
+    */
   private def tokens(in: String) = {
     import Character.isWhitespace
     import java.lang.{StringBuilder => Builder}
@@ -32,17 +32,17 @@ private[scala] object Parser {
     var accum: List[String] = Nil
     var pos = 0
     var start = 0
-    val qpos = new ArrayBuffer[Int](16)    // positions of paired quotes
+    val qpos = new ArrayBuffer[Int](16) // positions of paired quotes
 
-    def cur: Int  = if (done) -1 else in.charAt(pos)
+    def cur: Int = if (done) -1 else in.charAt(pos)
     def bump() = pos += 1
-    def done   = pos >= in.length
+    def done = pos >= in.length
 
     def skipToQuote(q: Int) = {
       var escaped = false
       def terminal = in.charAt(pos) match {
-        case _ if escaped => escaped = false ; false
-        case '\\'         => escaped = true ; false
+        case _ if escaped => escaped = false; false
+        case '\\'         => escaped = true; false
         case `q`          => true
         case _            => false
       }
@@ -51,7 +51,9 @@ private[scala] object Parser {
     }
     def skipToDelim(): Boolean =
       cur match {
-        case q @ (DQ | SQ)        => { qpos += pos; bump(); skipToQuote(q) } && { qpos += pos; bump(); skipToDelim() }
+        case q @ (DQ | SQ) => { qpos += pos; bump(); skipToQuote(q) } && {
+          qpos += pos; bump(); skipToDelim()
+        }
         case -1                   => true
         case c if isWhitespace(c) => true
         case _                    => bump(); skipToDelim()
@@ -66,8 +68,8 @@ private[scala] object Parser {
           buf.append(in, p, pos)
           p = pos
         } else if (p == qpos(i)) {
-          buf.append(in, qpos(i)+1, qpos(i+1))
-          p = qpos(i+1)+1
+          buf.append(in, qpos(i) + 1, qpos(i + 1))
+          p = qpos(i + 1) + 1
           i += 2
         } else {
           buf.append(in, p, qpos(i))
@@ -79,7 +81,8 @@ private[scala] object Parser {
     def text() = {
       val res =
         if (qpos.isEmpty) in.substring(start, pos)
-        else if (qpos(0) == start && qpos(1) == pos) in.substring(start+1, pos-1)
+        else if (qpos(0) == start && qpos(1) == pos)
+          in.substring(start + 1, pos - 1)
         else copyText()
       qpos.clear()
       res
@@ -104,8 +107,9 @@ private[scala] object Parser {
   def tokenize(line: String, errorFn: String => Unit): List[String] =
     tokens(line) match {
       case Right(args) => args.reverse
-      case Left(msg)   => errorFn(msg) ; Nil
+      case Left(msg)   => errorFn(msg); Nil
     }
 
-  def tokenize(line: String): List[String] = tokenize(line, x => throw new ParseException(x))
+  def tokenize(line: String): List[String] =
+    tokenize(line, x => throw new ParseException(x))
 }

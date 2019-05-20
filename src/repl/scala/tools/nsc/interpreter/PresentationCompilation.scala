@@ -30,14 +30,18 @@ trait PresentationCompilation { self: IMain =>
     *
     * The caller is responsible for calling [[PresentationCompileResult#cleanup]] to dispose of the compiler instance.
     */
-  def presentationCompile(cursor: Int, buf: String): Either[Result, PresentationCompileResult] = {
+  def presentationCompile(
+      cursor: Int,
+      buf: String): Either[Result, PresentationCompileResult] = {
     if (global == null) Left(Error)
     else {
       val pc = newPresentationCompiler()
       val line1 = buf.patch(cursor, Cursor, 0)
       val trees = pc.newUnitParser(line1).parseStats()
       val importer = global.mkImporter(pc)
-      val request = new Request(line1, trees map (t => importer.importTree(t)), generousImports = true)
+      val request = new Request(line1,
+                                trees map (t => importer.importTree(t)),
+                                generousImports = true)
       val origUnit = request.mkUnit
       val unit = new pc.CompilationUnit(origUnit.source)
       unit.body = pc.mkImporter(global).importTree(origUnit.body)
@@ -48,7 +52,9 @@ trait PresentationCompilation { self: IMain =>
       enteringTyper(typeCheck(richUnit))
       val inputRange = pc.wrappingPos(trees)
       // too bad dependent method types don't work for constructors
-      val result = new PresentationCompileResult(pc, inputRange, cursor, buf) { val unit = richUnit ; override val compiler: pc.type = pc }
+      val result = new PresentationCompileResult(pc, inputRange, cursor, buf) {
+        val unit = richUnit; override val compiler: pc.type = pc
+      }
       Right(result)
     }
   }
@@ -63,32 +69,41 @@ trait PresentationCompilation { self: IMain =>
     */
   def newPresentationCompiler(): interactive.Global = {
     def copySettings: Settings = {
-      val s = new Settings(_ => () /* ignores "bad option -nc" errors, etc */)
+      val s = new Settings(_ => () /* ignores "bad option -nc" errors, etc */ )
       s.processArguments(global.settings.recreateArgs, processAll = false)
       s.YpresentationAnyThread.value = true
       s
     }
     val storeReporter: StoreReporter = new StoreReporter
-    val interactiveGlobal = new interactive.Global(copySettings, storeReporter) { self =>
-      def mergedFlatClasspath = {
-        val replOutClasspath = ClassPathFactory.newClassPath(replOutput.dir, settings, closeableRegistry)
-        AggregateClassPath(replOutClasspath :: global.platform.classPath :: Nil)
-      }
+    val interactiveGlobal =
+      new interactive.Global(copySettings, storeReporter) { self =>
+        def mergedFlatClasspath = {
+          val replOutClasspath = ClassPathFactory.newClassPath(
+            replOutput.dir,
+            settings,
+            closeableRegistry)
+          AggregateClassPath(
+            replOutClasspath :: global.platform.classPath :: Nil)
+        }
 
-      override lazy val platform: ThisPlatform = {
-        new JavaPlatform {
-          lazy val global: self.type = self
-          override lazy val classPath: ClassPath = mergedFlatClasspath
+        override lazy val platform: ThisPlatform = {
+          new JavaPlatform {
+            lazy val global: self.type = self
+            override lazy val classPath: ClassPath = mergedFlatClasspath
+          }
         }
       }
-    }
     new interactiveGlobal.TyperRun()
     interactiveGlobal
   }
 
   private var lastCommonPrefixCompletion: Option[String] = None
 
-  abstract class PresentationCompileResult(val compiler: interactive.Global, val inputRange: Position, val cursor: Int, val buf: String) extends PresentationCompilationResult {
+  abstract class PresentationCompileResult(val compiler: interactive.Global,
+                                           val inputRange: Position,
+                                           val cursor: Int,
+                                           val buf: String)
+      extends PresentationCompilationResult {
     val unit: compiler.RichCompilationUnit // depmet broken for constructors, can't be ctor arg
 
     override def cleanup(): Unit = {
@@ -96,17 +111,25 @@ trait PresentationCompilation { self: IMain =>
     }
     import compiler.CompletionResult
 
-    def completionsAt(cursor: Int): CompletionResult = compiler.completionsAt(unit.source.position(cursor))
+    def completionsAt(cursor: Int): CompletionResult =
+      compiler.completionsAt(unit.source.position(cursor))
 
-    def typedTreeAt(code: String, selectionStart: Int, selectionEnd: Int): compiler.Tree =
-      compiler.typedTreeAt(new RangePosition(unit.source, selectionStart, selectionStart, selectionEnd))
+    def typedTreeAt(code: String,
+                    selectionStart: Int,
+                    selectionEnd: Int): compiler.Tree =
+      compiler.typedTreeAt(
+        new RangePosition(unit.source,
+                          selectionStart,
+                          selectionStart,
+                          selectionEnd))
 
     // offsets are 0-based
-    def treeAt(start: Int, end: Int): compiler.Tree = treeAt(unit.source.position(start).withEnd(end))
+    def treeAt(start: Int, end: Int): compiler.Tree =
+      treeAt(unit.source.position(start).withEnd(end))
     def treeAt(pos: Position): compiler.Tree = {
       import compiler.{Locator, Template, Block}
       new Locator(pos) locateIn unit.body match {
-        case t@Template(_, _, constructor :: (rest :+ last)) =>
+        case t @ Template(_, _, constructor :: (rest :+ last)) =>
           if (rest.isEmpty) last
           else Block(rest, last)
         case t =>
@@ -125,7 +148,6 @@ trait PresentationCompilation { self: IMain =>
       treeString(tree) + " // : " + tree.tpe.safeToString
     }
 
-
     override def typeAt(start: Int, end: Int) =
       typeString(typedTreeAt(buf, start, end))
 
@@ -136,7 +158,8 @@ trait PresentationCompilation { self: IMain =>
       import compiler._
       import CompletionResult.NoResults
 
-      def defStringCandidates(matching: List[Member], name: Name): Candidates = {
+      def defStringCandidates(matching: List[Member],
+                              name: Name): Candidates = {
         val defStrings = for {
           member <- matching
           if member.symNameDropLocal == name
@@ -154,42 +177,58 @@ trait PresentationCompilation { self: IMain =>
           def shouldHide(m: Member): Boolean = {
             val isUniversal = definitions.isUniversalMember(m.sym)
             def viaUniversalExtensionMethod = m match {
-              case t: TypeMember if t.implicitlyAdded && t.viaView.info.params.head.info.bounds.isEmptyBounds => true
+              case t: TypeMember
+                  if t.implicitlyAdded && t.viaView.info.params.head.info.bounds.isEmptyBounds =>
+                true
               case _ => false
             }
             (
               isUniversal && nme.isReplWrapperName(m.prefix.typeSymbol.name)
-                || isUniversal && tabCount == 0 && r.name.isEmpty
-                || viaUniversalExtensionMethod && tabCount == 0 && r.name.isEmpty
-              )
+              || isUniversal && tabCount == 0 && r.name.isEmpty
+              || viaUniversalExtensionMethod && tabCount == 0 && r.name.isEmpty
+            )
           }
 
           val matching = r.matchingResults().filterNot(shouldHide)
-          val tabAfterCommonPrefixCompletion = lastCommonPrefixCompletion.contains(buf.substring(inputRange.start, cursor)) && matching.exists(_.symNameDropLocal == r.name)
-          val doubleTab = tabCount > 0 && matching.forall(_.symNameDropLocal == r.name)
-          if (tabAfterCommonPrefixCompletion || doubleTab) defStringCandidates(matching, r.name)
+          val tabAfterCommonPrefixCompletion = lastCommonPrefixCompletion
+            .contains(buf.substring(inputRange.start, cursor)) && matching
+            .exists(_.symNameDropLocal == r.name)
+          val doubleTab = tabCount > 0 && matching.forall(
+            _.symNameDropLocal == r.name)
+          if (tabAfterCommonPrefixCompletion || doubleTab)
+            defStringCandidates(matching, r.name)
           else if (matching.isEmpty) {
             // Lenient matching based on camel case and on eliding JavaBean "get" / "is" boilerplate
-            val camelMatches: List[Member] = r.matchingResults(CompletionResult.camelMatch(_)).filterNot(shouldHide)
-            val memberCompletions = camelMatches.map(_.symNameDropLocal.decoded).distinct.sorted
+            val camelMatches: List[Member] = r
+              .matchingResults(CompletionResult.camelMatch(_))
+              .filterNot(shouldHide)
+            val memberCompletions =
+              camelMatches.map(_.symNameDropLocal.decoded).distinct.sorted
             def allowCompletion = (
               (memberCompletions.size == 1)
-                || CompletionResult.camelMatch(r.name)(r.name.newName(StringOps.longestCommonPrefix(memberCompletions)))
-              )
+                || CompletionResult.camelMatch(r.name)(
+                  r.name.newName(
+                    StringOps.longestCommonPrefix(memberCompletions)))
+            )
             if (memberCompletions.isEmpty) NoCandidates
-            else if (allowCompletion) (cursor - r.positionDelta, memberCompletions)
+            else if (allowCompletion)
+              (cursor - r.positionDelta, memberCompletions)
             else (cursor, "" :: memberCompletions)
-          } else if (matching.nonEmpty && matching.forall(_.symNameDropLocal == r.name))
+          } else if (matching.nonEmpty && matching.forall(
+                       _.symNameDropLocal == r.name))
             NoCandidates // don't offer completion if the only option has been fully typed already
           else {
             // regular completion
-            val memberCompletions: List[String] = matching.map(_.symNameDropLocal.decoded).distinct.sorted
+            val memberCompletions: List[String] =
+              matching.map(_.symNameDropLocal.decoded).distinct.sorted
             (cursor - r.positionDelta, memberCompletions)
           }
       }
       lastCommonPrefixCompletion =
         if (found != NoCandidates && buf.length >= found._1)
-          Some(buf.substring(inputRange.start, found._1) + StringOps.longestCommonPrefix(found._2))
+          Some(
+            buf.substring(inputRange.start, found._1) + StringOps
+              .longestCommonPrefix(found._2))
         else
           None
       found

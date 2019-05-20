@@ -15,7 +15,6 @@ package tools.scalap
 
 import java.io._
 
-
 class CodeWriter(writer: Writer) {
   import java.lang.System.{lineSeparator => nl}
 

@@ -1,15 +1,17 @@
 package benchmark
 
 /** Builder of a [[KeySeq]]
-  * 
+  *
   * @tparam K the type of the keys
   */
 trait KeySeqBuilder[K] {
+
   /** Return a [[KeySeq]] having at least the given size. */
   def build(size: Int): KeySeq[K]
 }
 
 object KeySeqBuilder {
+
   /** Builder of a sequence of `Int` keys.
     * Simply maps the sequence index to itself.
     */

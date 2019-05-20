@@ -25,10 +25,11 @@ final class ReusableInstance[T <: AnyRef](make: () => T) {
 
   @inline def using[R](action: T => R): R =
     if (taken) action(make())
-    else try {
-      taken = true
-      action(cached)
-    } finally taken = false
+    else
+      try {
+        taken = true
+        action(cached)
+      } finally taken = false
 }
 
 object ReusableInstance {

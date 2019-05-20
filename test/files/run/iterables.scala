@@ -5,12 +5,14 @@ object Test extends App {
     def iterator = new Iterator[Int] {
       def hasNext = i < n
       def next =
-        if (hasNext) { val v = i; i += 1; v }
-        else throw new IndexOutOfBoundsException("empty iterator")
+        if (hasNext) { val v = i; i += 1; v } else
+          throw new IndexOutOfBoundsException("empty iterator")
     }
   }
 
-  class TestStrict(n: Int) extends Test(n) with StrictOptimizedIterableOps[Int, Iterable, Iterable[Int]]
+  class TestStrict(n: Int)
+      extends Test(n)
+      with StrictOptimizedIterableOps[Int, Iterable, Iterable[Int]]
 
   {
     val x = new Test(10)

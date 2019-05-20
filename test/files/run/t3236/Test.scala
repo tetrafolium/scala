@@ -3,14 +3,24 @@ import scala.language.reflectiveCalls
 object Test extends App {
   val theClass = classOf[AnnotationTest]
 
-  def annotation[T <: java.lang.annotation.Annotation](annotationClass: Class[T], methodName: String): T =
-    theClass.getDeclaredMethod(methodName)
+  def annotation[T <: java.lang.annotation.Annotation](
+      annotationClass: Class[T],
+      methodName: String): T =
+    theClass
+      .getDeclaredMethod(methodName)
       .getAnnotation[T](annotationClass)
 
-  def check[T, U <: java.lang.annotation.Annotation { def value(): T } ](annotationClass: Class[U], methodName: String, expected: T): Unit = {
+  def check[T, U <: java.lang.annotation.Annotation { def value(): T }](
+      annotationClass: Class[U],
+      methodName: String,
+      expected: T): Unit = {
     val a = annotation(annotationClass, methodName)
-    assert(a != null, s"No annotation of type $annotationClass found on method $methodName")
-    assert(a.value() == expected, s"Actual value of annotation $a on $methodName was not of expected value $expected")
+    assert(
+      a != null,
+      s"No annotation of type $annotationClass found on method $methodName")
+    assert(
+      a.value() == expected,
+      s"Actual value of annotation $a on $methodName was not of expected value $expected")
   }
 
   check(classOf[BooleanAnnotation], "test1", Constants.BooleanTrue)

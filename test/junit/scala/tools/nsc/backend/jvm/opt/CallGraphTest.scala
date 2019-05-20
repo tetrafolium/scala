@@ -24,23 +24,33 @@ class CallGraphTest extends BytecodeTesting {
   import global.genBCode.{bTypes, postProcessor}
   import postProcessor.{byteCodeRepository, callGraph}
 
-
-  compiler.keepPerRunCachesAfterRun(List(
-    JavaClearable.forMap(bTypes.classBTypeCache),
-    postProcessor.byteCodeRepository.compilingClasses,
-    postProcessor.byteCodeRepository.parsedClasses,
-    postProcessor.callGraph.callsites))
+  compiler.keepPerRunCachesAfterRun(
+    List(
+      JavaClearable.forMap(bTypes.classBTypeCache),
+      postProcessor.byteCodeRepository.compilingClasses,
+      postProcessor.byteCodeRepository.parsedClasses,
+      postProcessor.callGraph.callsites
+    ))
 
   import callGraph._
   import global.genBCode.bTypes._
   import postProcessor.bTypesFromClassfile._
 
-  def callsInMethod(methodNode: MethodNode): List[MethodInsnNode] = methodNode.instructions.iterator.asScala.collect({
-    case call: MethodInsnNode => call
-  }).toList
+  def callsInMethod(methodNode: MethodNode): List[MethodInsnNode] =
+    methodNode.instructions.iterator.asScala
+      .collect({
+        case call: MethodInsnNode => call
+      })
+      .toList
 
-  def checkCallsite(call: MethodInsnNode, callsiteMethod: MethodNode, target: MethodNode, calleeDeclClass: ClassBType,
-                    safeToInline: Boolean, atInline: Boolean, atNoInline: Boolean, argInfos: IntMap[ArgInfo] = IntMap.empty) = {
+  def checkCallsite(call: MethodInsnNode,
+                    callsiteMethod: MethodNode,
+                    target: MethodNode,
+                    calleeDeclClass: ClassBType,
+                    safeToInline: Boolean,
+                    atInline: Boolean,
+                    atNoInline: Boolean,
+                    argInfos: IntMap[ArgInfo] = IntMap.empty) = {
     val callsite = callGraph.callsites(callsiteMethod)(call)
     try {
       assert(callsite.callsiteInstruction == call)
@@ -93,26 +103,44 @@ class CallGraphTest extends BytecodeTesting {
       "D::f1()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden.", // only one warning for D.f1: C.f1 is not annotated @inline
       "C::f3()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden.", // only one warning for C.f3: D.f3 does not have @inline (and it would also be safe to inline)
       "C::f4()I is annotated @inline but could not be inlined:\nThe operand stack at the callsite in Test::t1(LC;)I contains more values",
-      "C::f4()I is annotated @inline but could not be inlined:\nThe operand stack at the callsite in Test::t2(LD;)I contains more values")
+      "C::f4()I is annotated @inline but could not be inlined:\nThe operand stack at the callsite in Test::t2(LD;)I contains more values"
+    )
     var msgCount = 0
     val checkMsg = (m: StoreReporter#Info) => {
       msgCount += 1
       ok exists (m.msg contains _)
     }
-    val List(cCls, cMod, dCls, testCls) = { compileClasses(code, allowMessage = checkMsg); compiledClassesFromCache }
+    val List(cCls, cMod, dCls, testCls) = {
+      compileClasses(code, allowMessage = checkMsg); compiledClassesFromCache
+    }
     assert(msgCount == 4, msgCount)
 
-    val List(cf1, cf2, cf3, cf4, cf5, cf6, cf7) = getAsmMethods(cCls, _.startsWith("f"))
+    val List(cf1, cf2, cf3, cf4, cf5, cf6, cf7) =
+      getAsmMethods(cCls, _.startsWith("f"))
     val List(df1, df3) = getAsmMethods(dCls, _.startsWith("f"))
     val g1 = getAsmMethod(cMod, "g1")
     val List(t1, t2) = getAsmMethods(testCls, _.startsWith("t"))
 
-    val List(cf1Call, cf2Call, cf3Call, cf4Call, cf5Call, cf6Call, cf7Call, cg1Call) = callsInMethod(t1)
-    val List(df1Call, df2Call, df3Call, df4Call, df5Call, df6Call, df7Call, dg1Call) = callsInMethod(t2)
+    val List(cf1Call,
+             cf2Call,
+             cf3Call,
+             cf4Call,
+             cf5Call,
+             cf6Call,
+             cf7Call,
+             cg1Call) = callsInMethod(t1)
+    val List(df1Call,
+             df2Call,
+             df3Call,
+             df4Call,
+             df5Call,
+             df6Call,
+             df7Call,
+             dg1Call) = callsInMethod(t2)
 
-    val cClassBType  = classBTypeFromClassNode(cCls)
+    val cClassBType = classBTypeFromClassNode(cCls)
     val cMClassBType = classBTypeFromClassNode(cMod)
-    val dClassBType  = classBTypeFromClassNode(dCls)
+    val dClassBType = classBTypeFromClassNode(dCls)
 
     checkCallsite(cf1Call, t1, cf1, cClassBType, false, false, false)
     checkCallsite(cf2Call, t1, cf2, cClassBType, true, false, false)
@@ -143,10 +171,21 @@ class CallGraphTest extends BytecodeTesting {
     val List(c) = { compileClasses(code); compiledClassesFromCache }
     val m = getAsmMethod(c, "m")
     val List(fn) = callsInMethod(m)
-    val forNameMeth = byteCodeRepository.methodNode("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;").get._1
+    val forNameMeth = byteCodeRepository
+      .methodNode("java/lang/Class",
+                  "forName",
+                  "(Ljava/lang/String;)Ljava/lang/Class;")
+      .get
+      ._1
     val classTp = cachedClassBType("java/lang/Class")
     val r = callGraph.callsites(m)(fn)
-    checkCallsite(fn, m, forNameMeth, classTp, safeToInline = false, atInline = false, atNoInline = false)
+    checkCallsite(fn,
+                  m,
+                  forNameMeth,
+                  classTp,
+                  safeToInline = false,
+                  atInline = false,
+                  atNoInline = false)
   }
 
   @Test
@@ -169,7 +208,8 @@ class CallGraphTest extends BytecodeTesting {
         |""".stripMargin
     val List(c, d, e) = compileClasses(code)
 
-    def callIn(m: String) = callGraph.callsites.find(_._1.name == m).get._2.values.head
+    def callIn(m: String) =
+      callGraph.callsites.find(_._1.name == m).get._2.values.head
     val t1h = callIn("t1")
     assertEquals(t1h.argInfos.toList, List((1, FunctionLiteral)))
 
@@ -180,7 +220,7 @@ class CallGraphTest extends BytecodeTesting {
     assertEquals(t3h.argInfos.toList, List((1, FunctionLiteral)))
 
     val selfSamCallD = callIn("selfSamCallD")
-    assertEquals(selfSamCallD.argInfos.toList, List((0,ForwardedParam(0))))
+    assertEquals(selfSamCallD.argInfos.toList, List((0, ForwardedParam(0))))
 
     val selfSamCallE = callIn("selfSamCallE")
     assertEquals(selfSamCallE.argInfos.toList, List())
@@ -203,10 +243,11 @@ class CallGraphTest extends BytecodeTesting {
       """.stripMargin
 
     compileClasses(code)
-    def callIn(m: String) = callGraph.callsites.find(_._1.name == m).get._2.values.head
-    assertEquals(List((1, FunctionLiteral)),   callIn("t1").argInfos.toList)
+    def callIn(m: String) =
+      callGraph.callsites.find(_._1.name == m).get._2.values.head
+    assertEquals(List((1, FunctionLiteral)), callIn("t1").argInfos.toList)
     assertEquals(List((1, ForwardedParam(2))), callIn("t2").argInfos.toList)
-    assertEquals(List((1, FunctionLiteral)),   callIn("t3").argInfos.toList)
-    assertEquals(Nil,                          callIn("t4").argInfos.toList)
+    assertEquals(List((1, FunctionLiteral)), callIn("t3").argInfos.toList)
+    assertEquals(Nil, callIn("t4").argInfos.toList)
   }
 }

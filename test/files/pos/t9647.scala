@@ -6,7 +6,7 @@ object Test {
 
   @annotation.tailrec
   def foo[L <: HList](l: L): Unit = l match {
-    case HNil => ()
+    case HNil        => ()
     case HCons(h, t) => foo(t)
   }
 

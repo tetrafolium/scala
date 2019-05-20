@@ -16,7 +16,12 @@ package nsc
 
 import java.io.{FileNotFoundException, IOException}
 import java.net.URL
-import java.nio.charset.{Charset, CharsetDecoder, IllegalCharsetNameException, UnsupportedCharsetException}
+import java.nio.charset.{
+  Charset,
+  CharsetDecoder,
+  IllegalCharsetNameException,
+  UnsupportedCharsetException
+}
 
 import scala.collection.{immutable, mutable}
 import io.{AbstractFile, SourceReader}
@@ -24,7 +29,13 @@ import util.{ClassPath, returning}
 import reporters.{Reporter => LegacyReporter}
 import scala.reflect.ClassTag
 import scala.reflect.internal.{Reporter => InternalReporter}
-import scala.reflect.internal.util.{BatchSourceFile, FreshNameCreator, NoSourceFile, ScriptSourceFile, SourceFile}
+import scala.reflect.internal.util.{
+  BatchSourceFile,
+  FreshNameCreator,
+  NoSourceFile,
+  ScriptSourceFile,
+  SourceFile
+}
 import scala.reflect.internal.pickling.PickleBuffer
 import symtab.{Flags, SymbolTable, SymbolTrackers}
 import symtab.classfile.Pickler
@@ -62,14 +73,17 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   override val useOffsetPositions = !currentSettings.Yrangepos
 
   type RuntimeClass = java.lang.Class[_]
-  implicit val RuntimeClassTag: ClassTag[RuntimeClass] = ClassTag[RuntimeClass](classOf[RuntimeClass])
+  implicit val RuntimeClassTag: ClassTag[RuntimeClass] =
+    ClassTag[RuntimeClass](classOf[RuntimeClass])
 
   class GlobalMirror extends Roots(NoSymbol) {
     val universe: self.type = self
-    def rootLoader: LazyType = new loaders.PackageLoader(ClassPath.RootPackage, classPath)
+    def rootLoader: LazyType =
+      new loaders.PackageLoader(ClassPath.RootPackage, classPath)
     override def toString = "compiler mirror"
   }
-  implicit val MirrorTag: ClassTag[Mirror] = ClassTag[Mirror](classOf[GlobalMirror])
+  implicit val MirrorTag: ClassTag[Mirror] =
+    ClassTag[Mirror](classOf[GlobalMirror])
 
   lazy val rootMirror: Mirror = {
     val rm = new GlobalMirror
@@ -80,17 +94,21 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   def EmptyPackageClass: ClassSymbol = rootMirror.EmptyPackageClass
 
   import definitions.findNamedMember
-  def findMemberFromRoot(fullName: Name): Symbol = rootMirror.findMemberFromRoot(fullName)
+  def findMemberFromRoot(fullName: Name): Symbol =
+    rootMirror.findMemberFromRoot(fullName)
 
   // alternate constructors ------------------------------------------
 
   override def settings = currentSettings
 
-  private[this] var currentReporter: LegacyReporter = { reporter = reporter0 ; currentReporter }
+  private[this] var currentReporter: LegacyReporter = {
+    reporter = reporter0; currentReporter
+  }
 
   def reporter: LegacyReporter = currentReporter
   // enforce maxerrs if necessary
-  def reporter_=(newReporter: LegacyReporter): Unit = currentReporter = LegacyReporter.limitedReporter(settings, newReporter)
+  def reporter_=(newReporter: LegacyReporter): Unit =
+    currentReporter = LegacyReporter.limitedReporter(settings, newReporter)
 
   /** Switch to turn on detailed type logs */
   var printTypings = settings.Ytyperdebug.value
@@ -101,9 +119,11 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   def this(settings: Settings) =
     this(settings, LegacyReporter(settings))
 
-  def picklerPhase: Phase = if (currentRun.isDefined) currentRun.picklerPhase else NoPhase
+  def picklerPhase: Phase =
+    if (currentRun.isDefined) currentRun.picklerPhase else NoPhase
 
-  def erasurePhase: Phase = if (currentRun.isDefined) currentRun.erasurePhase else NoPhase
+  def erasurePhase: Phase =
+    if (currentRun.isDefined) currentRun.erasurePhase else NoPhase
 
   /* Override `newStubSymbol` defined in `SymbolTable` to provide us access
    * to the last tree to typer, whose position is the trigger of stub errors. */
@@ -126,7 +146,7 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   } with JavaPlatform
 
   type ThisPlatform = JavaPlatform { val global: Global.this.type }
-  lazy val platform: ThisPlatform  = new GlobalPlatform
+  lazy val platform: ThisPlatform = new GlobalPlatform
   /* A hook for the REPL to add a classpath entry containing products of previous runs to inliner's bytecode repository*/
   // Fixes scala/bug#8779
   def optimizerClassPath(base: ClassPath): ClassPath = base
@@ -144,12 +164,13 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** A spare instance of TreeBuilder left for backwards compatibility. */
-  lazy val treeBuilder: TreeBuilder { val global: Global.this.type } = new TreeBuilder {
-    val global: Global.this.type = Global.this
+  lazy val treeBuilder: TreeBuilder { val global: Global.this.type } =
+    new TreeBuilder {
+      val global: Global.this.type = Global.this
 
-    def unit = currentUnit
-    def source = currentUnit.source
-  }
+      def unit = currentUnit
+      def source = currentUnit.source
+    }
 
   /** Fold constants */
   object constfold extends {
@@ -178,15 +199,19 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
 
   import scala.reflect.internal.util.Statistics
   import scala.tools.nsc.transform.patmat.PatternMatchingStats
-  trait GlobalStats extends ReflectStats
-                       with TypersStats
-                       with ImplicitsStats
-                       with MacrosStats
-                       with BackendStats
-                       with PatternMatchingStats { self: Statistics => }
+  trait GlobalStats
+      extends ReflectStats
+      with TypersStats
+      with ImplicitsStats
+      with MacrosStats
+      with BackendStats
+      with PatternMatchingStats { self: Statistics =>
+  }
 
   /** Redefine statistics to include all known global + reflect stats. */
-  final object statistics extends Statistics(Global.this, settings) with GlobalStats
+  final object statistics
+      extends Statistics(Global.this, settings)
+      with GlobalStats
 
   // Components for collecting and generating output
 
@@ -202,7 +227,8 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       print(" // " + unit.source)
       if (unit.body == null) println(": tree is null")
       else {
-        val source = util.stringFromWriter(w => newTreePrinter(w) print unit.body)
+        val source =
+          util.stringFromWriter(w => newTreePrinter(w) print unit.body)
 
         // treePrinter show unit.body
         if (lastPrintedSource == source)
@@ -231,10 +257,10 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   private var propCnt = 0
   @inline final def withPropagateCyclicReferences[T](t: => T): T = {
     try {
-      propCnt = propCnt+1
+      propCnt = propCnt + 1
       t
     } finally {
-      propCnt = propCnt-1
+      propCnt = propCnt - 1
       assert(propCnt >= 0)
     }
   }
@@ -252,7 +278,7 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   // ------------ Hooks for interactive mode-------------------------
 
   /** Called every time an AST node is successfully typechecked in typerPhase.
-   */
+    */
   def signalDone(context: analyzer.Context, old: Tree, result: Tree): Unit = {}
 
   /** Called from parser, which signals hereby that a method definition has been parsed. */
@@ -267,13 +293,13 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** Register new context; called for every created context
-   */
+    */
   def registerContext(c: analyzer.Context): Unit = {
     lastSeenContext = c
   }
 
   /** Register top level class (called on entering the class)
-   */
+    */
   def registerTopLevelSym(sym: Symbol): Unit = {}
 
 // ------------------ Debugging -------------------------------------
@@ -284,12 +310,13 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** This is for WARNINGS which should reach the ears of scala developers
-   *  whenever they occur, but are not useful for normal users. They should
-   *  be precise, explanatory, and infrequent. Please don't use this as a
-   *  logging mechanism. !!! is prefixed to all messages issued via this route
-   *  to make them visually distinct.
-   */
-  @inline final override def devWarning(msg: => String): Unit = devWarning(NoPosition, msg)
+    *  whenever they occur, but are not useful for normal users. They should
+    *  be precise, explanatory, and infrequent. Please don't use this as a
+    *  logging mechanism. !!! is prefixed to all messages issued via this route
+    *  to make them visually distinct.
+    */
+  @inline final override def devWarning(msg: => String): Unit =
+    devWarning(NoPosition, msg)
   @inline final def devWarning(pos: Position, msg: => String): Unit = {
     def pos_s = if (pos eq NoPosition) "" else s" [@ $pos]"
     if (isDeveloper)
@@ -341,12 +368,20 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     }
 
     def loadReader(name: String): Option[SourceReader] = {
-      def ccon = Class.forName(name).getConstructor(classOf[CharsetDecoder], classOf[InternalReporter])
+      def ccon =
+        Class
+          .forName(name)
+          .getConstructor(classOf[CharsetDecoder], classOf[InternalReporter])
 
-      try Some(ccon.newInstance(charset.newDecoder(), reporter).asInstanceOf[SourceReader])
-      catch { case ex: Throwable =>
-        globalError("exception while trying to instantiate source reader '" + name + "'")
-        None
+      try Some(
+        ccon
+          .newInstance(charset.newDecoder(), reporter)
+          .asInstanceOf[SourceReader])
+      catch {
+        case ex: Throwable =>
+          globalError(
+            "exception while trying to instantiate source reader '" + name + "'")
+          None
       }
     }
 
@@ -358,15 +393,17 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   if (settings.verbose || settings.Ylogcp)
     reporter.echo(
       s"[search path for source files: ${classPath.asSourcePathString}]\n" +
-      s"[search path for class files: ${classPath.asClassPathString}]"
+        s"[search path for class files: ${classPath.asClassPathString}]"
     )
 
-  def getSourceFile(f: AbstractFile): BatchSourceFile = new BatchSourceFile(f, reader read f)
+  def getSourceFile(f: AbstractFile): BatchSourceFile =
+    new BatchSourceFile(f, reader read f)
 
   def getSourceFile(name: String): SourceFile = {
     val f = AbstractFile.getFile(name)
-    if (f eq null) throw new FileNotFoundException(
-      "source file '" + name + "' could not be found")
+    if (f eq null)
+      throw new FileNotFoundException(
+        "source file '" + name + "' could not be found")
     getSourceFile(f)
   }
 
@@ -392,8 +429,7 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     def run(): Unit = {
       echoPhaseSummary(this)
       val units = currentRun.units
-      while (units.hasNext)
-        applyPhase(units.next())
+      while (units.hasNext) applyPhase(units.next())
     }
 
     def apply(unit: CompilationUnit): Unit
@@ -401,7 +437,9 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     /** Is current phase cancelled on this unit? */
     def cancelled(unit: CompilationUnit) = {
       // run the typer only if in `createJavadoc` mode
-      val maxJavaPhase = if (createJavadoc) currentRun.typerPhase.id else currentRun.namerPhase.id
+      val maxJavaPhase =
+        if (createJavadoc) currentRun.typerPhase.id
+        else currentRun.namerPhase.id
       if (Thread.interrupted()) reporter.cancelled = true
       reporter.cancelled || unit.isJava && this.id > maxJavaPhase
     }
@@ -414,7 +452,7 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         inform("[running phase " + name + " on " + unit + "]")
     }
 
-    @deprecated("Unused, inlined in applyPhase", since="2.13")
+    @deprecated("Unused, inlined in applyPhase", since = "2.13")
     final def withCurrentUnit(unit: CompilationUnit)(task: => Unit): Unit = {
       beforeUnit(unit)
       if (!cancelled(unit)) {
@@ -425,8 +463,9 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     }
 
     @inline
-    @deprecated("Unused, see withCurrentUnit", since="2.13")
-    final def withCurrentUnitNoLog(unit: CompilationUnit)(task: => Unit): Unit = {
+    @deprecated("Unused, see withCurrentUnit", since = "2.13")
+    final def withCurrentUnitNoLog(unit: CompilationUnit)(
+        task: => Unit): Unit = {
       val unit0 = currentUnit
       try {
         currentRun.currentUnit = unit
@@ -463,7 +502,7 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     override val initial = true
   }
 
-  import syntaxAnalyzer.{ UnitScanner, UnitParser, JavaUnitParser }
+  import syntaxAnalyzer.{UnitScanner, UnitParser, JavaUnitParser}
 
   // !!! I think we're overdue for all these phase objects being lazy vals.
   // There's no way for a Global subclass to provide a custom typer
@@ -474,7 +513,9 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   //
   // factory for phases: namer, packageobjects, typer
   lazy val analyzer =
-    if (settings.YmacroAnnotations) new { val global: Global.this.type = Global.this } with Analyzer with MacroAnnotationNamers
+    if (settings.YmacroAnnotations) new {
+      val global: Global.this.type = Global.this
+    } with Analyzer with MacroAnnotationNamers
     else new { val global: Global.this.type = Global.this } with Analyzer
 
   // phaseName = "superaccessors"
@@ -570,7 +611,6 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     val runsRightAfter = Some("erasure")
   } with PostErasure
 
-
   // phaseName = "lambdalift"
   object lambdaLift extends {
     val global: Global.this.type = Global.this
@@ -639,47 +679,47 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** The checkers are for validating the compiler data structures
-   *  at phase boundaries.
-   */
-
+    *  at phase boundaries.
+    */
   /** Tree checker */
   object treeChecker extends {
     val global: Global.this.type = Global.this
   } with TreeCheckers
 
-  object typer extends analyzer.Typer(
-    analyzer.NoContext.make(EmptyTree, RootClass, newScope)
-  )
+  object typer
+      extends analyzer.Typer(
+        analyzer.NoContext.make(EmptyTree, RootClass, newScope)
+      )
 
   /** Add the internal compiler phases to the phases set.
-   *  This implementation creates a description map at the same time.
-   */
+    *  This implementation creates a description map at the same time.
+    */
   protected def computeInternalPhases(): Unit = {
     // Note: this fits -Xshow-phases into 80 column width, which is
     // desirable to preserve.
     val phs = List(
-      syntaxAnalyzer          -> "parse source into ASTs, perform simple desugaring",
-      analyzer.namerFactory   -> "resolve names, attach symbols to named trees",
+      syntaxAnalyzer -> "parse source into ASTs, perform simple desugaring",
+      analyzer.namerFactory -> "resolve names, attach symbols to named trees",
       analyzer.packageObjects -> "load package objects",
-      analyzer.typerFactory   -> "the meat and potatoes: type the trees",
-      superAccessors          -> "add super accessors in traits and nested classes",
-      patmat                  -> "translate match expressions",
-      extensionMethods        -> "add extension methods for inline classes",
-      pickler                 -> "serialize symbol tables",
-      refChecks               -> "reference/override checking, translate nested objects",
-      uncurry                 -> "uncurry, translate function values to anonymous classes",
-      fields                  -> "synthesize accessors and fields, add bitmaps for lazy vals",
-      tailCalls               -> "replace tail calls by jumps",
-      specializeTypes         -> "@specialized-driven class and method specialization",
-      explicitOuter           -> "this refs to outer pointers",
-      erasure                 -> "erase types, add interfaces for traits",
-      postErasure             -> "clean up erased inline classes",
-      lambdaLift              -> "move nested functions to top level",
-      constructors            -> "move field definitions into constructors",
-      mixer                   -> "mixin composition",
-      delambdafy              -> "remove lambdas",
-      cleanup                 -> "platform-specific cleanups, generate reflective calls",
-      terminal                -> "the last phase during a compilation run"
+      analyzer.typerFactory -> "the meat and potatoes: type the trees",
+      superAccessors -> "add super accessors in traits and nested classes",
+      patmat -> "translate match expressions",
+      extensionMethods -> "add extension methods for inline classes",
+      pickler -> "serialize symbol tables",
+      refChecks -> "reference/override checking, translate nested objects",
+      uncurry -> "uncurry, translate function values to anonymous classes",
+      fields -> "synthesize accessors and fields, add bitmaps for lazy vals",
+      tailCalls -> "replace tail calls by jumps",
+      specializeTypes -> "@specialized-driven class and method specialization",
+      explicitOuter -> "this refs to outer pointers",
+      erasure -> "erase types, add interfaces for traits",
+      postErasure -> "clean up erased inline classes",
+      lambdaLift -> "move nested functions to top level",
+      constructors -> "move field definitions into constructors",
+      mixer -> "mixin composition",
+      delambdafy -> "remove lambdas",
+      cleanup -> "platform-specific cleanups, generate reflective calls",
+      terminal -> "the last phase during a compilation run"
     )
 
     phs foreach (addToPhasesSet _).tupled
@@ -687,35 +727,41 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   // This is slightly inelegant but it avoids adding a new member to SubComponent,
   // and attractive -Xshow-phases output is unlikely if the descs span 20 files anyway.
   private val otherPhaseDescriptions = Map(
-    "flatten"  -> "eliminate inner classes",
-    "jvm"      -> "generate JVM bytecode"
+    "flatten" -> "eliminate inner classes",
+    "jvm" -> "generate JVM bytecode"
   ) withDefaultValue ""
 
-  protected def computePlatformPhases() = platform.platformPhases foreach { sub =>
-    addToPhasesSet(sub, otherPhaseDescriptions(sub.phaseName))
+  protected def computePlatformPhases() = platform.platformPhases foreach {
+    sub =>
+      addToPhasesSet(sub, otherPhaseDescriptions(sub.phaseName))
   }
 
   // sequences the phase assembly
   protected def computePhaseDescriptors: List[SubComponent] = {
+
     /** Allow phases to opt out of the phase assembly. */
     def cullPhases(phases: List[SubComponent]) = {
-      val enabled = if (settings.debug && settings.isInfo) phases else phases filter (_.enabled)
+      val enabled =
+        if (settings.debug && settings.isInfo) phases
+        else phases filter (_.enabled)
       def isEnabled(q: String) = enabled exists (_.phaseName == q)
       val (satisfied, unhappy) = enabled partition (_.requires forall isEnabled)
-      unhappy foreach (u => globalError(s"Phase '${u.phaseName}' requires: ${u.requires filterNot isEnabled}"))
-      satisfied   // they're happy now, but they may need an unhappy phase that was booted
+      unhappy foreach (u =>
+        globalError(
+          s"Phase '${u.phaseName}' requires: ${u.requires filterNot isEnabled}"))
+      satisfied // they're happy now, but they may need an unhappy phase that was booted
     }
-    computeInternalPhases()             // Global.scala
-    computePlatformPhases()             // backend/Platform.scala
-    computePluginPhases()               // plugins/Plugins.scala
-    cullPhases(computePhaseAssembly())  // PhaseAssembly.scala
+    computeInternalPhases() // Global.scala
+    computePlatformPhases() // backend/Platform.scala
+    computePluginPhases() // plugins/Plugins.scala
+    cullPhases(computePhaseAssembly()) // PhaseAssembly.scala
   }
 
   /* The phase descriptor list. Components that are phase factories. */
   lazy val phaseDescriptors: List[SubComponent] = computePhaseDescriptors
 
   /* The set of phase objects that is the basis for the compiler phase chain */
-  protected lazy val phasesSet     = new mutable.HashSet[SubComponent]
+  protected lazy val phasesSet = new mutable.HashSet[SubComponent]
   protected lazy val phasesDescMap = new mutable.HashMap[SubComponent, String] withDefaultValue ""
 
   protected def addToPhasesSet(sub: SubComponent, descr: String): Unit = {
@@ -730,50 +776,62 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** A description of the phases that will run in this configuration, or all if -Ydebug. */
-  def phaseDescriptions: String = phaseHelp("description", elliptically = !settings.debug, phasesDescMap)
+  def phaseDescriptions: String =
+    phaseHelp("description", elliptically = !settings.debug, phasesDescMap)
 
   /** Summary of the per-phase values of nextFlags and newFlags, shown under -Xshow-phases -Ydebug. */
   def phaseFlagDescriptions: String = {
     def fmt(ph: SubComponent) = {
-      def fstr1 = if (ph.phaseNewFlags == 0L) "" else "[START] " + Flags.flagsToString(ph.phaseNewFlags)
-      def fstr2 = if (ph.phaseNextFlags == 0L) "" else "[END] " + Flags.flagsToString(ph.phaseNextFlags)
+      def fstr1 =
+        if (ph.phaseNewFlags == 0L) ""
+        else "[START] " + Flags.flagsToString(ph.phaseNewFlags)
+      def fstr2 =
+        if (ph.phaseNextFlags == 0L) ""
+        else "[END] " + Flags.flagsToString(ph.phaseNextFlags)
       if (ph.initial) Flags.flagsToString(Flags.InitialFlags)
-      else if (ph.phaseNewFlags != 0L && ph.phaseNextFlags != 0L) fstr1 + " " + fstr2
+      else if (ph.phaseNewFlags != 0L && ph.phaseNextFlags != 0L)
+        fstr1 + " " + fstr2
       else fstr1 + fstr2
     }
     phaseHelp("new flags", elliptically = !settings.debug, fmt)
   }
 
   /** Emit a verbose phase table.
-   *  The table includes the phase id in the current assembly,
-   *  or "oo" to indicate a skipped phase, or "xx" to indicate
-   *  a disabled phase.
-   *
-   *  @param title descriptive header
-   *  @param elliptically whether to truncate the description with an ellipsis (...)
-   *  @param describe how to describe a component
-   */
-  private def phaseHelp(title: String, elliptically: Boolean, describe: SubComponent => String): String = {
-    val Limit   = 16    // phase names should not be absurdly long
-    val MaxCol  = 80    // because some of us edit on green screens
+    *  The table includes the phase id in the current assembly,
+    *  or "oo" to indicate a skipped phase, or "xx" to indicate
+    *  a disabled phase.
+    *
+    *  @param title descriptive header
+    *  @param elliptically whether to truncate the description with an ellipsis (...)
+    *  @param describe how to describe a component
+    */
+  private def phaseHelp(title: String,
+                        elliptically: Boolean,
+                        describe: SubComponent => String): String = {
+    val Limit = 16 // phase names should not be absurdly long
+    val MaxCol = 80 // because some of us edit on green screens
     val maxName = phaseNames map (_.length) max
-    val width   = maxName min Limit
-    val maxDesc = MaxCol - (width + 6)  // descriptions not novels
-    val fmt     = if (settings.verbose || !elliptically) s"%${maxName}s  %2s  %s%n"
-                  else s"%${width}.${width}s  %2s  %.${maxDesc}s%n"
+    val width = maxName min Limit
+    val maxDesc = MaxCol - (width + 6) // descriptions not novels
+    val fmt =
+      if (settings.verbose || !elliptically) s"%${maxName}s  %2s  %s%n"
+      else s"%${width}.${width}s  %2s  %.${maxDesc}s%n"
 
     val line1 = fmt.format("phase name", "id", title)
     val line2 = fmt.format("----------", "--", "-" * title.length)
 
     // built-in string precision merely truncates
-    import java.util.{ Formattable, FormattableFlags, Formatter }
+    import java.util.{Formattable, FormattableFlags, Formatter}
     def dotfmt(s: String) = new Formattable {
       def foreshortened(s: String, max: Int) = (
         if (max < 0 || s.length <= max) s
         else if (max < 4) s.take(max)
         else s.take(max - 3) + "..."
       )
-      override def formatTo(formatter: Formatter, flags: Int, width: Int, precision: Int): Unit = {
+      override def formatTo(formatter: Formatter,
+                            flags: Int,
+                            width: Int,
+                            precision: Int): Unit = {
         val p = foreshortened(s, precision)
         val w = if (width > 0 && p.length < width) {
           import FormattableFlags.LEFT_JUSTIFY
@@ -791,25 +849,30 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
 
     // phase id in run, or suitable icon
     def idOf(p: SubComponent) = (
-      if (settings.skip contains p.phaseName) "oo"   // (currentRun skipPhase p.phaseName)
+      if (settings.skip contains p.phaseName)
+        "oo" // (currentRun skipPhase p.phaseName)
       else if (!p.enabled) "xx"
       else p.ownPhase.id.toString
     )
     def mkText(p: SubComponent) = {
-      val (name, text) = if (elliptically) (dotfmt(p.phaseName), dotfmt(describe(p)))
-                         else (p.phaseName, describe(p))
+      val (name, text) =
+        if (elliptically) (dotfmt(p.phaseName), dotfmt(describe(p)))
+        else (p.phaseName, describe(p))
       fmt.format(name, idOf(p), text)
     }
     (line1 :: line2 :: (phaseDescriptors map mkText)).mkString
   }
 
   /** Returns List of (phase, value) pairs, including only those
-   *  where the value compares unequal to the previous phase's value.
-   */
+    *  where the value compares unequal to the previous phase's value.
+    */
   def afterEachPhase[T](op: => T): List[(Phase, T)] = { // used in tests
-    phaseDescriptors.map(_.ownPhase).filterNot(_ eq NoPhase).foldLeft(List[(Phase, T)]()) { (res, ph) =>
-      val value = exitingPhase(ph)(op)
-      if (res.nonEmpty && res.head._2 == value) res
+    phaseDescriptors
+      .map(_.ownPhase)
+      .filterNot(_ eq NoPhase)
+      .foldLeft(List[(Phase, T)]()) { (res, ph) =>
+        val value = exitingPhase(ph)(op)
+        if (res.nonEmpty && res.head._2 == value) res
       else ((ph, value)) :: res
     } reverse
   }
@@ -818,8 +881,12 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
 
   /** Extend classpath of `platform` and rescan updated packages. */
   def extendCompilerClassPath(urls: URL*): Unit = {
-    val urlClasspaths = urls.map(u => ClassPathFactory.newClassPath(AbstractFile.getURL(u), settings, closeableRegistry))
-    val newClassPath = AggregateClassPath.createAggregate(platform.classPath +: urlClasspaths : _*)
+    val urlClasspaths = urls.map(
+      u =>
+        ClassPathFactory
+          .newClassPath(AbstractFile.getURL(u), settings, closeableRegistry))
+    val newClassPath = AggregateClassPath.createAggregate(
+      platform.classPath +: urlClasspaths: _*)
     platform.currentClassPath = Some(newClassPath)
     invalidateClassPathEntries(urls.map(_.getPath): _*)
   }
@@ -827,34 +894,37 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   // ------------ Invalidations ---------------------------------
 
   /** Is given package class a system package class that cannot be invalidated?
-   */
+    */
   private def isSystemPackageClass(pkg: Symbol) =
-    pkg == RootClass || (pkg.hasTransOwner(definitions.ScalaPackageClass) && !pkg.hasTransOwner(this.rootMirror.staticPackage("scala.tools").moduleClass.asClass))
+    pkg == RootClass || (pkg.hasTransOwner(definitions.ScalaPackageClass) && !pkg
+      .hasTransOwner(
+        this.rootMirror.staticPackage("scala.tools").moduleClass.asClass))
 
   /** Invalidates packages that contain classes defined in a classpath entry, and
-   *  rescans that entry.
-   *
-   *  First, the classpath entry referred to by one of the `paths` is rescanned,
-   *  so that any new files or changes in subpackages are picked up.
-   *  Second, any packages for which one of the following conditions is met is invalidated:
-   *   - the classpath entry contained during the last compilation run now contains classfiles
-   *     that represent a member in the package;
-   *   - the classpath entry now contains classfiles that represent a member in the package;
-   *   - the set of subpackages has changed.
-   *
-   *  The invalidated packages are reset in their entirety; all member classes and member packages
-   *  are re-accessed using the new classpath.
-   *
-   *  System packages that the compiler needs to access as part of standard definitions
-   *  are not invalidated. A system package is:
-   *  Any package rooted in "scala", with the exception of packages rooted in "scala.tools".
-   *
-   *  @param paths  Fully-qualified names that refer to directories or jar files that are
-   *                entries on the classpath.
-   */
+    *  rescans that entry.
+    *
+    *  First, the classpath entry referred to by one of the `paths` is rescanned,
+    *  so that any new files or changes in subpackages are picked up.
+    *  Second, any packages for which one of the following conditions is met is invalidated:
+    *   - the classpath entry contained during the last compilation run now contains classfiles
+    *     that represent a member in the package;
+    *   - the classpath entry now contains classfiles that represent a member in the package;
+    *   - the set of subpackages has changed.
+    *
+    *  The invalidated packages are reset in their entirety; all member classes and member packages
+    *  are re-accessed using the new classpath.
+    *
+    *  System packages that the compiler needs to access as part of standard definitions
+    *  are not invalidated. A system package is:
+    *  Any package rooted in "scala", with the exception of packages rooted in "scala.tools".
+    *
+    *  @param paths  Fully-qualified names that refer to directories or jar files that are
+    *                entries on the classpath.
+    */
   def invalidateClassPathEntries(paths: String*): Unit = {
     implicit object ClassPathOrdering extends Ordering[ClassPath] {
-      def compare(a: ClassPath, b: ClassPath): Int = a.asClassPathString compareTo b.asClassPathString
+      def compare(a: ClassPath, b: ClassPath): Int =
+        a.asClassPathString compareTo b.asClassPathString
     }
     val invalidated, failed = new mutable.ListBuffer[ClassSymbol]
 
@@ -862,16 +932,16 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       def origin(lookup: ClassPath): Option[String] = lookup match {
         case cp: JFileDirectoryLookup[_] => Some(cp.dir.getPath)
         case cp: ZipArchiveFileLookup[_] => Some(cp.zipFile.getPath)
-        case _ => None
+        case _                           => None
       }
 
       def entries(lookup: ClassPath): Seq[ClassPath] = lookup match {
         case cp: AggregateClassPath => cp.aggregates
-        case cp: ClassPath => Seq(cp)
+        case cp: ClassPath          => Seq(cp)
       }
 
       val dir = AbstractFile.getDirectory(path) // if path is a `jar`, this is a FileZipArchive (isDirectory is true)
-      val canonical = dir.canonicalPath         // this is the canonical path of the .jar
+      val canonical = dir.canonicalPath // this is the canonical path of the .jar
       def matchesCanonical(e: ClassPath) = origin(e) match {
         case Some(opath) =>
           AbstractFile.getDirectory(opath).canonicalPath == canonical
@@ -880,26 +950,34 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       }
       entries(classPath) find matchesCanonical match {
         case Some(oldEntry) =>
-          Some(oldEntry -> ClassPathFactory.newClassPath(dir, settings, closeableRegistry))
+          Some(
+            oldEntry -> ClassPathFactory
+              .newClassPath(dir, settings, closeableRegistry))
         case None =>
-          error(s"Error adding entry to classpath. During invalidation, no entry named $path in classpath $classPath")
+          error(
+            s"Error adding entry to classpath. During invalidation, no entry named $path in classpath $classPath")
           None
       }
     }
     val subst = immutable.TreeMap(paths flatMap assoc: _*)
     if (subst.nonEmpty) {
       platform updateClassPath subst
-      informProgress(s"classpath updated on entries [${subst.keys mkString ","}]")
+      informProgress(
+        s"classpath updated on entries [${subst.keys mkString ","}]")
       def mkClassPath(elems: Iterable[ClassPath]): ClassPath =
         if (elems.size == 1) elems.head
         else AggregateClassPath.createAggregate(elems.toSeq: _*)
       val oldEntries = mkClassPath(subst.keys)
       val newEntries = mkClassPath(subst.values)
       classPath match {
-        case cp: ClassPath => mergeNewEntries(
-          RootClass, "",
-          oldEntries, newEntries, cp,
-          invalidated, failed)
+        case cp: ClassPath =>
+          mergeNewEntries(RootClass,
+                          "",
+                          oldEntries,
+                          newEntries,
+                          cp,
+                          invalidated,
+                          failed)
       }
     }
     def show(msg: String, syms: scala.collection.Iterable[Symbol]) =
@@ -910,30 +988,36 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /**
-   * Merges new classpath entries into the symbol table
-   *
-   * @param packageClass    The ClassSymbol for the package being updated
-   * @param fullPackageName The full name of the package being updated
-   * @param oldEntries      The classpath that was removed, it is no longer part of fullClasspath
-   * @param newEntries      The classpath that was added, it is already part of fullClasspath
-   * @param fullClasspath   The full classpath, equivalent to global.classPath
-   * @param invalidated     A ListBuffer collecting the invalidated package classes
-   * @param failed          A ListBuffer collecting system package classes which could not be invalidated
-   *
-   * If either oldEntries or newEntries contains classes in the current package, the package symbol
-   * is re-initialized to a fresh package loader, provided that a corresponding package exists in
-   * fullClasspath. Otherwise it is removed.
-   *
-   * Otherwise, sub-packages in newEntries are looked up in the symbol table (created if
-   * non-existent) and the merge function is called recursively.
-   */
-  private def mergeNewEntries(packageClass: ClassSymbol, fullPackageName: String,
-                              oldEntries: ClassPath, newEntries: ClassPath, fullClasspath: ClassPath,
-                              invalidated: mutable.ListBuffer[ClassSymbol], failed: mutable.ListBuffer[ClassSymbol]): Unit = {
-    ifDebug(informProgress(s"syncing $packageClass, $oldEntries -> $newEntries"))
+    * Merges new classpath entries into the symbol table
+    *
+    * @param packageClass    The ClassSymbol for the package being updated
+    * @param fullPackageName The full name of the package being updated
+    * @param oldEntries      The classpath that was removed, it is no longer part of fullClasspath
+    * @param newEntries      The classpath that was added, it is already part of fullClasspath
+    * @param fullClasspath   The full classpath, equivalent to global.classPath
+    * @param invalidated     A ListBuffer collecting the invalidated package classes
+    * @param failed          A ListBuffer collecting system package classes which could not be invalidated
+    *
+    * If either oldEntries or newEntries contains classes in the current package, the package symbol
+    * is re-initialized to a fresh package loader, provided that a corresponding package exists in
+    * fullClasspath. Otherwise it is removed.
+    *
+    * Otherwise, sub-packages in newEntries are looked up in the symbol table (created if
+    * non-existent) and the merge function is called recursively.
+    */
+  private def mergeNewEntries(packageClass: ClassSymbol,
+                              fullPackageName: String,
+                              oldEntries: ClassPath,
+                              newEntries: ClassPath,
+                              fullClasspath: ClassPath,
+                              invalidated: mutable.ListBuffer[ClassSymbol],
+                              failed: mutable.ListBuffer[ClassSymbol]): Unit = {
+    ifDebug(
+      informProgress(s"syncing $packageClass, $oldEntries -> $newEntries"))
 
     def packageExists(cp: ClassPath): Boolean = {
-      val (parent, _) = PackageNameUtils.separatePkgAndClassNames(fullPackageName)
+      val (parent, _) =
+        PackageNameUtils.separatePkgAndClassNames(fullPackageName)
       cp.packages(parent).exists(_.name == fullPackageName)
     }
 
@@ -945,7 +1029,9 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       invalidated += pkg
     }
 
-    val classesFound = oldEntries.classes(fullPackageName).nonEmpty || newEntries.classes(fullPackageName).nonEmpty
+    val classesFound = oldEntries
+      .classes(fullPackageName)
+      .nonEmpty || newEntries.classes(fullPackageName).nonEmpty
     if (classesFound) {
       // if the package contains classes either in oldEntries or newEntries, the package is invalidated (or removed if there are no more classes in it)
       if (!isSystemPackageClass(packageClass)) invalidateOrRemove(packageClass)
@@ -954,15 +1040,21 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     } else {
       // no new or removed classes in the current package
       for (p <- newEntries.packages(fullPackageName)) {
-        val (_, subPackageName) = PackageNameUtils.separatePkgAndClassNames(p.name)
+        val (_, subPackageName) =
+          PackageNameUtils.separatePkgAndClassNames(p.name)
         val subPackage = packageClass.info.decl(newTermName(subPackageName)) orElse {
           // package does not exist in symbol table, create a new symbol
-          loaders.enterPackage(packageClass, subPackageName, new loaders.PackageLoader(p.name, fullClasspath))
+          loaders.enterPackage(packageClass,
+                               subPackageName,
+                               new loaders.PackageLoader(p.name, fullClasspath))
         }
-        mergeNewEntries(
-          subPackage.moduleClass.asClass, p.name,
-          oldEntries, newEntries, fullClasspath,
-          invalidated, failed)
+        mergeNewEntries(subPackage.moduleClass.asClass,
+                        p.name,
+                        oldEntries,
+                        newEntries,
+                        fullClasspath,
+                        invalidated,
+                        failed)
       }
     }
   }
@@ -977,59 +1069,84 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   } with typechecker.StructuredTypeStrings
 
   /** There are common error conditions where when the exception hits
-   *  here, currentRun.currentUnit is null.  This robs us of the knowledge
-   *  of what file was being compiled when it broke.  Since I really
-   *  really want to know, this hack.
-   */
+    *  here, currentRun.currentUnit is null.  This robs us of the knowledge
+    *  of what file was being compiled when it broke.  Since I really
+    *  really want to know, this hack.
+    */
   protected var lastSeenSourceFile: SourceFile = NoSourceFile
 
   /** Let's share a lot more about why we crash all over the place.
-   *  People will be very grateful.
-   */
+    *  People will be very grateful.
+    */
   protected var lastSeenContext: analyzer.Context = analyzer.NoContext
 
   /** The currently active run
-   */
-  def currentRun: Run              = curRun
-  def currentUnit: CompilationUnit = if (currentRun eq null) NoCompilationUnit else currentRun.currentUnit
-  def currentSource: SourceFile    = if (currentUnit.exists) currentUnit.source else lastSeenSourceFile
-  def currentFreshNameCreator      = if (curFreshNameCreator == null) currentUnit.fresh else curFreshNameCreator
+    */
+  def currentRun: Run = curRun
+  def currentUnit: CompilationUnit =
+    if (currentRun eq null) NoCompilationUnit else currentRun.currentUnit
+  def currentSource: SourceFile =
+    if (currentUnit.exists) currentUnit.source else lastSeenSourceFile
+  def currentFreshNameCreator =
+    if (curFreshNameCreator == null) currentUnit.fresh else curFreshNameCreator
   private[this] var curFreshNameCreator: FreshNameCreator = null
-  private[scala] def currentFreshNameCreator_=(fresh: FreshNameCreator): Unit = curFreshNameCreator = fresh
+  private[scala] def currentFreshNameCreator_=(fresh: FreshNameCreator): Unit =
+    curFreshNameCreator = fresh
 
   def isGlobalInitialized = (
-       definitions.isDefinitionsInitialized
-    && rootMirror.isMirrorInitialized
+    definitions.isDefinitionsInitialized
+      && rootMirror.isMirrorInitialized
   )
   override def isPastTyper = isPast(currentRun.typerPhase)
   def isPast(phase: Phase) = (
-       (curRun ne null)
-    && isGlobalInitialized // defense against init order issues
-    && (globalPhase.id > phase.id)
+    (curRun ne null)
+      && isGlobalInitialized // defense against init order issues
+      && (globalPhase.id > phase.id)
   )
 
   // TODO - trim these to the absolute minimum.
-  @inline final def exitingErasure[T](op: => T): T        = exitingPhase(currentRun.erasurePhase)(op)
-  @inline final def exitingPostErasure[T](op: => T): T    = exitingPhase(currentRun.posterasurePhase)(op)
-  @inline final def exitingExplicitOuter[T](op: => T): T  = exitingPhase(currentRun.explicitouterPhase)(op)
-  @inline final def exitingFlatten[T](op: => T): T        = exitingPhase(currentRun.flattenPhase)(op)
-  @inline final def exitingMixin[T](op: => T): T          = exitingPhase(currentRun.mixinPhase)(op)
-  @inline final def exitingDelambdafy[T](op: => T): T     = exitingPhase(currentRun.delambdafyPhase)(op)
-  @inline final def exitingPickler[T](op: => T): T        = exitingPhase(currentRun.picklerPhase)(op)
-  @inline final def exitingRefchecks[T](op: => T): T      = exitingPhase(currentRun.refchecksPhase)(op)
-  @inline final def exitingSpecialize[T](op: => T): T     = exitingPhase(currentRun.specializePhase)(op)
-  @inline final def exitingTyper[T](op: => T): T          = exitingPhase(currentRun.typerPhase)(op)
-  @inline final def exitingUncurry[T](op: => T): T        = exitingPhase(currentRun.uncurryPhase)(op)
-  @inline final def enteringErasure[T](op: => T): T       = enteringPhase(currentRun.erasurePhase)(op)
-  @inline final def enteringExplicitOuter[T](op: => T): T = enteringPhase(currentRun.explicitouterPhase)(op)
-  @inline final def enteringFlatten[T](op: => T): T       = enteringPhase(currentRun.flattenPhase)(op)
-  @inline final def enteringMixin[T](op: => T): T         = enteringPhase(currentRun.mixinPhase)(op)
-  @inline final def enteringDelambdafy[T](op: => T): T    = enteringPhase(currentRun.delambdafyPhase)(op)
-  @inline final def enteringJVM[T](op: => T): T           = enteringPhase(currentRun.jvmPhase)(op)
-  @inline final def enteringPickler[T](op: => T): T       = enteringPhase(currentRun.picklerPhase)(op)
-  @inline final def enteringSpecialize[T](op: => T): T    = enteringPhase(currentRun.specializePhase)(op)
-  @inline final def enteringTyper[T](op: => T): T         = enteringPhase(currentRun.typerPhase)(op)
-  @inline final def enteringUncurry[T](op: => T): T       = enteringPhase(currentRun.uncurryPhase)(op)
+  @inline final def exitingErasure[T](op: => T): T =
+    exitingPhase(currentRun.erasurePhase)(op)
+  @inline final def exitingPostErasure[T](op: => T): T =
+    exitingPhase(currentRun.posterasurePhase)(op)
+  @inline final def exitingExplicitOuter[T](op: => T): T =
+    exitingPhase(currentRun.explicitouterPhase)(op)
+  @inline final def exitingFlatten[T](op: => T): T =
+    exitingPhase(currentRun.flattenPhase)(op)
+  @inline final def exitingMixin[T](op: => T): T =
+    exitingPhase(currentRun.mixinPhase)(op)
+  @inline final def exitingDelambdafy[T](op: => T): T =
+    exitingPhase(currentRun.delambdafyPhase)(op)
+  @inline final def exitingPickler[T](op: => T): T =
+    exitingPhase(currentRun.picklerPhase)(op)
+  @inline final def exitingRefchecks[T](op: => T): T =
+    exitingPhase(currentRun.refchecksPhase)(op)
+  @inline final def exitingSpecialize[T](op: => T): T =
+    exitingPhase(currentRun.specializePhase)(op)
+  @inline final def exitingTyper[T](op: => T): T =
+    exitingPhase(currentRun.typerPhase)(op)
+  @inline final def exitingUncurry[T](op: => T): T =
+    exitingPhase(currentRun.uncurryPhase)(op)
+  @inline final def enteringErasure[T](op: => T): T =
+    enteringPhase(currentRun.erasurePhase)(op)
+  @inline final def enteringExplicitOuter[T](op: => T): T =
+    enteringPhase(currentRun.explicitouterPhase)(op)
+  @inline final def enteringFlatten[T](op: => T): T =
+    enteringPhase(currentRun.flattenPhase)(op)
+  @inline final def enteringMixin[T](op: => T): T =
+    enteringPhase(currentRun.mixinPhase)(op)
+  @inline final def enteringDelambdafy[T](op: => T): T =
+    enteringPhase(currentRun.delambdafyPhase)(op)
+  @inline final def enteringJVM[T](op: => T): T =
+    enteringPhase(currentRun.jvmPhase)(op)
+  @inline final def enteringPickler[T](op: => T): T =
+    enteringPhase(currentRun.picklerPhase)(op)
+  @inline final def enteringSpecialize[T](op: => T): T =
+    enteringPhase(currentRun.specializePhase)(op)
+  @inline final def enteringTyper[T](op: => T): T =
+    enteringPhase(currentRun.typerPhase)(op)
+  @inline final def enteringUncurry[T](op: => T): T =
+    enteringPhase(currentRun.uncurryPhase)(op)
 
   // Owners which aren't package classes.
   private def ownerChainString(sym: Symbol): String = (
@@ -1037,61 +1154,76 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     else sym.ownerChain takeWhile (!_.isPackageClass) mkString " -> "
   )
 
-
   /** Don't want to introduce new errors trying to report errors,
-   *  so swallow exceptions.
-   */
-  override def supplementTyperState(errorMessage: String): String = try {
-    def formatExplain(pairs: List[(String, Any)]): String =
-      pairs collect { case (k, v) if v != null => f"$k%20s: $v" } mkString "\n"
+    *  so swallow exceptions.
+    */
+  override def supplementTyperState(errorMessage: String): String =
+    try {
+      def formatExplain(pairs: List[(String, Any)]): String =
+        pairs collect { case (k, v) if v != null => f"$k%20s: $v" } mkString "\n"
 
-    val tree      = analyzer.lastTreeToTyper
-    val sym       = tree.symbol
-    val tpe       = tree.tpe
-    val site      = lastSeenContext.enclClassOrMethod.owner
-    val pos_s     = if (tree.pos.isDefined) s"line ${tree.pos.line} of ${tree.pos.source.file}" else "<unknown>"
-    val context_s = try {
-      // Taking 3 before, 3 after the fingered line.
-      val start = 0 max (tree.pos.line - 4)
-      val xs = tree.pos.source.lines(start, start + 7)
-      val strs = xs.zipWithIndex map { case (line, idx) => f"${start + idx + 1}%6d $line" }
-      strs.mkString("== Source file context for tree position ==\n\n", "\n", "")
-    }
-    catch { case t: Exception => devWarning("" + t) ; "<Cannot read source file>" }
+      val tree = analyzer.lastTreeToTyper
+      val sym = tree.symbol
+      val tpe = tree.tpe
+      val site = lastSeenContext.enclClassOrMethod.owner
+      val pos_s =
+        if (tree.pos.isDefined)
+          s"line ${tree.pos.line} of ${tree.pos.source.file}"
+        else "<unknown>"
+      val context_s = try {
+        // Taking 3 before, 3 after the fingered line.
+        val start = 0 max (tree.pos.line - 4)
+        val xs = tree.pos.source.lines(start, start + 7)
+        val strs = xs.zipWithIndex map {
+          case (line, idx) => f"${start + idx + 1}%6d $line"
+        }
+        strs.mkString("== Source file context for tree position ==\n\n",
+                      "\n",
+                      "")
+      } catch {
+        case t: Exception => devWarning("" + t); "<Cannot read source file>"
+      }
 
-    val info1 = formatExplain(List(
-      "while compiling"    -> currentSource.path,
-      "during phase"       -> ( if (globalPhase eq phase) phase else "globalPhase=%s, enteringPhase=%s".format(globalPhase, phase) ),
-      "library version"    -> scala.util.Properties.versionString,
-      "compiler version"   -> scala.tools.nsc.Properties.versionString,
-      "reconstructed args" -> settings.recreateArgs.mkString(" ")
-    ))
-    // useful things to know if we have a sym
-    val symbolInfos = if (sym eq null) List("symbol" -> "null") else List(
-      "symbol"             -> sym.debugLocationString,
-      "symbol definition"  -> s"${sym.defString} (a ${sym.shortSymbolClass})",
-      "symbol package"     -> sym.enclosingPackage.fullName,
-      "symbol owners"      -> ownerChainString(sym),
-    )
-    val info2 = formatExplain(List(
-      "last tree to typer" -> tree.summaryString,
-      "tree position"      -> pos_s,
-      "tree tpe"           -> tpe
-    ) ::: symbolInfos ::: List(
-      "call site"          -> (site.fullLocationString + " in " + site.enclosingPackage)
-    ))
-    ("\n  " + errorMessage + "\n" + info1) :: info2 :: context_s :: Nil mkString "\n\n"
-  } catch { case _: Exception | _: TypeError => errorMessage }
-
+      val info1 = formatExplain(
+        List(
+          "while compiling" -> currentSource.path,
+          "during phase" -> (if (globalPhase eq phase) phase
+                             else
+                               "globalPhase=%s, enteringPhase=%s"
+                                 .format(globalPhase, phase)),
+          "library version" -> scala.util.Properties.versionString,
+          "compiler version" -> scala.tools.nsc.Properties.versionString,
+          "reconstructed args" -> settings.recreateArgs.mkString(" ")
+        ))
+      // useful things to know if we have a sym
+      val symbolInfos =
+        if (sym eq null) List("symbol" -> "null")
+        else
+          List(
+            "symbol" -> sym.debugLocationString,
+            "symbol definition" -> s"${sym.defString} (a ${sym.shortSymbolClass})",
+            "symbol package" -> sym.enclosingPackage.fullName,
+            "symbol owners" -> ownerChainString(sym),
+          )
+      val info2 = formatExplain(List(
+        "last tree to typer" -> tree.summaryString,
+        "tree position" -> pos_s,
+        "tree tpe" -> tpe
+      ) ::: symbolInfos ::: List(
+        "call site" -> (site.fullLocationString + " in " + site.enclosingPackage)
+      ))
+      ("\n  " + errorMessage + "\n" + info1) :: info2 :: context_s :: Nil mkString "\n\n"
+    } catch { case _: Exception | _: TypeError => errorMessage }
 
   /** The id of the currently active run
-   */
+    */
   override def currentRunId = curRunId
 
   def echoPhaseSummary(ph: Phase) = {
     /* Only output a summary message under debug if we aren't echoing each file. */
     if (settings.debug && !(settings.verbose || currentRun.size < 5))
-      inform("[running phase " + ph.name + " on " + currentRun.size +  " compilation units]")
+      inform(
+        "[running phase " + ph.name + " on " + currentRun.size + " compilation units]")
   }
 
   def newSourceFile(code: String, filename: String = "<console>") =
@@ -1109,21 +1241,28 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   def newUnitParser(code: String, filename: String = "<console>"): UnitParser =
     newUnitParser(newCompilationUnit(code, filename))
 
-  def newJavaUnitParser(unit: CompilationUnit): JavaUnitParser = new JavaUnitParser(unit)
+  def newJavaUnitParser(unit: CompilationUnit): JavaUnitParser =
+    new JavaUnitParser(unit)
 
-  override protected[scala] def currentRunProfilerBeforeCompletion(root: Symbol, associatedFile: AbstractFile): Unit =
+  override protected[scala] def currentRunProfilerBeforeCompletion(
+      root: Symbol,
+      associatedFile: AbstractFile): Unit =
     curRun.profiler.beforeCompletion(root, associatedFile)
-  override protected[scala] def currentRunProfilerAfterCompletion(root: Symbol, associatedFile: AbstractFile): Unit =
+  override protected[scala] def currentRunProfilerAfterCompletion(
+      root: Symbol,
+      associatedFile: AbstractFile): Unit =
     curRun.profiler.afterCompletion(root, associatedFile)
 
   /** A Run is a single execution of the compiler on a set of units.
-   */
+    */
   class Run extends RunContextApi with RunReporting with RunParsing {
+
     /** Have been running into too many init order issues with Run
-     *  during erroneous conditions.  Moved all these vals up to the
-     *  top of the file so at least they're not trivially null.
-     */
+      *  during erroneous conditions.  Moved all these vals up to the
+      *  top of the file so at least they're not trivially null.
+      */
     var isDefined = false
+
     /** The currently compiled unit; set from GlobalPhase */
     var currentUnit: CompilationUnit = NoCompilationUnit
 
@@ -1137,31 +1276,39 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     val isScala300: Boolean = settings.isScala300
 
     // used in sbt
-    def uncheckedWarnings: List[(Position, String)]   = reporting.uncheckedWarnings.map{case (pos, (msg, since)) => (pos, msg)}
+    def uncheckedWarnings: List[(Position, String)] =
+      reporting.uncheckedWarnings.map { case (pos, (msg, since)) => (pos, msg) }
     // used in sbt
-    def deprecationWarnings: List[(Position, String)] = reporting.deprecationWarnings.map{case (pos, (msg, since)) => (pos, msg)}
+    def deprecationWarnings: List[(Position, String)] =
+      reporting.deprecationWarnings.map {
+        case (pos, (msg, since)) => (pos, msg)
+      }
 
     private class SyncedCompilationBuffer { self =>
       private val underlying = new mutable.ArrayBuffer[CompilationUnit]
       def size = synchronized { underlying.size }
-      def +=(cu: CompilationUnit): this.type = { synchronized { underlying += cu }; this }
-      def head: CompilationUnit = synchronized{ underlying.head }
-      def apply(i: Int): CompilationUnit = synchronized { underlying(i) }
-      def iterator: Iterator[CompilationUnit] = new collection.AbstractIterator[CompilationUnit] {
-        private var used = 0
-        def hasNext = self.synchronized{ used < underlying.size }
-        def next = self.synchronized {
-          if (!hasNext) throw new NoSuchElementException("next on empty Iterator")
-          used += 1
-          underlying(used-1)
-        }
+      def +=(cu: CompilationUnit): this.type = {
+        synchronized { underlying += cu }; this
       }
-      def toList: List[CompilationUnit] = synchronized{ underlying.toList }
+      def head: CompilationUnit = synchronized { underlying.head }
+      def apply(i: Int): CompilationUnit = synchronized { underlying(i) }
+      def iterator: Iterator[CompilationUnit] =
+        new collection.AbstractIterator[CompilationUnit] {
+          private var used = 0
+          def hasNext = self.synchronized { used < underlying.size }
+          def next = self.synchronized {
+            if (!hasNext)
+              throw new NoSuchElementException("next on empty Iterator")
+            used += 1
+            underlying(used - 1)
+          }
+        }
+      def toList: List[CompilationUnit] = synchronized { underlying.toList }
     }
 
     private val unitbuf = new SyncedCompilationBuffer
 
-    val compiledFiles   = new mutable.HashSet[String]
+    val compiledFiles = new mutable.HashSet[String]
 
     /** A map from compiled top-level symbols to their source files */
     val symSource = new mutable.AnyRefMap[Symbol, AbstractFile]
@@ -1169,25 +1316,27 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     /** A map from compiled top-level symbols to their picklers */
     val symData = new mutable.AnyRefMap[Symbol, PickleBuffer]
 
-    private var phasec: Int  = 0   // phases completed
-    private var unitc: Int   = 0   // units completed this phase
+    private var phasec: Int = 0 // phases completed
+    private var unitc: Int = 0 // units completed this phase
 
     def size = unitbuf.size
-    override def toString = "scalac Run for:\n  " + compiledFiles.toList.sorted.mkString("\n  ")
+    override def toString =
+      "scalac Run for:\n  " + compiledFiles.toList.sorted.mkString("\n  ")
 
     // Calculate where to stop based on settings -Ystop-before or -Ystop-after.
     // The result is the phase to stop at BEFORE running it.
     private lazy val stopPhaseSetting = {
       def isBefore(pd: SubComponent) = settings.stopBefore contains pd.phaseName
       phaseDescriptors sliding 2 collectFirst {
-        case xs if xs exists isBefore
-                => (xs find isBefore).get
-        case xs if settings.stopAfter contains xs.head.phaseName
-                => xs.last
+        case xs if xs exists isBefore                            => (xs find isBefore).get
+        case xs if settings.stopAfter contains xs.head.phaseName => xs.last
       }
     }
+
     /** Should we stop right before entering the given phase? */
-    protected def stopPhase(name: String) = stopPhaseSetting exists (_.phaseName == name)
+    protected def stopPhase(name: String) =
+      stopPhaseSetting exists (_.phaseName == name)
+
     /** Should we skip the given phase? */
     protected def skipPhase(name: String) = settings.skip contains name
 
@@ -1215,7 +1364,8 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         def skippable(pd: SubComponent) = {
           val skippable = skipPhase(pd.phaseName)
           if (skippable && (pd.initial || pd.terminal)) {
-            globalError(s"Cannot skip an initial or terminal phase '${pd.phaseName}'.")
+            globalError(
+              s"Cannot skip an initial or terminal phase '${pd.phaseName}'.")
             false
           } else
             skippable || !pd.enabled
@@ -1223,17 +1373,21 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         val phs = phaseDescriptors takeWhile unstoppable filterNot skippable
         // Ensure there is a terminal phase at the end, since -Ystop may have limited the phases.
         if (phs.isEmpty || !phs.last.terminal) {
-          val t = if (phaseDescriptors.last.terminal) phaseDescriptors.last else terminal
+          val t =
+            if (phaseDescriptors.last.terminal) phaseDescriptors.last
+            else terminal
           phs :+ t
         } else phs
       }
       // Create phases and link them together. We supply the previous, and the ctor sets prev.next.
-      val last  = components.foldLeft(NoPhase: Phase)((prev, c) => c newPhase prev)
-      val phaseList = Iterator.iterate(last)(_.prev).takeWhile(_ != NoPhase).toList.reverse
+      val last =
+        components.foldLeft(NoPhase: Phase)((prev, c) => c newPhase prev)
+      val phaseList =
+        Iterator.iterate(last)(_.prev).takeWhile(_ != NoPhase).toList.reverse
       val maxId = phaseList.map(_.id).max
       nextFrom = Array.tabulate(maxId)(i => infoTransformers.nextFrom(i))
       val first = phaseList.head
-      val ss    = settings
+      val ss = settings
 
       // As a final courtesy, see if the settings make any sense at all.
       // If a setting selects no phase, it's a mistake. If a name prefix
@@ -1241,16 +1395,18 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       def checkPhaseSettings(including: Boolean, specs: Seq[String]*) = {
         def isRange(s: String) = s.forall(c => c.isDigit || c == '-')
         def isSpecial(s: String) = (s == "all" || isRange(s))
-        val setting = new ss.PhasesSetting("fake","fake")
+        val setting = new ss.PhasesSetting("fake", "fake")
         for (p <- specs.flatten.to(Set)) {
           setting.value = List(p)
-          val count = (
-            if (including) first.iterator count (setting containsPhase _)
-            else phaseDescriptors count (setting contains _.phaseName)
-          )
+          val count =
+            (
+              if (including) first.iterator count (setting containsPhase _)
+              else phaseDescriptors count (setting contains _.phaseName)
+            )
           if (count == 0) warning(s"'$p' specifies no phase")
           if (count > 1 && !isSpecial(p)) warning(s"'$p' selects $count phases")
-          if (!including && isSpecial(p)) globalError(s"-Yskip and -Ystop values must name phases: '$p'")
+          if (!including && isSpecial(p))
+            globalError(s"-Yskip and -Ystop values must name phases: '$p'")
           setting.clear()
         }
       }
@@ -1269,37 +1425,38 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       if (statistics.areStatisticsLocallyEnabled)
         statistics.reportStatisticsOverhead(reporter)
 
-      phase = first   //parserPhase
+      phase = first //parserPhase
       first
     }
 
     // --------------- Miscellanea -------------------------------
 
     /** Progress tracking.  Measured in "progress units" which are 1 per
-     *  compilation unit per phase completed.
-     *
-     *  @param    current   number of "progress units" completed
-     *  @param    total     total number of "progress units" in run
-     */
+      *  compilation unit per phase completed.
+      *
+      *  @param    current   number of "progress units" completed
+      *  @param    total     total number of "progress units" in run
+      */
     def progress(current: Int, total: Int): Unit = {}
 
     /**
-     * For subclasses to override. Called when `phase` is about to be run on `unit`.
-     * Variables are passed explicitly to indicate that `globalPhase` and `currentUnit` have been set.
-     */
-    def informUnitStarting(phase: Phase, unit: CompilationUnit): Unit = { }
+      * For subclasses to override. Called when `phase` is about to be run on `unit`.
+      * Variables are passed explicitly to indicate that `globalPhase` and `currentUnit` have been set.
+      */
+    def informUnitStarting(phase: Phase, unit: CompilationUnit): Unit = {}
 
     /** take note that phase is completed
-     *  (for progress reporting)
-     */
+      *  (for progress reporting)
+      */
     def advancePhase(): Unit = {
       unitc = 0
       phasec += 1
       refreshProgress()
     }
+
     /** take note that a phase on a unit is completed
-     *  (for progress reporting)
-     */
+      *  (for progress reporting)
+      */
     def advanceUnit(): Unit = {
       unitc += 1
       refreshProgress()
@@ -1308,9 +1465,11 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     // for sbt
     def cancel(): Unit = reporter.cancelled = true
 
-    private def currentProgress   = (phasec * size) + unitc
-    private def totalProgress     = (phaseDescriptors.size - 1) * size // -1: drops terminal phase
-    private def refreshProgress() = if (size > 0) progress(currentProgress, totalProgress)
+    private def currentProgress = (phasec * size) + unitc
+    private def totalProgress =
+      (phaseDescriptors.size - 1) * size // -1: drops terminal phase
+    private def refreshProgress() =
+      if (size > 0) progress(currentProgress, totalProgress)
 
     // ----- finding phases --------------------------------------------
 
@@ -1318,38 +1477,37 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       findOrElse(firstPhase.iterator)(_.name == name)(NoPhase)
 
     /** All phases as of 3/2012 here for handiness; the ones in
-     *  active use uncommented.
-     */
-    val parserPhase                  = phaseNamed("parser")
-    val namerPhase                   = phaseNamed("namer")
+      *  active use uncommented.
+      */
+    val parserPhase = phaseNamed("parser")
+    val namerPhase = phaseNamed("namer")
     // val packageobjectsPhase          = phaseNamed("packageobjects")
-    val typerPhase                   = phaseNamed("typer")
+    val typerPhase = phaseNamed("typer")
     // val inlineclassesPhase           = phaseNamed("inlineclasses")
     // val superaccessorsPhase          = phaseNamed("superaccessors")
-    val picklerPhase                 = phaseNamed("pickler")
-    val refchecksPhase               = phaseNamed("refchecks")
-    val uncurryPhase                 = phaseNamed("uncurry")
+    val picklerPhase = phaseNamed("pickler")
+    val refchecksPhase = phaseNamed("refchecks")
+    val uncurryPhase = phaseNamed("uncurry")
     // val fieldsPhase                  = phaseNamed("fields")
     // val tailcallsPhase               = phaseNamed("tailcalls")
-    val specializePhase              = phaseNamed("specialize")
-    val explicitouterPhase           = phaseNamed("explicitouter")
-    val erasurePhase                 = phaseNamed("erasure")
-    val posterasurePhase             = phaseNamed("posterasure")
-    val lambdaliftPhase              = phaseNamed("lambdalift")
+    val specializePhase = phaseNamed("specialize")
+    val explicitouterPhase = phaseNamed("explicitouter")
+    val erasurePhase = phaseNamed("erasure")
+    val posterasurePhase = phaseNamed("posterasure")
+    val lambdaliftPhase = phaseNamed("lambdalift")
     // val constructorsPhase            = phaseNamed("constructors")
-    val flattenPhase                 = phaseNamed("flatten")
-    val mixinPhase                   = phaseNamed("mixin")
-    val delambdafyPhase              = phaseNamed("delambdafy")
-    val cleanupPhase                 = phaseNamed("cleanup")
-    val jvmPhase                     = phaseNamed("jvm")
+    val flattenPhase = phaseNamed("flatten")
+    val mixinPhase = phaseNamed("mixin")
+    val delambdafyPhase = phaseNamed("delambdafy")
+    val cleanupPhase = phaseNamed("cleanup")
+    val jvmPhase = phaseNamed("jvm")
 
-    def runIsAt(ph: Phase)   = globalPhase.id == ph.id
-    def runIsAtOptimiz       = runIsAt(jvmPhase)
+    def runIsAt(ph: Phase) = globalPhase.id == ph.id
+    def runIsAtOptimiz = runIsAt(jvmPhase)
 
     isDefined = true
 
     // ----------- Units and top-level classes and objects --------
-
 
     /** add unit to be compiled in this run */
     private def addUnit(unit: CompilationUnit): Unit = {
@@ -1359,11 +1517,17 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     private def warnDeprecatedAndConflictingSettings(): Unit = {
       // issue warnings for any usage of deprecated settings
       settings.userSetSettings filter (_.isDeprecated) foreach { s =>
-        currentRun.reporting.deprecationWarning(NoPosition, s.name + " is deprecated: " + s.deprecationMessage.get, "")
+        currentRun.reporting.deprecationWarning(
+          NoPosition,
+          s.name + " is deprecated: " + s.deprecationMessage.get,
+          "")
       }
       val supportedTarget = "jvm-1.8"
       if (settings.target.value != supportedTarget) {
-        currentRun.reporting.deprecationWarning(NoPosition, settings.target.name + ":" + settings.target.value + " is deprecated and has no effect, setting to " + supportedTarget, "2.12.0")
+        currentRun.reporting.deprecationWarning(
+          NoPosition,
+          settings.target.name + ":" + settings.target.value + " is deprecated and has no effect, setting to " + supportedTarget,
+          "2.12.0")
         settings.target.value = supportedTarget
       }
       settings.conflictWarning.foreach(reporter.warning(NoPosition, _))
@@ -1386,22 +1550,23 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     def compiles(sym: Symbol): Boolean =
       if (sym == NoSymbol) false
       else if (symSource.isDefinedAt(sym)) true
-      else if (!sym.isTopLevel) compiles(sym.originalEnclosingTopLevelClassOrDummy)
+      else if (!sym.isTopLevel)
+        compiles(sym.originalEnclosingTopLevelClassOrDummy)
       else if (sym.isModuleClass) compiles(sym.sourceModule)
       else false
 
     /** Is this run allowed to redefine the given symbol? Usually this is true
-     *  if the run does not already compile `sym`, but for interactive mode
-     *  we have a more liberal interpretation.
-     */
+      *  if the run does not already compile `sym`, but for interactive mode
+      *  we have a more liberal interpretation.
+      */
     def canRedefine(sym: Symbol) = !compiles(sym)
 
     // --------------- Compilation methods ----------------------------
 
     protected def runCheckers(): Unit = {
-      val toCheck  = globalPhase.prev
+      val toCheck = globalPhase.prev
       val canCheck = toCheck.checkable
-      val fmt      = if (canCheck) "[Now checking: %s]" else "[Not checkable: %s]"
+      val fmt = if (canCheck) "[Now checking: %s]" else "[Not checkable: %s]"
 
       inform(fmt format toCheck.name)
 
@@ -1417,18 +1582,22 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
       def splitClassAndPhase(str: String, term: Boolean): Name = {
         def mkName(s: String) = if (term) newTermName(s) else newTypeName(s)
         (str indexOf '@') match {
-          case -1   => mkName(str)
-          case idx  =>
+          case -1 => mkName(str)
+          case idx =>
             val phasePart = str drop (idx + 1)
             settings.Yshow.tryToSetColon(phasePart split ',' toList)
             mkName(str take idx)
         }
       }
       if (settings.Xshowcls.isSetByUser)
-        showDef(splitClassAndPhase(settings.Xshowcls.value, term = false), declsOnly = false, globalPhase)
+        showDef(splitClassAndPhase(settings.Xshowcls.value, term = false),
+                declsOnly = false,
+                globalPhase)
 
       if (settings.Xshowobj.isSetByUser)
-        showDef(splitClassAndPhase(settings.Xshowobj.value, term = true), declsOnly = false, globalPhase)
+        showDef(splitClassAndPhase(settings.Xshowobj.value, term = true),
+                declsOnly = false,
+                globalPhase)
     }
 
     // Similarly, this will only be created under -Yshow-syms.
@@ -1440,19 +1609,21 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         exitingPhase(phase) {
           trackers foreach { t =>
             t.snapshot()
-            inform(t.show("Heading from " + phase.prev.name + " to " + phase.name))
+            inform(
+              t.show("Heading from " + phase.prev.name + " to " + phase.name))
           }
         }
       }
     }
 
-
     /** Caching member symbols that are def-s in Definitions because they might change from Run to Run. */
-    val runDefinitions: definitions.RunDefinitions = new definitions.RunDefinitions
+    val runDefinitions: definitions.RunDefinitions =
+      new definitions.RunDefinitions
 
     private def printArgs(sources: List[SourceFile]): Unit = {
       if (settings.printArgs.isSetByUser) {
-        val argsFile = (settings.recreateArgs ::: sources.map(_.file.absolute.toString())).mkString("", "\n", "\n")
+        val argsFile = (settings.recreateArgs ::: sources.map(
+          _.file.absolute.toString())).mkString("", "\n", "\n")
         settings.printArgs.value match {
           case "-" =>
             reporter.echo(argsFile)
@@ -1466,57 +1637,71 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     }
 
     /** Compile list of source files,
-     *  unless there is a problem already,
-     *  such as a plugin was passed a bad option.
-     */
-    def compileSources(sources: List[SourceFile]): Unit = if (!reporter.hasErrors) {
-      printArgs(sources)
+      *  unless there is a problem already,
+      *  such as a plugin was passed a bad option.
+      */
+    def compileSources(sources: List[SourceFile]): Unit =
+      if (!reporter.hasErrors) {
+        printArgs(sources)
 
-      def checkDeprecations() = {
-        warnDeprecatedAndConflictingSettings()
-        reporting.summarizeErrors()
+        def checkDeprecations() = {
+          warnDeprecatedAndConflictingSettings()
+          reporting.summarizeErrors()
+        }
+
+        val units = sources map scripted map (file =>
+          new CompilationUnit(file, warningFreshNameCreator))
+
+        units match {
+          case Nil =>
+            checkDeprecations() // nothing to compile, report deprecated options
+          case _ => compileUnits(units)
+        }
       }
-
-      val units = sources map scripted map (file => new CompilationUnit(file, warningFreshNameCreator))
-
-      units match {
-        case Nil => checkDeprecations()   // nothing to compile, report deprecated options
-        case _   => compileUnits(units)
-      }
-    }
 
     private final val GlobalPhaseName = "global (synthetic)"
-    protected final val totalCompileTime = statistics.newTimer("#total compile time", GlobalPhaseName)
+    protected final val totalCompileTime =
+      statistics.newTimer("#total compile time", GlobalPhaseName)
 
-    def compileUnits(units: List[CompilationUnit], fromPhase: Phase = firstPhase): Unit =
+    def compileUnits(units: List[CompilationUnit],
+                     fromPhase: Phase = firstPhase): Unit =
       compileUnitsInternal(units, fromPhase)
-    private def compileUnitsInternal(units: List[CompilationUnit], fromPhase: Phase): Unit = {
+    private def compileUnitsInternal(units: List[CompilationUnit],
+                                     fromPhase: Phase): Unit = {
       units foreach addUnit
       reporter.reset()
       warnDeprecatedAndConflictingSettings()
       globalPhase = fromPhase
 
       val timePhases = statistics.areStatisticsLocallyEnabled
-      val startTotal = if (timePhases) statistics.startTimer(totalCompileTime) else null
+      val startTotal =
+        if (timePhases) statistics.startTimer(totalCompileTime) else null
 
       while (globalPhase.hasNext && !reporter.hasErrors) {
         phase = globalPhase
-        val phaseTimer = if (timePhases) statistics.newSubTimer(s"  ${phase.name}", totalCompileTime) else null
-        val startPhase = if (timePhases) statistics.startTimer(phaseTimer) else null
+        val phaseTimer =
+          if (timePhases)
+            statistics.newSubTimer(s"  ${phase.name}", totalCompileTime)
+          else null
+        val startPhase =
+          if (timePhases) statistics.startTimer(phaseTimer) else null
 
-        val profileBefore=profiler.beforePhase(phase)
+        val profileBefore = profiler.beforePhase(phase)
         try globalPhase.run()
-        catch { case _: InterruptedException => reporter.cancelled = true }
-        finally if (timePhases) statistics.stopTimer(phaseTimer, startPhase) else ()
+        catch { case _: InterruptedException => reporter.cancelled = true } finally if (timePhases)
+          statistics.stopTimer(phaseTimer, startPhase)
+        else ()
         profiler.afterPhase(phase, profileBefore)
 
         if (timePhases)
           informTime(globalPhase.description, phaseTimer.nanos)
 
         // progress update
-        if ((settings.Xprint containsPhase globalPhase) || settings.printLate && runIsAt(cleanupPhase)) {
+        if ((settings.Xprint containsPhase globalPhase) || settings.printLate && runIsAt(
+              cleanupPhase)) {
           // print trees
-          if (settings.Xshowtrees || settings.XshowtreesCompact || settings.XshowtreesStringified) nodePrinters.printAll()
+          if (settings.Xshowtrees || settings.XshowtreesCompact || settings.XshowtreesStringified)
+            nodePrinters.printAll()
           else printAllUnits()
         }
 
@@ -1543,7 +1728,8 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
           runCheckers()
 
         // output collected statistics
-        if (settings.YstatisticsEnabled && settings.Ystatistics.contains(phase.name))
+        if (settings.YstatisticsEnabled && settings.Ystatistics.contains(
+              phase.name))
           printStatisticsFor(phase)
 
         advancePhase()
@@ -1588,10 +1774,9 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         val sources = files map getSourceFile
         profiler.afterPhase(Global.InitPhase, snap)
         compileSources(sources)
-      }
-      catch {
+      } catch {
         case ex: InterruptedException => reporter.cancelled = true
-        case ex: IOException => globalError(ex.getMessage())
+        case ex: IOException          => globalError(ex.getMessage())
       }
     }
 
@@ -1601,31 +1786,33 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
         val snap = profiler.beforePhase(Global.InitPhase)
 
         val sources: List[SourceFile] =
-          if (settings.script.isSetByUser && filenames.size > 1) returning(Nil)(_ => globalError("can only compile one script at a time"))
+          if (settings.script.isSetByUser && filenames.size > 1)
+            returning(Nil)(_ =>
+              globalError("can only compile one script at a time"))
           else filenames map getSourceFile
 
         profiler.afterPhase(Global.InitPhase, snap)
         compileSources(sources)
-      }
-      catch { case ex: IOException => globalError(ex.getMessage()) }
+      } catch { case ex: IOException => globalError(ex.getMessage()) }
     }
 
     /** If this compilation is scripted, convert the source to a script source. */
     private def scripted(s: SourceFile) = s match {
-      case b: BatchSourceFile if settings.script.isSetByUser => ScriptSourceFile(b)
+      case b: BatchSourceFile if settings.script.isSetByUser =>
+        ScriptSourceFile(b)
       case _ => s
     }
 
     /** Compile abstract file until `globalPhase`, but at least
-     *  to phase "namer".
-     */
+      *  to phase "namer".
+      */
     def compileLate(file: AbstractFile): Unit = {
       if (!compiledFiles(file.path))
         compileLate(new CompilationUnit(scripted(getSourceFile(file))))
     }
 
     /** Compile abstract file until `globalPhase`, but at least to phase "namer".
-     */
+      */
     def compileLate(unit: CompilationUnit): Unit = {
       addUnit(unit)
 
@@ -1638,16 +1825,19 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
     }
 
     /** Reset package class to state at typer (not sure what this is needed for?)
-     */
-    private def resetPackageClass(pclazz: Symbol): Unit = if (typerPhase != NoPhase) {
-      enteringPhase(firstPhase) {
-        pclazz.setInfo(enteringPhase(typerPhase)(pclazz.info))
+      */
+    private def resetPackageClass(pclazz: Symbol): Unit =
+      if (typerPhase != NoPhase) {
+        enteringPhase(firstPhase) {
+          pclazz.setInfo(enteringPhase(typerPhase)(pclazz.info))
+        }
+        if (!pclazz.isRoot) resetPackageClass(pclazz.owner)
       }
-      if (!pclazz.isRoot) resetPackageClass(pclazz.owner)
-    }
 
     private val hotCounters =
-      List(statistics.retainedCount, statistics.retainedByType, statistics.nodeByType)
+      List(statistics.retainedCount,
+           statistics.retainedByType,
+           statistics.nodeByType)
     private val parserStats = {
       import statistics.treeNodeCount
       if (settings.YhotStatisticsEnabled) treeNodeCount :: hotCounters
@@ -1684,38 +1874,50 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
   }
 
   /** We resolve the class/object ambiguity by passing a type/term name.
-   */
+    */
   def showDef(fullName: Name, declsOnly: Boolean, ph: Phase): Unit = {
-    val boringOwners = Set[Symbol](definitions.AnyClass, definitions.AnyRefClass, definitions.ObjectClass)
+    val boringOwners = Set[Symbol](definitions.AnyClass,
+                                   definitions.AnyRefClass,
+                                   definitions.ObjectClass)
     def phased[T](body: => T): T = exitingPhase(ph)(body)
     def boringMember(sym: Symbol) = boringOwners(sym.owner)
     def symString(sym: Symbol) = if (sym.isTerm) sym.defString else sym.toString
 
-    def members(sym: Symbol) = phased(sym.info.members filterNot boringMember map symString)
-    def decls(sym: Symbol)   = phased(sym.info.decls.toList map symString)
-    def bases(sym: Symbol)   = phased(sym.info.baseClasses map (x => x.kindString + " " + x.fullName))
+    def members(sym: Symbol) =
+      phased(sym.info.members filterNot boringMember map symString)
+    def decls(sym: Symbol) = phased(sym.info.decls.toList map symString)
+    def bases(sym: Symbol) =
+      phased(sym.info.baseClasses map (x => x.kindString + " " + x.fullName))
 
     // make the type/term selections walking from the root.
     val syms = findMemberFromRoot(fullName) match {
       // The name as given was not found, so we'll sift through every symbol in
       // the run looking for plausible matches.
-      case NoSymbol => phased(currentRun.symSource.keys map (sym => findNamedMember(fullName, sym)) filterNot (_ == NoSymbol) toList)
+      case NoSymbol =>
+        phased(currentRun.symSource.keys map (sym =>
+          findNamedMember(fullName, sym)) filterNot (_ == NoSymbol) toList)
       // The name as given matched, so show only that.
-      case sym      => List(sym)
+      case sym => List(sym)
     }
 
     syms foreach { sym =>
-      val name        = "\n<<-- %s %s after phase '%s' -->>".format(sym.kindString, sym.fullName, ph.name)
+      val name = "\n<<-- %s %s after phase '%s' -->>".format(sym.kindString,
+                                                             sym.fullName,
+                                                             ph.name)
       val baseClasses = bases(sym).mkString("Base classes:\n  ", "\n  ", "")
       val contents =
         if (declsOnly) decls(sym).mkString("Declarations:\n  ", "\n  ", "")
-        else members(sym).mkString("Members (excluding Any/AnyRef unless overridden):\n  ", "\n  ", "")
+        else
+          members(sym).mkString(
+            "Members (excluding Any/AnyRef unless overridden):\n  ",
+            "\n  ",
+            "")
 
       inform(List(name, baseClasses, contents) mkString "\n\n")
     }
   }
 
-  def createJavadoc    = false
+  def createJavadoc = false
 
   final val closeableRegistry: CloseableRegistry = new CloseableRegistry
 
@@ -1726,9 +1928,11 @@ class Global(var currentSettings: Settings, reporter0: LegacyReporter)
 }
 
 object Global {
-  def apply(settings: Settings, reporter: LegacyReporter): Global = new Global(settings, reporter)
+  def apply(settings: Settings, reporter: LegacyReporter): Global =
+    new Global(settings, reporter)
 
-  def apply(settings: Settings): Global = new Global(settings, LegacyReporter(settings))
+  def apply(settings: Settings): Global =
+    new Global(settings, LegacyReporter(settings))
 
   private object InitPhase extends Phase(null) {
     def name = "<init phase>"

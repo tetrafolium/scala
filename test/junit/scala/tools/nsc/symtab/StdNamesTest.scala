@@ -16,7 +16,8 @@ class StdNamesTest {
 
   @Test
   def testNewTermNameInvalid(): Unit = {
-    assertThrows[IllegalArgumentException](newTermName("foo".toCharArray, -1, 1))
+    assertThrows[IllegalArgumentException](
+      newTermName("foo".toCharArray, -1, 1))
   }
 
   @Test
@@ -42,7 +43,8 @@ class StdNamesTest {
     def test(expected: (Name, String, String), nme: Name): Unit = {
       assertEquals(expected, splitSpecializedName(nme))
     }
-    test((TermName("Tuple2"), "II", ""), TermName("Tuple2$mcII" + SPECIALIZED_SUFFIX))
+    test((TermName("Tuple2"), "II", ""),
+         TermName("Tuple2$mcII" + SPECIALIZED_SUFFIX))
     test((TermName("foo"), "D", "I"), TermName("foo$mIcD" + SPECIALIZED_SUFFIX))
     test((TermName("foo"), "", "I"), TermName("foo$mIc" + SPECIALIZED_SUFFIX))
     test((nme.EMPTY, "T1", ""), TermName(s"T1$SPECIALIZED_SUFFIX"))

@@ -54,7 +54,10 @@ trait PrintReporter extends InternalReporter {
 
   /** Format a message and emit it. */
   def display(pos: Position, msg: String, severity: Severity): Unit = {
-    val text = formatMessage(pos, s"${clabel(severity)}${DisplayReporter.explanation(msg)}", shortname)
+    val text = formatMessage(
+      pos,
+      s"${clabel(severity)}${DisplayReporter.explanation(msg)}",
+      shortname)
     severity match {
       case INFO => echoMessage(text)
       case _    => printMessage(text)
@@ -92,18 +95,26 @@ trait PrintReporter extends InternalReporter {
 }
 
 /** This class implements a Reporter that displays messages on a text console.
- */
-class DisplayReporter(val settings: Settings, val reader: BufferedReader, val writer: PrintWriter, val echoWriter: PrintWriter) extends InternalReporter with PrintReporter {
+  */
+class DisplayReporter(val settings: Settings,
+                      val reader: BufferedReader,
+                      val writer: PrintWriter,
+                      val echoWriter: PrintWriter)
+    extends InternalReporter
+    with PrintReporter {
 
-  def info0(pos: Position, msg: String, severity: Severity, force: Boolean): Unit = display(pos, msg, severity)
+  def info0(pos: Position,
+            msg: String,
+            severity: Severity,
+            force: Boolean): Unit = display(pos, msg, severity)
 }
 
 object DisplayReporter {
   def apply(
-    settings: Settings      = new Settings,
-    reader: BufferedReader  = Console.in,
-    writer: PrintWriter     = new PrintWriter(Console.err, true),
-    echoWriter: PrintWriter = new PrintWriter(Console.out, true)
+      settings: Settings = new Settings,
+      reader: BufferedReader = Console.in,
+      writer: PrintWriter = new PrintWriter(Console.err, true),
+      echoWriter: PrintWriter = new PrintWriter(Console.out, true)
   ) = new DisplayReporter(settings, reader, writer, echoWriter)
 
   /** Take the message with its explanation, if it has one. */
@@ -116,20 +127,27 @@ object DisplayReporter {
   private def splitting(msg: String, explaining: Boolean): String =
     if (msg != null && msg.indexOf("\n----") > 0) {
       val (err, exp) = msg.linesIterator.span(!_.startsWith("----"))
-      if (explaining) (err ++ exp.drop(1)).mkString("\n") else err.mkString("\n")
+      if (explaining) (err ++ exp.drop(1)).mkString("\n")
+      else err.mkString("\n")
     } else {
       msg
     }
 }
 
 /** A reporter that filters by position and forwards for display */
-class DefaultReporter(settings: Settings, writer: PrintWriter, echo: PrintWriter)
-  extends PositionFilter(settings, DisplayReporter(settings, Console.in, writer, echo))
-  with CountingReporter
-  with SummaryReporter
-  with LimitFilter {
+class DefaultReporter(settings: Settings,
+                      writer: PrintWriter,
+                      echo: PrintWriter)
+    extends PositionFilter(settings,
+                           DisplayReporter(settings, Console.in, writer, echo))
+    with CountingReporter
+    with SummaryReporter
+    with LimitFilter {
   // required constructor for -Xreporter
-  def this(settings: Settings) = this(settings, new PrintWriter(Console.err, true), new PrintWriter(Console.out, true))
+  def this(settings: Settings) =
+    this(settings,
+         new PrintWriter(Console.err, true),
+         new PrintWriter(Console.out, true))
   private def displayReporter = delegate.asInstanceOf[DisplayReporter]
   def shortname_=(flag: Boolean): Unit = displayReporter.shortname = flag
   def shortname: Boolean = displayReporter.shortname
@@ -140,16 +158,20 @@ class DefaultReporter(settings: Settings, writer: PrintWriter, echo: PrintWriter
 }
 object DefaultReporter {
   def apply(settings: Settings) = new DefaultReporter(settings)
-  def apply(settings: Settings, out: PrintWriter) = new DefaultReporter(settings, out, out)
+  def apply(settings: Settings, out: PrintWriter) =
+    new DefaultReporter(settings, out, out)
 }
 
 /** A `Reporter` that echos a summary in `finish`. */
 trait SummaryReporter extends InternalReporter {
+
   /** Prints the number of warnings and errors if there are any. */
   override def finish(): Unit = {
     import reflect.internal.util.StringOps.{countElementsAsString => countAs}
-    if (hasWarnings) echo(s"${countAs(WARNING.count, WARNING.toString.toLowerCase)} found")
-    if (hasErrors)   echo(s"${countAs(ERROR.count, ERROR.toString.toLowerCase)} found")
+    if (hasWarnings)
+      echo(s"${countAs(WARNING.count, WARNING.toString.toLowerCase)} found")
+    if (hasErrors)
+      echo(s"${countAs(ERROR.count, ERROR.toString.toLowerCase)} found")
     super.finish()
   }
 }
@@ -161,44 +183,52 @@ trait Filtering { _: InternalReporter =>
 }
 
 /** A `ForwardingReporter` that filters events before delegating.
- *
- *  Concrete subclasses should implement just the abstract `filter` method.
- */
+  *
+  *  Concrete subclasses should implement just the abstract `filter` method.
+  */
 trait FilteringReporter extends ForwardingReporter with Filtering {
-  override def echo(pos: Position, msg: String)    = if (filter(pos, msg, INFO)) delegate.echo(pos, msg)
-  override def warning(pos: Position, msg: String) = if (filter(pos, msg, WARNING)) delegate.warning(pos, msg)
-  override def error(pos: Position, msg: String)   = if (filter(pos, msg, ERROR)) delegate.error(pos, msg)
+  override def echo(pos: Position, msg: String) =
+    if (filter(pos, msg, INFO)) delegate.echo(pos, msg)
+  override def warning(pos: Position, msg: String) =
+    if (filter(pos, msg, WARNING)) delegate.warning(pos, msg)
+  override def error(pos: Position, msg: String) =
+    if (filter(pos, msg, ERROR)) delegate.error(pos, msg)
 }
 
 /** A `Reporter` that counts messages that are passed by the filter. */
 trait CountingReporter extends FilteringReporter {
-  abstract override protected def filter(pos: Position, msg: String, severity: Severity): Boolean =
-    super.filter(pos, msg, severity) && { severity.count += 1 ; true }
+  abstract override protected def filter(pos: Position,
+                                         msg: String,
+                                         severity: Severity): Boolean =
+    super.filter(pos, msg, severity) && { severity.count += 1; true }
 }
 
 /** Disable a message when super.filter has passed the message but max limit has been reached.
- *  `hasErrors` is implemented as a flag to defer initializing ERROR object.
- */
+  *  `hasErrors` is implemented as a flag to defer initializing ERROR object.
+  */
 trait LimitFilter extends FilteringReporter {
   def maxerrs: Int
   def maxwarns: Int
 
   private[this] var warned = false
-  private[this] var erred  = false
+  private[this] var erred = false
   override def hasWarnings = warned
-  override def hasErrors   = erred
+  override def hasErrors = erred
 
-  abstract override protected def filter(pos: Position, msg: String, severity: Severity): Boolean =
+  abstract override protected def filter(pos: Position,
+                                         msg: String,
+                                         severity: Severity): Boolean =
     super.filter(pos, msg, severity) && {
-    severity match {
-      case ERROR   => erred = true  ; ERROR.count <= maxerrs
-      case WARNING => warned = true ; WARNING.count <= maxwarns
-      case _       => true
-    }}
+      severity match {
+        case ERROR   => erred = true; ERROR.count <= maxerrs
+        case WARNING => warned = true; WARNING.count <= maxwarns
+        case _       => true
+      }
+    }
 
   override def reset(): Unit = {
     super.reset()
     warned = false
-    erred  = false
+    erred = false
   }
 }

@@ -11,20 +11,20 @@ import scala.tools.asm.Opcodes._
 import scala.tools.partest.ASMConverters._
 import scala.tools.testing.BytecodeTesting
 import scala.tools.testing.BytecodeTesting._
-
-
 @RunWith(classOf[JUnit4])
 class EmptyExceptionHandlersTest extends BytecodeTesting {
   override def compilerArgs = "-opt:unreachable-code"
   def dceCompiler = compiler
 
-  val noOptCompiler = cached("noOptCompiler", () => newCompiler(extraArgs = "-opt:l:none"))
+  val noOptCompiler =
+    cached("noOptCompiler", () => newCompiler(extraArgs = "-opt:l:none"))
 
   val exceptionDescriptor = "java/lang/Exception"
 
   @Test
   def eliminateEmpty(): Unit = {
-    val handlers = List(ExceptionHandler(Label(1), Label(2), Label(2), Some(exceptionDescriptor)))
+    val handlers = List(
+      ExceptionHandler(Label(1), Label(2), Label(2), Some(exceptionDescriptor)))
     val asmMethod = genMethod(handlers = handlers)(
       Label(1),
       Label(2),
@@ -37,18 +37,17 @@ class EmptyExceptionHandlersTest extends BytecodeTesting {
 
   @Test
   def eliminateHandlersGuardingNops(): Unit = {
-    val handlers = List(ExceptionHandler(Label(1), Label(2), Label(2), Some(exceptionDescriptor)))
+    val handlers = List(
+      ExceptionHandler(Label(1), Label(2), Label(2), Some(exceptionDescriptor)))
     val asmMethod = genMethod(handlers = handlers)(
-      Label(1),          // nops only
+      Label(1), // nops only
       Jump(GOTO, Label(3)),
       Label(3),
       Jump(GOTO, Label(4)),
-
-      Label(2),          // handler
+      Label(2), // handler
       Op(ACONST_NULL),
       Op(ATHROW),
-
-      Label(4),          // return
+      Label(4), // return
       Op(RETURN)
     )
     assertTrue(convertMethod(asmMethod).handlers.length == 1)
@@ -58,7 +57,8 @@ class EmptyExceptionHandlersTest extends BytecodeTesting {
 
   @Test
   def eliminateUnreachableHandler(): Unit = {
-    val code = "def f: Unit = try { } catch { case _: Exception => println(0) }; println(1)"
+    val code =
+      "def f: Unit = try { } catch { case _: Exception => println(0) }; println(1)"
 
     assertTrue(noOptCompiler.compileMethod(code).handlers.length == 1)
     val optMethod = dceCompiler.compileMethod(code)

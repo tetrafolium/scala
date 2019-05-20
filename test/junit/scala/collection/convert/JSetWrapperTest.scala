@@ -23,7 +23,8 @@ class JSetWrapperTest {
 
   @Test
   def testFilterInPlace(): Unit = {
-    val jSet: ju.Set[Int] = new ju.HashSet(ju.Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+    val jSet: ju.Set[Int] =
+      new ju.HashSet(ju.Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     val sSet: collection.mutable.Set[Int] = jSet.asScala
 
     sSet.filterInPlace(_ % 2 == 0)

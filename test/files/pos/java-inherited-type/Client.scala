@@ -1,5 +1,5 @@
 object Client {
-  def test= {
+  def test = {
     Test.Outer.Nested.sig
     Test.Outer.Nested.sig1
     Test.Outer.Nested.sig2

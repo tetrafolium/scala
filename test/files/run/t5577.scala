@@ -9,8 +9,8 @@ object Test {
   }
 
   def main(args: Array[String]): Unit = {
-    val iteratorBuilder = (new AlarmingBuilder[Int]) mapResult {
-      res => res.iterator
+    val iteratorBuilder = (new AlarmingBuilder[Int]) mapResult { res =>
+      res.iterator
     }
 
     iteratorBuilder.sizeHint(10)

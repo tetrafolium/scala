@@ -7,5 +7,5 @@ abstract class SamImplicitConvert {
 
   implicit def conv(xs: Array[Int]): Lst[Int]
 
-  def encoded = flatMap (_.getBytes)
+  def encoded = flatMap(_.getBytes)
 }

@@ -20,8 +20,10 @@ import scala.language.higherKinds
   *  `tail` operations.
   *  Known subclasses: List, LazyList
   */
-trait LinearSeq[+A] extends Seq[A] with LinearSeqOps[A, LinearSeq, LinearSeq[A]] {
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+trait LinearSeq[+A]
+    extends Seq[A]
+    with LinearSeqOps[A, LinearSeq, LinearSeq[A]] {
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix: String = "LinearSeq"
 }
 
@@ -29,7 +31,10 @@ trait LinearSeq[+A] extends Seq[A] with LinearSeqOps[A, LinearSeq, LinearSeq[A]]
 object LinearSeq extends SeqFactory.Delegate[LinearSeq](immutable.LinearSeq)
 
 /** Base trait for linear Seq operations */
-trait LinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeqOps[A, CC, C]] extends Any with SeqOps[A, CC, C] {
+trait LinearSeqOps[
+    +A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeqOps[A, CC, C]]
+    extends Any
+    with SeqOps[A, CC, C] {
 
   // To be overridden in implementations:
   def isEmpty: Boolean
@@ -83,24 +88,25 @@ trait LinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeq
     val thatKnownSize = that.knownSize
 
     if (thatKnownSize >= 0) this lengthCompare thatKnownSize
-    else that match {
-      case that: LinearSeq[_] =>
-        var thisSeq = this
-        var thatSeq = that
-        while (thisSeq.nonEmpty && thatSeq.nonEmpty) {
-          thisSeq = thisSeq.tail
-          thatSeq = thatSeq.tail
-        }
-        java.lang.Boolean.compare(thisSeq.nonEmpty, thatSeq.nonEmpty)
-      case _                  =>
-        var thisSeq = this
-        val thatIt = that.iterator
-        while (thisSeq.nonEmpty && thatIt.hasNext) {
-          thisSeq = thisSeq.tail
-          thatIt.next()
-        }
-        java.lang.Boolean.compare(thisSeq.nonEmpty, thatIt.hasNext)
-    }
+    else
+      that match {
+        case that: LinearSeq[_] =>
+          var thisSeq = this
+          var thatSeq = that
+          while (thisSeq.nonEmpty && thatSeq.nonEmpty) {
+            thisSeq = thisSeq.tail
+            thatSeq = thatSeq.tail
+          }
+          java.lang.Boolean.compare(thisSeq.nonEmpty, thatSeq.nonEmpty)
+        case _ =>
+          var thisSeq = this
+          val thatIt = that.iterator
+          while (thisSeq.nonEmpty && thatIt.hasNext) {
+            thisSeq = thisSeq.tail
+            thatIt.next()
+          }
+          java.lang.Boolean.compare(thisSeq.nonEmpty, thatIt.hasNext)
+      }
   }
 
   override def isDefinedAt(x: Int): Boolean = x >= 0 && lengthCompare(x) > 0
@@ -174,15 +180,14 @@ trait LinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeq
       (a eq b) || {
         if (a.nonEmpty && b.nonEmpty && a.head == b.head) {
           linearSeqEq(a.tail, b.tail)
-        }
-        else {
+        } else {
           a.isEmpty && b.isEmpty
         }
       }
 
     that match {
       case that: LinearSeq[B] => linearSeqEq(coll, that)
-      case _ => super.sameElements(that)
+      case _                  => super.sameElements(that)
     }
   }
 
@@ -237,10 +242,17 @@ trait LinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with LinearSeq
   }
 
   override def tails: Iterator[C] =
-    Iterator.iterate(coll)(_.tail).takeWhile(_.nonEmpty) ++ Iterator.single(newSpecificBuilder.result())
+    Iterator.iterate(coll)(_.tail).takeWhile(_.nonEmpty) ++ Iterator.single(
+      newSpecificBuilder.result())
 }
 
-trait StrictOptimizedLinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A] with StrictOptimizedLinearSeqOps[A, CC, C]] extends Any with LinearSeqOps[A, CC, C] with StrictOptimizedSeqOps[A, CC, C] {
+trait StrictOptimizedLinearSeqOps[
+    +A,
+    +CC[X] <: LinearSeq[X],
+    +C <: LinearSeq[A] with StrictOptimizedLinearSeqOps[A, CC, C]]
+    extends Any
+    with LinearSeqOps[A, CC, C]
+    with StrictOptimizedSeqOps[A, CC, C] {
   // A more efficient iterator implementation than the default LinearSeqIterator
   override def iterator: Iterator[A] = new AbstractIterator[A] {
     private[this] var current: Iterable[A] = toIterable
@@ -267,9 +279,12 @@ trait StrictOptimizedLinearSeqOps[+A, +CC[X] <: LinearSeq[X], +C <: LinearSeq[A]
 /** A specialized Iterator for LinearSeqs that is lazy enough for Stream and LazyList. This is accomplished by not
   * evaluating the tail after returning the current head.
   */
-private[collection] final class LinearSeqIterator[A](coll: LinearSeqOps[A, LinearSeq, LinearSeq[A]]) extends AbstractIterator[A] {
+private[collection] final class LinearSeqIterator[A](
+    coll: LinearSeqOps[A, LinearSeq, LinearSeq[A]])
+    extends AbstractIterator[A] {
   // A call-by-need cell
-  private[this] final class LazyCell(st: => LinearSeqOps[A, LinearSeq, LinearSeq[A]]) { lazy val v = st }
+  private[this] final class LazyCell(
+      st: => LinearSeqOps[A, LinearSeq, LinearSeq[A]]) { lazy val v = st }
 
   private[this] var these: LazyCell = new LazyCell(coll)
 
@@ -278,7 +293,7 @@ private[collection] final class LinearSeqIterator[A](coll: LinearSeqOps[A, Linea
   def next(): A =
     if (isEmpty) Iterator.empty.next()
     else {
-      val cur    = these.v
+      val cur = these.v
       val result = cur.head
       these = new LazyCell(cur.tail)
       result

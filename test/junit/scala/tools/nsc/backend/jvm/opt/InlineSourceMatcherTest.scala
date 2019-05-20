@@ -20,7 +20,9 @@ class InlineSourceMatcherTest extends BytecodeTesting {
     global.settings.optInlineFrom.value = s.split(':').toList
   }
 
-  case class E(regex: String, negated: Boolean = false, terminal: Boolean = true)
+  case class E(regex: String,
+               negated: Boolean = false,
+               terminal: Boolean = true)
 
   def check(pat: String, expect: E*): InlineSourceMatcher = {
     val m = new InlineSourceMatcher(pat.split(':').toList)
@@ -62,14 +64,17 @@ class InlineSourceMatcherTest extends BytecodeTesting {
       m.d("a/b/A")
     }
     {
-      val m = check("a.*:!a.C", E("a/[^/]*", false, false), E("a/C", true, true))
+      val m =
+        check("a.*:!a.C", E("a/[^/]*", false, false), E("a/C", true, true))
       m.a("a/A")
       m.a("a/CC")
       m.d("a/C")
       m.d("a/b/C")
     }
     {
-      val m = check("a.*:!a.*C*", E("a/[^/]*", false, false), E("a/[^/]*C[^/]*", true, true))
+      val m = check("a.*:!a.*C*",
+                    E("a/[^/]*", false, false),
+                    E("a/[^/]*C[^/]*", true, true))
       m.a("a/A")
       m.a("a/SDEJAB")
       m.d("a/C")
@@ -92,7 +97,9 @@ class InlineSourceMatcherTest extends BytecodeTesting {
     }
     {
       // no entry for **, sets the matcher's `startAllow` boolean
-      val m = check("**:!scala.Predef$:!java.**", E("scala/\\QPredef$\\E", true, true), E("java/.*", true, true))
+      val m = check("**:!scala.Predef$:!java.**",
+                    E("scala/\\QPredef$\\E", true, true),
+                    E("java/.*", true, true))
       m.a("Predef$")
       m.a("skala/Predef$")
       m.a("scala/Predef")
@@ -145,9 +152,9 @@ class InlineSourceMatcherTest extends BytecodeTesting {
     }
     {
       val m = check("**.*Util*:!**.AUtil*:a/b/AUtil*",
-        E("(?:.*/|)[^/]*Util[^/]*", false, false),
-        E("(?:.*/|)AUtil[^/]*", true, false),
-        E("a/b/AUtil[^/]*", false, true))
+                    E("(?:.*/|)[^/]*Util[^/]*", false, false),
+                    E("(?:.*/|)AUtil[^/]*", true, false),
+                    E("a/b/AUtil[^/]*", false, true))
       m.a("a/b/AUtils")
       m.d("a/c/AUtils")
       m.d("AUtils")
@@ -155,7 +162,8 @@ class InlineSourceMatcherTest extends BytecodeTesting {
     }
 
     {
-      val m = check("**:!a.*:a.C", E("a/[^/]*", true, false), E("a/C", false, true))
+      val m =
+        check("**:!a.*:a.C", E("a/[^/]*", true, false), E("a/C", false, true))
       m.d("a/A")
       m.a("a/C")
       m.a("a/A/K")
@@ -163,12 +171,15 @@ class InlineSourceMatcherTest extends BytecodeTesting {
       m.d("a/")
     }
     {
-      val m = check("**:!**.C:C", E("(?:.*/|)C", true, false), E("C", false, true))
+      val m =
+        check("**:!**.C:C", E("(?:.*/|)C", true, false), E("C", false, true))
       m.a("C")
       m.d("a/C")
     }
     {
-      val m = check("scala.**:<sources>:com.corp.**", E("scala/.*", false, true), E("com/corp/.*", false, true))
+      val m = check("scala.**:<sources>:com.corp.**",
+                    E("scala/.*", false, true),
+                    E("com/corp/.*", false, true))
       assert(m.allowFromSources)
     }
   }

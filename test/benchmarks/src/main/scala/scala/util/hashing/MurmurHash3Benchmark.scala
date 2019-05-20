@@ -33,9 +33,9 @@ class MurmurHash3Benchmark {
     ordered = Array.iterate(1, size)(_ + 1)
     mixed1 = Array.copyOf(ordered, ordered.length)
     mixed2 = Array.copyOf(ordered, ordered.length)
-    if(size > 1) {
+    if (size > 1) {
       swap(mixed1, 0, 1)
-      swap(mixed2, mixed2.length-1, mixed2.length-2)
+      swap(mixed2, mixed2.length - 1, mixed2.length - 2)
     }
     orderedL = ordered.toList
     mixed1L = mixed1.toList
@@ -53,8 +53,6 @@ class MurmurHash3Benchmark {
 
   @Benchmark def rangeHash(bh: Blackhole): Unit =
     bh.consume(MurmurHash3.rangeHash(1, 1, size, MurmurHash3.seqSeed))
-
-
   @Benchmark def oldArrayHashOrdered(bh: Blackhole): Unit =
     bh.consume(OldMurmurHash3.oldArrayHash(ordered, MurmurHash3.seqSeed))
 
@@ -78,8 +76,6 @@ class MurmurHash3Benchmark {
 
   @Benchmark def rangeOptimizedOrderedHashListMixed2(bh: Blackhole): Unit =
     bh.consume(MurmurHash3.orderedHash(mixed2L, MurmurHash3.seqSeed))
-
-
   @Benchmark def oldOrderedHashIndexedOrdered(bh: Blackhole): Unit =
     bh.consume(OldMurmurHash3.oldOrderedHash(orderedI, MurmurHash3.seqSeed))
 
@@ -91,8 +87,6 @@ class MurmurHash3Benchmark {
 
   @Benchmark def rangeOptimizedOrderedHashIndexedMixed2(bh: Blackhole): Unit =
     bh.consume(MurmurHash3.orderedHash(mixed2I, MurmurHash3.seqSeed))
-
-
   @Benchmark def rangeOptimizedIndexedHashOrdered(bh: Blackhole): Unit =
     bh.consume(MurmurHash3.indexedSeqHash(orderedI, MurmurHash3.seqSeed))
 
@@ -101,8 +95,6 @@ class MurmurHash3Benchmark {
 
   @Benchmark def rangeOptimizedIndexedHashMixed2(bh: Blackhole): Unit =
     bh.consume(MurmurHash3.indexedSeqHash(mixed2I, MurmurHash3.seqSeed))
-
-
   @Benchmark def oldListHashOrdered(bh: Blackhole): Unit =
     bh.consume(OldMurmurHash3.oldListHash(orderedL, MurmurHash3.seqSeed))
 
@@ -143,7 +135,8 @@ object OldMurmurHash3 {
     finalizeHash(h, a.length)
   }
 
-  final def oldListHash(xs: scala.collection.immutable.List[_], seed: Int): Int = {
+  final def oldListHash(xs: scala.collection.immutable.List[_],
+                        seed: Int): Int = {
     var n = 0
     var h = seed
     var elems = xs

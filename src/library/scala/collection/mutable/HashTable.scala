@@ -21,26 +21,28 @@ import scala.util.hashing.byteswap32
 import java.lang.Integer
 
 /** This class can be used to construct data structures that are based
- *  on hashtables. Class `HashTable[A]` implements a hashtable
- *  that maps keys of type `A` to values of the fully abstract
- *  member type `Entry`. Classes that make use of `HashTable`
- *  have to provide an implementation for `Entry`.
- *
- *  There are mainly two parameters that affect the performance of a hashtable:
- *  the <i>initial size</i> and the <i>load factor</i>. The <i>size</i>
- *  refers to the number of <i>buckets</i> in the hashtable, and the <i>load
- *  factor</i> is a measure of how full the hashtable is allowed to get before
- *  its size is automatically doubled. Both parameters may be changed by
- *  overriding the corresponding values in class `HashTable`.
- *
- *  @author  Matthias Zenger
- *  @author  Martin Odersky
- *  @since   1
- *
- *  @tparam A     type of the elements contained in this hash table.
- */
+  *  on hashtables. Class `HashTable[A]` implements a hashtable
+  *  that maps keys of type `A` to values of the fully abstract
+  *  member type `Entry`. Classes that make use of `HashTable`
+  *  have to provide an implementation for `Entry`.
+  *
+  *  There are mainly two parameters that affect the performance of a hashtable:
+  *  the <i>initial size</i> and the <i>load factor</i>. The <i>size</i>
+  *  refers to the number of <i>buckets</i> in the hashtable, and the <i>load
+  *  factor</i> is a measure of how full the hashtable is allowed to get before
+  *  its size is automatically doubled. Both parameters may be changed by
+  *  overriding the corresponding values in class `HashTable`.
+  *
+  *  @author  Matthias Zenger
+  *  @author  Martin Odersky
+  *  @since   1
+  *
+  *  @tparam A     type of the elements contained in this hash table.
+  */
 // Was an abstract class, but to simplify the upgrade of the parallel collections I’ve made it a trait
-private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: HashEntry[A, Entry]] extends HashTable.HashUtils[A] {
+private[collection] /*abstract class*/ trait HashTable[
+    A, B, Entry >: Null <: HashEntry[A, Entry]]
+    extends HashTable.HashUtils[A] {
   // Replacing Entry type parameter by abstract type member here allows to not expose to public
   // implementation-specific entry classes such as `DefaultEntry` or `LinkedEntry`.
   // However, I'm afraid it's too late now for such breaking change.
@@ -49,21 +51,22 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   protected var _loadFactor = defaultLoadFactor
 
   /** The actual hash table.
-   */
-  protected[collection] var table: Array[HashEntry[A, Entry]] = new Array(initialCapacity)
+    */
+  protected[collection] var table: Array[HashEntry[A, Entry]] = new Array(
+    initialCapacity)
 
   /** The number of mappings contained in this hash table.
-   */
+    */
   protected[collection] var tableSize: Int = 0
 
   final def size: Int = tableSize
 
   /** The next size value at which to resize (capacity * load factor).
-   */
+    */
   protected[collection] var threshold: Int = initialThreshold(_loadFactor)
 
   /** The array keeping track of the number of elements in 32 element blocks.
-   */
+    */
   protected var sizemap: Array[Int] = null
 
   protected var seedvalue: Int = tableSizeSeed
@@ -71,28 +74,29 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   protected def tableSizeSeed = Integer.bitCount(table.length - 1)
 
   /** The initial size of the hash table.
-   */
+    */
   protected def initialSize: Int = 16
 
   /** The initial threshold.
-   */
-  private def initialThreshold(_loadFactor: Int): Int = newThreshold(_loadFactor, initialCapacity)
+    */
+  private def initialThreshold(_loadFactor: Int): Int =
+    newThreshold(_loadFactor, initialCapacity)
 
   private def initialCapacity = capacity(initialSize)
 
   private def lastPopulatedIndex = {
     var idx = table.length - 1
-    while (table(idx) == null && idx > 0)
-      idx -= 1
+    while (table(idx) == null && idx > 0) idx -= 1
 
     idx
   }
 
   /**
-   * Initializes the collection from the input stream. `readEntry` will be called for each
-   * entry to be read from the input stream.
-   */
-  private[collection] def init(in: java.io.ObjectInputStream, readEntry: => Entry): Unit = {
+    * Initializes the collection from the input stream. `readEntry` will be called for each
+    * entry to be read from the input stream.
+    */
+  private[collection] def init(in: java.io.ObjectInputStream,
+                               readEntry: => Entry): Unit = {
     _loadFactor = in.readInt()
     assert(_loadFactor > 0)
 
@@ -117,13 +121,14 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /**
-   * Serializes the collection to the output stream by saving the load factor, collection
-   * size and collection entries. `writeEntry` is responsible for writing an entry to the stream.
-   *
-   * `foreachEntry` determines the order in which the key/value pairs are saved to the stream. To
-   * deserialize, `init` should be used.
-   */
-  private[collection] def serializeTo(out: java.io.ObjectOutputStream, writeEntry: Entry => Unit): Unit = {
+    * Serializes the collection to the output stream by saving the load factor, collection
+    * size and collection entries. `writeEntry` is responsible for writing an entry to the stream.
+    *
+    * `foreachEntry` determines the order in which the key/value pairs are saved to the stream. To
+    * deserialize, `init` should be used.
+    */
+  private[collection] def serializeTo(out: java.io.ObjectOutputStream,
+                                      writeEntry: Entry => Unit): Unit = {
     out.writeInt(_loadFactor)
     out.writeInt(tableSize)
     out.writeInt(seedvalue)
@@ -133,7 +138,7 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** Find entry with given key in table, null if not found.
-   */
+    */
   final def findEntry(key: A): Entry =
     findEntry0(key, index(elemHashCode(key)))
 
@@ -144,8 +149,8 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** Add entry to table
-   *  pre: no entry with same key exists
-   */
+    *  pre: no entry with same key exists
+    */
   protected[collection] final def addEntry(e: Entry): Unit = {
     addEntry0(e, index(elemHashCode(e.key)))
   }
@@ -160,11 +165,11 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** Find entry with given key in table, or add new one if not found.
-   *  May be somewhat faster then `findEntry`/`addEntry` pair as it
-   *  computes entry's hash index only once.
-   *  Returns entry found in table or null.
-   *  New entries are created by calling `createNewEntry` method.
-   */
+    *  May be somewhat faster then `findEntry`/`addEntry` pair as it
+    *  computes entry's hash index only once.
+    *  Returns entry found in table or null.
+    *  New entries are created by calling `createNewEntry` method.
+    */
   def findOrAddEntry(key: A, value: B): Entry = {
     val h = index(elemHashCode(key))
     val e = findEntry0(key, h)
@@ -172,14 +177,14 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** Creates new entry to be immediately inserted into the hashtable.
-   *  This method is guaranteed to be called only once and in case that the entry
-   *  will be added. In other words, an implementation may be side-effecting.
-   */
+    *  This method is guaranteed to be called only once and in case that the entry
+    *  will be added. In other words, an implementation may be side-effecting.
+    */
   def createNewEntry(key: A, value: B): Entry
 
   /** Remove entry from table if present.
-   */
-  final def removeEntry(key: A) : Entry = {
+    */
+  final def removeEntry(key: A): Entry = {
     val h = index(elemHashCode(key))
     var e = table(h).asInstanceOf[Entry]
     if (e != null) {
@@ -208,11 +213,11 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** An iterator returning all entries.
-   */
+    */
   def entriesIterator: Iterator[Entry] = new AbstractIterator[Entry] {
     val iterTable = table
-    var idx       = lastPopulatedIndex
-    var es        = iterTable(idx)
+    var idx = lastPopulatedIndex
+    var es = iterTable(idx)
 
     def hasNext = es != null
     def next() = {
@@ -229,8 +234,8 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   /** Avoid iterator for a 2x faster traversal. */
   def foreachEntry[U](f: Entry => U): Unit = {
     val iterTable = table
-    var idx       = lastPopulatedIndex
-    var es        = iterTable(idx)
+    var idx = lastPopulatedIndex
+    var es = iterTable(idx)
 
     while (es != null) {
       val next = es.next // Cache next in case f removes es.
@@ -245,7 +250,7 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
   }
 
   /** Remove all entries from table
-   */
+    */
   def clearTable(): Unit = {
     var i = table.length - 1
     while (i >= 0) { table(i) = null; i = i - 1 }
@@ -306,9 +311,12 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
     else java.util.Arrays.fill(sizemap, 0)
   }
 
-  private[collection] final def totalSizeMapBuckets = if (sizeMapBucketSize < table.length) 1 else table.length / sizeMapBucketSize
+  private[collection] final def totalSizeMapBuckets =
+    if (sizeMapBucketSize < table.length) 1
+    else table.length / sizeMapBucketSize
 
-  protected final def calcSizeMapSize(tableLength: Int) = (tableLength >> sizeMapBucketBitSize) + 1
+  protected final def calcSizeMapSize(tableLength: Int) =
+    (tableLength >> sizeMapBucketBitSize) + 1
 
   // discards the previous sizemap and only allocates a new one
   protected def sizeMapInit(tableLength: Int): Unit = {
@@ -324,7 +332,8 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
     var bucketidx = 0
     val tbl = table
     var tableuntil = 0
-    if (tbl.length < sizeMapBucketSize) tableuntil = tbl.length else tableuntil = sizeMapBucketSize
+    if (tbl.length < sizeMapBucketSize) tableuntil = tbl.length
+    else tableuntil = sizeMapBucketSize
     val totalbuckets = totalSizeMapBuckets
     while (bucketidx < totalbuckets) {
       var currbucketsize = 0
@@ -369,16 +378,22 @@ private[collection] /*abstract class*/ trait HashTable[A, B, Entry >: Null <: Ha
 }
 
 private[collection] object HashTable {
+
   /** The load factor for the hash table (in 0.001 step).
-   */
-  private[collection] final def defaultLoadFactor: Int = 750 // corresponds to 75%
-  private[collection] final def loadFactorDenum = 1000 // should be loadFactorDenom, but changing that isn't binary compatible
+    */
+  private[collection] final def defaultLoadFactor: Int =
+    750 // corresponds to 75%
+  private[collection] final def loadFactorDenum =
+    1000 // should be loadFactorDenom, but changing that isn't binary compatible
 
-  private[collection] final def newThreshold(_loadFactor: Int, size: Int) = ((size.toLong * _loadFactor) / loadFactorDenum).toInt
+  private[collection] final def newThreshold(_loadFactor: Int, size: Int) =
+    ((size.toLong * _loadFactor) / loadFactorDenum).toInt
 
-  private[collection] final def sizeForThreshold(_loadFactor: Int, thr: Int) = ((thr.toLong * loadFactorDenum) / _loadFactor).toInt
+  private[collection] final def sizeForThreshold(_loadFactor: Int, thr: Int) =
+    ((thr.toLong * loadFactorDenum) / _loadFactor).toInt
 
-  private[collection] final def capacity(expectedSize: Int) = nextPositivePowerOfTwo(expectedSize)
+  private[collection] final def capacity(expectedSize: Int) =
+    nextPositivePowerOfTwo(expectedSize)
 
   trait HashUtils[KeyType] {
     protected final def sizeMapBucketBitSize = 5
@@ -400,13 +415,15 @@ private[collection] object HashTable {
       * }}}
       * the rest of the computation is due to SI-5293
       */
-    protected final def improve(hcode: Int, seed: Int): Int = rotateRight(byteswap32(hcode), seed)
+    protected final def improve(hcode: Int, seed: Int): Int =
+      rotateRight(byteswap32(hcode), seed)
   }
 
   /**
-   * Returns a power of two >= `target`.
-   */
-  private[collection] def nextPositivePowerOfTwo(target: Int): Int = 1 << -numberOfLeadingZeros(target - 1)
+    * Returns a power of two >= `target`.
+    */
+  private[collection] def nextPositivePowerOfTwo(target: Int): Int =
+    1 << -numberOfLeadingZeros(target - 1)
 }
 
 /** Class used internally.

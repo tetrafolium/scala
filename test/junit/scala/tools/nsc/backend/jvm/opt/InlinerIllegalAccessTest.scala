@@ -17,13 +17,19 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
   override def compilerArgs = "-opt:l:none"
 
   import compiler._
-  import global.genBCode.postProcessor.{bTypesFromClassfile, byteCodeRepository, inliner}
+  import global.genBCode.postProcessor.{
+    bTypesFromClassfile,
+    byteCodeRepository,
+    inliner
+  }
   import bTypesFromClassfile._
   import global.genBCode.bTypes._
 
-  def addToRepo(cls: List[ClassNode]): Unit = for (c <- cls) byteCodeRepository.add(c, None)
-  def assertEmpty(ins: List[AbstractInsnNode]) = for (i <- ins)
-    throw new AssertionError(textify(i))
+  def addToRepo(cls: List[ClassNode]): Unit =
+    for (c <- cls) byteCodeRepository.add(c, None)
+  def assertEmpty(ins: List[AbstractInsnNode]) =
+    for (i <- ins)
+      throw new AssertionError(textify(i))
 
   def clearClassBTypeCaches(): Unit = {
     classBTypeCache.clear()
@@ -47,14 +53,21 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
 
     val allClasses = compileClasses(code)
     val List(cClass, dClass, eClass) = allClasses
-    assert(cClass.name == "a/C" && dClass.name == "a/D" && eClass.name == "b/E", s"${cClass.name}, ${dClass.name}, ${eClass.name}")
+    assert(cClass.name == "a/C" && dClass.name == "a/D" && eClass.name == "b/E",
+           s"${cClass.name}, ${dClass.name}, ${eClass.name}")
     addToRepo(allClasses) // they are not on the compiler's classpath, so we add them manually to the code repo
 
     val methods = cClass.methods.asScala.filter(_.name(0) == 'f').toList
 
     def check(classNode: ClassNode, test: List[AbstractInsnNode] => Unit) = {
       for (m <- methods)
-        test(inliner.findIllegalAccess(m.instructions, classBTypeFromParsedClassfile(cClass.name), classBTypeFromParsedClassfile(classNode.name)).right.get)
+        test(
+          inliner
+            .findIllegalAccess(m.instructions,
+                               classBTypeFromParsedClassfile(cClass.name),
+                               classBTypeFromParsedClassfile(classNode.name))
+            .right
+            .get)
     }
 
     check(cClass, assertEmpty)
@@ -70,14 +83,17 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
     // private classes can be accessed from the same package
     check(cClass, assertEmpty)
     check(dClass, assertEmpty) // accessing a private class in the same package is OK
-    check(eClass, {
-      case (ti: TypeInsnNode) :: is if Set("a/C", "[La/C;")(ti.desc) =>
-        is match {
-          case List(mi: MethodInsnNode) => assert(mi.owner == "a/C" && mi.name == "<init>")
-          case Nil =>
-        }
-      // MatchError otherwise
-    })
+    check(
+      eClass, {
+        case (ti: TypeInsnNode) :: is if Set("a/C", "[La/C;")(ti.desc) =>
+          is match {
+            case List(mi: MethodInsnNode) =>
+              assert(mi.owner == "a/C" && mi.name == "<init>")
+            case Nil =>
+          }
+        // MatchError otherwise
+      }
+    )
 
     // ensure the caches are empty at the end for the next test to run (`check` caches types by
     // calling `classBTypeFromParsedClassfile`). note that per-run caches are cleared at the end
@@ -136,28 +152,44 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
 
     // set flags that Scala scala doesn't (default access, static) - a hacky way to test all access modes.
     val names = ('a' to 'h').map(_.toString).toSet
-    val List(a, b, c, d, e, f, g, h) = cCl.methods.asScala.toList.filter(m => names(m.name))
+    val List(a, b, c, d, e, f, g, h) =
+      cCl.methods.asScala.toList.filter(m => names(m.name))
 
     def checkAccess(a: MethodNode, expected: Int): Unit = {
-      assert((a.access & (ACC_STATIC | ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE)) == expected, s"${a.name}, ${a.access}")
+      assert(
+        (a.access & (ACC_STATIC | ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE)) == expected,
+        s"${a.name}, ${a.access}")
     }
 
-                                                        checkAccess(a, ACC_PUBLIC)
-    b.access &= ~ACC_PUBLIC;                            checkAccess(b, 0) // make it default access
-    c.access &= ~ACC_PUBLIC; c.access |= ACC_PROTECTED; checkAccess(c, ACC_PROTECTED) // make it protected - scalac actually never emits PROTECTED in bytecode, see javaFlags in BTypesFromSymbols
-                                                        checkAccess(d, ACC_PRIVATE)
+    checkAccess(a, ACC_PUBLIC)
+    b.access &= ~ACC_PUBLIC; checkAccess(b, 0) // make it default access
+    c.access &= ~ACC_PUBLIC; c.access |= ACC_PROTECTED;
+    checkAccess(c, ACC_PROTECTED) // make it protected - scalac actually never emits PROTECTED in bytecode, see javaFlags in BTypesFromSymbols
+    checkAccess(d, ACC_PRIVATE)
 
-                             e.access |= ACC_STATIC;                   checkAccess(e, ACC_STATIC | ACC_PUBLIC)
-    f.access &= ~ACC_PUBLIC; f.access |= ACC_STATIC;                   checkAccess(f, ACC_STATIC)
-    g.access &= ~ACC_PUBLIC; g.access |= (ACC_STATIC | ACC_PROTECTED); checkAccess(g, ACC_STATIC | ACC_PROTECTED)
-                             h.access |= ACC_STATIC;                   checkAccess(h, ACC_STATIC | ACC_PRIVATE)
+    e.access |= ACC_STATIC; checkAccess(e, ACC_STATIC | ACC_PUBLIC)
+    f.access &= ~ACC_PUBLIC; f.access |= ACC_STATIC; checkAccess(f, ACC_STATIC)
+    g.access &= ~ACC_PUBLIC; g.access |= (ACC_STATIC | ACC_PROTECTED);
+    checkAccess(g, ACC_STATIC | ACC_PROTECTED)
+    h.access |= ACC_STATIC; checkAccess(h, ACC_STATIC | ACC_PRIVATE)
 
-    val List(raC, rbC, rcC, rdC, reC, rfC, rgC, rhC) = cCl.methods.asScala.toList.filter(_.name(0) == 'r').sortBy(_.name)
+    val List(raC, rbC, rcC, rdC, reC, rfC, rgC, rhC) =
+      cCl.methods.asScala.toList.filter(_.name(0) == 'r').sortBy(_.name)
 
-    val List(rbD, rcD, rfD, rgD) = dCl.methods.asScala.toList.filter(_.name(0) == 'r').sortBy(_.name)
+    val List(rbD, rcD, rfD, rgD) =
+      dCl.methods.asScala.toList.filter(_.name(0) == 'r').sortBy(_.name)
 
-    def check(method: MethodNode, decl: ClassNode, dest: ClassNode, test: List[AbstractInsnNode] => Unit): Unit = {
-      test(inliner.findIllegalAccess(method.instructions, classBTypeFromParsedClassfile(decl.name), classBTypeFromParsedClassfile(dest.name)).right.get)
+    def check(method: MethodNode,
+              decl: ClassNode,
+              dest: ClassNode,
+              test: List[AbstractInsnNode] => Unit): Unit = {
+      test(
+        inliner
+          .findIllegalAccess(method.instructions,
+                             classBTypeFromParsedClassfile(decl.name),
+                             classBTypeFromParsedClassfile(dest.name))
+          .right
+          .get)
     }
 
     val cOrDOwner = (_: List[AbstractInsnNode] @unchecked) match {
@@ -173,7 +205,8 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
     // DEFAULT ACCESS
 
     // default access OK in same package
-    for ((m, declCls) <- Set((rbC, cCl), (rfC, cCl), (rbD, dCl), (rfD, dCl)); c <- allClasses) {
+    for ((m, declCls) <- Set((rbC, cCl), (rfC, cCl), (rbD, dCl), (rfD, dCl));
+         c <- allClasses) {
       if (c.name startsWith "a/") check(m, declCls, c, assertEmpty)
       else check(m, declCls, c, cOrDOwner)
     }
@@ -182,7 +215,9 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
 
     // protected static accessed in same class, or protected static accessed in subclass(rgD).
     // can be inlined to sub- and superclasses, and classes in the same package (gCl)
-    for ((m, declCls) <- Set((rgC, cCl), (rgD, dCl)); c <- Set(cCl, dCl, eCl, fCl, gCl, hCl)) check(m, declCls, c, assertEmpty)
+    for ((m, declCls) <- Set((rgC, cCl), (rgD, dCl));
+         c <- Set(cCl, dCl, eCl, fCl, gCl, hCl))
+      check(m, declCls, c, assertEmpty)
 
     // protected in non-subclass and different package
     for (m <- Set(rcC, rgC)) check(m, cCl, iCl, cOrDOwner)
@@ -191,7 +226,8 @@ class InlinerIllegalAccessTest extends BytecodeTesting {
     // can be inlined only if the destination class is related (sub- or superclass) or in the same package,
     // AND if the receiver object is a subtype of the destination class
     // TODO: we cannot check this yet, so the check flags the instruction as causing an IllegalAccess. https://github.com/scala-opt/scala/issues/13
-    for ((m, declCls) <- Set((rcC, cCl), (rcD, dCl)); c <- Set(cCl, dCl, eCl, fCl, gCl)) check(m, declCls, c, cOrDOwner)
+    for ((m, declCls) <- Set((rcC, cCl), (rcD, dCl));
+         c <- Set(cCl, dCl, eCl, fCl, gCl)) check(m, declCls, c, cOrDOwner)
 
     // rcD cannot be inlined into non-related classes, if the declaration and destination are not in the same package
     for (c <- Set(hCl, iCl)) check(rcD, dCl, c, cOrDOwner)

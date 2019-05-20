@@ -5,7 +5,8 @@ import pkg._
 @kase class CPreToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
 @placebo object CPreToplevelPrecomp
 @kase class CPreToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-@kase class CPreToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class CPreToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
 @placebo object CPreToplevelPostcomp
 
 class KasePlaceboClass {
@@ -22,7 +23,8 @@ class KasePlaceboClass {
   @kase class CPreMemberNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
   @placebo object CPreMemberPrecomp
   @kase class CPreMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-  @kase class CPreMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class CPreMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
   @placebo object CPreMemberPostcomp
   objects += CPreMemberNocomp(42)(true)
   objects += CPreMemberPrecomp(42)(true)
@@ -32,16 +34,20 @@ class KasePlaceboClass {
   objects += CPostMemberPostcomp(42)(true)
   @kase class CPostMemberNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
   @placebo object CPostMemberPrecomp
-  @kase class CPostMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-  @kase class CPostMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class CPostMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
+  @kase class CPostMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                       w: String = "")
   @placebo object CPostMemberPostcomp
 
   // @Test
   def combo: Unit = {
     @kase class CPreLocalNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
     @placebo object CPreLocalPrecomp
-    @kase class CPreLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-    @kase class CPreLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class CPreLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
+    @kase class CPreLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                       w: String = "")
     @placebo object CPreLocalPostcomp
     objects += CPreLocalNocomp(42)(true)
     objects += CPreLocalPrecomp(42)(true)
@@ -49,13 +55,18 @@ class KasePlaceboClass {
     objects += CPostLocalNocomp(42)(true)
     objects += CPostLocalPrecomp(42)(true)
     objects += CPostLocalPostcomp(42)(true)
-    @kase class CPostLocalNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class CPostLocalNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
     @placebo object CPostLocalPrecomp
-    @kase class CPostLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-    @kase class CPostLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class CPostLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                       w: String = "")
+    @kase class CPostLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                        w: String = "")
     @placebo object CPostLocalPostcomp
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |CPreToplevelNocomp(42,2)
       |CPreToplevelPrecomp(42,2)
       |CPreToplevelPostcomp(42,2)
@@ -74,12 +85,15 @@ class KasePlaceboClass {
       |CPostLocalNocomp(42,2)
       |CPostLocalPrecomp(42,2)
       |CPostLocalPostcomp(42,2)
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 
 @kase class CPostToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
 @placebo object CPostToplevelPrecomp
-@kase class CPostToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-@kase class CPostToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class CPostToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                      w: String = "")
+@kase class CPostToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                       w: String = "")
 @placebo object CPostToplevelPostcomp

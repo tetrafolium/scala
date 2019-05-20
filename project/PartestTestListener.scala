@@ -30,7 +30,9 @@ class PartestTestListener(target: File) extends TestsListener {
     def groupOf(e: sbt.testing.Event) = {
       val group = e.selector match {
         case sel: TestSelector =>
-          e.fullyQualifiedName().replace('/', '.') + "." + sel.testName().takeWhile(_ != '/')
+          e.fullyQualifiedName().replace('/', '.') + "." + sel
+            .testName()
+            .takeWhile(_ != '/')
         case _: SuiteSelector =>
           // SBT emits this in the test event when a forked test failed unexpectedly: https://github.com/sbt/sbt/blob/684e2c369269e2aded5861c06aaad6f0b6b70a30/testing/agent/src/main/java/sbt/ForkMain.java#L337-L339
           "<unknown>"

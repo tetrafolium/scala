@@ -8,7 +8,8 @@ object Derivation {
 
   var failures = List.empty[String]
 
-  def materializeDerivationImpl[A](c: whitebox.Context)(implicit tt: c.WeakTypeTag[A]): c.Tree = {
+  def materializeDerivationImpl[A](c: whitebox.Context)(
+      implicit tt: c.WeakTypeTag[A]): c.Tree = {
     import c.universe._
 
     c.inferImplicitValue(weakTypeOf[A]) match {
@@ -29,5 +30,6 @@ object Derivation {
     }
   }
 
-  implicit def materializeDerivation[A]: Derivation[A] = macro materializeDerivationImpl[A]
+  implicit def materializeDerivation[A]: Derivation[A] =
+    macro materializeDerivationImpl[A]
 }

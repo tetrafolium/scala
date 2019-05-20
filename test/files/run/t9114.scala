@@ -2,21 +2,21 @@ import annotation.unchecked
 
 class Test {
   trait Two[A, B]
-  type One[A] = Two[A,A]
+  type One[A] = Two[A, A]
   class View extends One[Any]
 
   def checkAny(x: Some[One[Any]]) = x match { // okay
     case Some(_: View) => true
-    case _ => false
+    case _             => false
   }
   def checkAbstract[A](x: Some[One[A]]) = x match { // okay
     case Some(_: View) => true
-    case _ => false
+    case _             => false
   }
 
   def checkExistential(x: Some[One[_]]) = x match {
     case Some(_: View) => true // compiler crash
-    case _ => false
+    case _             => false
   }
 }
 

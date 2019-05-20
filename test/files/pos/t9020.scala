@@ -9,7 +9,7 @@ test/files/pos/t9020.scala:2: warning: discarded non-Unit value
   def u: U
       ^
 one warning found
-*/
+ */
 
 trait DiscardThis {
   import collection.mutable.ListBuffer

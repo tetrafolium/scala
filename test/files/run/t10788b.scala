@@ -34,9 +34,10 @@ object Test {
   }
 
   object BoxParam {
-    def apply(x: String): BoxParam[x.type] = { println("oh boy"); new BoxParam[x.type](x) }
+    def apply(x: String): BoxParam[x.type] = {
+      println("oh boy"); new BoxParam[x.type](x)
+    }
   }
-
 
   class C {
     println("effect42")

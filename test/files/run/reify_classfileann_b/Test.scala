@@ -5,10 +5,12 @@ import scala.tools.reflect.ToolBox
 
 object Test extends App {
   // test 1: reify
-  val tree = reify{
+  val tree = reify {
     class C {
       def x: Int = {
-        2: @Ann(bar="1", quux=Array("2", "3"), baz = new SuppressWarnings(Array("hups")))
+        2: @Ann(bar = "1",
+                quux = Array("2", "3"),
+                baz = new SuppressWarnings(Array("hups")))
       }
     }
   }.tree

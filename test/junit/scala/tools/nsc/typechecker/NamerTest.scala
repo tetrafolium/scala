@@ -15,9 +15,18 @@ class NamerTest extends BytecodeTesting {
 
   @Test
   def defaultMethodsInDeclarationOrder(): Unit = {
-    compiler.compileClasses("package p1; class Test { C.b(); C.a() }; object C { def a(x: Int = 0) = 0; def b(x: Int = 0) = 0 }")
-    val methods = compiler.global.rootMirror.getRequiredModule("p1.C").info.decls.toList.map(_.name.toString).filter(_.matches("""(a|b).*"""))
+    compiler.compileClasses(
+      "package p1; class Test { C.b(); C.a() }; object C { def a(x: Int = 0) = 0; def b(x: Int = 0) = 0 }")
+    val methods = compiler.global.rootMirror
+      .getRequiredModule("p1.C")
+      .info
+      .decls
+      .toList
+      .map(_.name.toString)
+      .filter(_.matches("""(a|b).*"""))
     def getterName(s: String) = nme.defaultGetterName(TermName(s), 1).toString
-    Assert.assertEquals(List("a", getterName("a"), "b", getterName("b")), methods) // order no longer depends on order of lazy type completion :)
+    Assert.assertEquals(
+      List("a", getterName("a"), "b", getterName("b")),
+      methods) // order no longer depends on order of lazy type completion :)
   }
 }

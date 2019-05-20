@@ -1,8 +1,7 @@
 // scalac: -Ydelambdafy:inline
 /** Tests for compatible InnerClasses attribute between trait and
- *  impl classes, as well as anonymous classes.
- */
-
+  *  impl classes, as well as anonymous classes.
+  */
 trait Test1 {
   def testFunc(i: Int) = (i: Int) => i + 5
 }

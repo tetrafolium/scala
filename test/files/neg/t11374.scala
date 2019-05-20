@@ -1,9 +1,8 @@
-
 class C {
-  val `_` = 42   // ok
+  val `_` = 42 // ok
 }
 
 class D {
   val `_` = 42
-  val `_` = 17   // not ok
+  val `_` = 17 // not ok
 }

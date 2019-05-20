@@ -1,6 +1,6 @@
 class C {
   val z = 2
-  def mod = { object x { val y = z } ; x.y }
+  def mod = { object x { val y = z }; x.y }
 }
 
 object Test extends App {

@@ -8,8 +8,11 @@ class t9151 {
 
   map ++ set.map(_ -> "")
 
-  values ++ seq.groupBy(_ / 2).toSeq.map({
-    case (key, group) =>
-      key -> (values(key) ++ group.map(_ => ""))
-  })
+  values ++ seq
+    .groupBy(_ / 2)
+    .toSeq
+    .map({
+      case (key, group) =>
+        key -> (values(key) ++ group.map(_ => ""))
+    })
 }

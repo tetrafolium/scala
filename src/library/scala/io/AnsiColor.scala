@@ -81,96 +81,116 @@ package io
   * @groupprio color-white 180
   */
 trait AnsiColor {
+
   /** Foreground color for ANSI black
     * @group color-black
     */
-  final val BLACK      = "\u001b[30m"
+  final val BLACK = "\u001b[30m"
+
   /** Foreground color for ANSI red
     * @group color-red
     */
-  final val RED        = "\u001b[31m"
+  final val RED = "\u001b[31m"
+
   /** Foreground color for ANSI green
     * @group color-green
     */
-  final val GREEN      = "\u001b[32m"
+  final val GREEN = "\u001b[32m"
+
   /** Foreground color for ANSI yellow
     * @group color-yellow
     */
-  final val YELLOW     = "\u001b[33m"
+  final val YELLOW = "\u001b[33m"
+
   /** Foreground color for ANSI blue
     * @group color-blue
     */
-  final val BLUE       = "\u001b[34m"
+  final val BLUE = "\u001b[34m"
+
   /** Foreground color for ANSI magenta
     * @group color-magenta
     */
-  final val MAGENTA    = "\u001b[35m"
+  final val MAGENTA = "\u001b[35m"
+
   /** Foreground color for ANSI cyan
     * @group color-cyan
     */
-  final val CYAN       = "\u001b[36m"
+  final val CYAN = "\u001b[36m"
+
   /** Foreground color for ANSI white
     * @group color-white
     */
-  final val WHITE      = "\u001b[37m"
+  final val WHITE = "\u001b[37m"
 
   /** Background color for ANSI black
     * @group color-black
     */
-  final val BLACK_B    = "\u001b[40m"
+  final val BLACK_B = "\u001b[40m"
+
   /** Background color for ANSI red
     * @group color-red
     */
-  final val RED_B      = "\u001b[41m"
+  final val RED_B = "\u001b[41m"
+
   /** Background color for ANSI green
     * @group color-green
     */
-  final val GREEN_B    = "\u001b[42m"
+  final val GREEN_B = "\u001b[42m"
+
   /** Background color for ANSI yellow
     * @group color-yellow
     */
-  final val YELLOW_B   = "\u001b[43m"
+  final val YELLOW_B = "\u001b[43m"
+
   /** Background color for ANSI blue
     * @group color-blue
     */
-  final val BLUE_B     = "\u001b[44m"
+  final val BLUE_B = "\u001b[44m"
+
   /** Background color for ANSI magenta
     * @group color-magenta
     */
-  final val MAGENTA_B  = "\u001b[45m"
+  final val MAGENTA_B = "\u001b[45m"
+
   /** Background color for ANSI cyan
     * @group color-cyan
     */
-  final val CYAN_B     = "\u001b[46m"
+  final val CYAN_B = "\u001b[46m"
+
   /** Background color for ANSI white
     * @group color-white
     */
-  final val WHITE_B    = "\u001b[47m"
+  final val WHITE_B = "\u001b[47m"
 
   /** Reset ANSI styles
     * @group style-control
     */
-  final val RESET      = "\u001b[0m"
+  final val RESET = "\u001b[0m"
+
   /** ANSI bold
     * @group style-control
     */
-  final val BOLD       = "\u001b[1m"
+  final val BOLD = "\u001b[1m"
+
   /** ANSI underlines
     * @group style-control
     */
   final val UNDERLINED = "\u001b[4m"
+
   /** ANSI blink
     * @group style-control
     */
-  final val BLINK      = "\u001b[5m"
+  final val BLINK = "\u001b[5m"
+
   /** ANSI reversed
     * @group style-control
     */
-  final val REVERSED   = "\u001b[7m"
+  final val REVERSED = "\u001b[7m"
+
   /** ANSI invisible
     * @group style-control
     */
-  final val INVISIBLE  = "\u001b[8m"
+  final val INVISIBLE = "\u001b[8m"
 }
 
-object AnsiColor extends AnsiColor { }
+object AnsiColor extends AnsiColor {}

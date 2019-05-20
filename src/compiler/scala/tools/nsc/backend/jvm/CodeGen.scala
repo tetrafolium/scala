@@ -24,7 +24,8 @@ abstract class CodeGen[G <: Global](val global: G) extends PerRunInit {
   import genBCode.generatedClassHandler
 
   // TODO: do we really need a new instance per run? Is there state that depends on the compiler frontend (symbols, types, settings)?
-  private[this] lazy val mirrorCodeGen: LazyVar[CodeGenImpl.JMirrorBuilder] = perRunLazy(this)(new CodeGenImpl.JMirrorBuilder())
+  private[this] lazy val mirrorCodeGen: LazyVar[CodeGenImpl.JMirrorBuilder] =
+    perRunLazy(this)(new CodeGenImpl.JMirrorBuilder())
 
   /**
     * Generate ASM ClassNodes for classes found in a compilation unit. The resulting classes are
@@ -33,38 +34,46 @@ abstract class CodeGen[G <: Global](val global: G) extends PerRunInit {
   def genUnit(unit: CompilationUnit): Unit = {
     val generatedClasses = ListBuffer.empty[GeneratedClass]
 
-    def genClassDef(cd: ClassDef): Unit = try {
-      val sym = cd.symbol
-      val position = sym.pos
-      val fullSymbolName = sym.javaClassName
-      val mainClassNode = genClass(cd, unit)
-      generatedClasses += GeneratedClass(mainClassNode, fullSymbolName, position, isArtifact = false)
-      if (bTypes.isTopLevelModuleClass(sym)) {
-        if (sym.companionClass == NoSymbol) {
-          val mirrorClassNode = genMirrorClass(sym, unit)
-          generatedClasses += GeneratedClass(mirrorClassNode, fullSymbolName, position, isArtifact = true)
+    def genClassDef(cd: ClassDef): Unit =
+      try {
+        val sym = cd.symbol
+        val position = sym.pos
+        val fullSymbolName = sym.javaClassName
+        val mainClassNode = genClass(cd, unit)
+        generatedClasses += GeneratedClass(mainClassNode,
+                                           fullSymbolName,
+                                           position,
+                                           isArtifact = false)
+        if (bTypes.isTopLevelModuleClass(sym)) {
+          if (sym.companionClass == NoSymbol) {
+            val mirrorClassNode = genMirrorClass(sym, unit)
+            generatedClasses += GeneratedClass(mirrorClassNode,
+                                               fullSymbolName,
+                                               position,
+                                               isArtifact = true)
+          } else
+            log(
+              s"No mirror class for module with linked class: ${sym.fullName}")
         }
-        else
-          log(s"No mirror class for module with linked class: ${sym.fullName}")
+      } catch {
+        case ex: InterruptedException => throw ex
+        case ex: Throwable =>
+          if (settings.debug) ex.printStackTrace()
+          error(s"Error while emitting ${unit.source}\n${ex.getMessage}")
       }
-    } catch {
-      case ex: InterruptedException => throw ex
-      case ex: Throwable =>
-        if (settings.debug) ex.printStackTrace()
-        error(s"Error while emitting ${unit.source}\n${ex.getMessage}")
-    }
 
     def genClassDefs(tree: Tree): Unit = tree match {
-      case EmptyTree => ()
+      case EmptyTree            => ()
       case PackageDef(_, stats) => stats foreach genClassDefs
-      case cd: ClassDef => frontendAccess.frontendSynch(genClassDef(cd))
+      case cd: ClassDef         => frontendAccess.frontendSynch(genClassDef(cd))
     }
 
     statistics.timed(statistics.bcodeGenStat) {
       genClassDefs(unit.body)
     }
 
-    generatedClassHandler.process(GeneratedCompilationUnit(unit.source.file, generatedClasses.toList))
+    generatedClassHandler.process(
+      GeneratedCompilationUnit(unit.source.file, generatedClasses.toList))
   }
 
   def genClass(cd: ClassDef, unit: CompilationUnit): ClassNode = {
@@ -79,7 +88,6 @@ abstract class CodeGen[G <: Global](val global: G) extends PerRunInit {
   def genMirrorClass(classSym: Symbol, unit: CompilationUnit): ClassNode = {
     mirrorCodeGen.get.genMirrorClass(classSym, unit)
   }
-
 
   private def addSbtIClassShim(cd: ClassDef): Unit = {
     // shim for SBT, see https://github.com/sbt/sbt/issues/2076

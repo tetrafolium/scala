@@ -34,8 +34,9 @@ import scala.collection.mutable
   */
 final class VectorMap[K, +V] private (
     private[immutable] val fields: Vector[Any],
-    private[immutable] val underlying: Map[K, (Int, V)], dummy: Boolean)
-  extends AbstractMap[K, V]
+    private[immutable] val underlying: Map[K, (Int, V)],
+    dummy: Boolean)
+    extends AbstractMap[K, V]
     with SeqMap[K, V]
     with StrictOptimizedMapOps[K, V, VectorMap, VectorMap[K, V]] {
 
@@ -56,9 +57,14 @@ final class VectorMap[K, +V] private (
   def updated[V1 >: V](key: K, value: V1): VectorMap[K, V1] = {
     underlying.get(key) match {
       case Some((slot, _)) =>
-        new VectorMap(fields, underlying.updated[(Int, V1)](key, (slot, value)), false)
+        new VectorMap(fields,
+                      underlying.updated[(Int, V1)](key, (slot, value)),
+                      false)
       case None =>
-        new VectorMap(fields :+ key, underlying.updated[(Int, V1)](key, (fields.length, value)), false)
+        new VectorMap(
+          fields :+ key,
+          underlying.updated[(Int, V1)](key, (fields.length, value)),
+          false)
     }
   }
 
@@ -112,7 +118,8 @@ final class VectorMap[K, +V] private (
     override def hasNext: Boolean = slot < fieldsLength
 
     override def next(): (K, V) = {
-      if (!hasNext) throw new NoSuchElementException("next called on depleted iterator")
+      if (!hasNext)
+        throw new NoSuchElementException("next called on depleted iterator")
       val result = (key, underlying(key)._2)
       advance()
       result
@@ -131,9 +138,9 @@ final class VectorMap[K, +V] private (
           // Calculate distance to next of kin
           val d =
             if (s < sz - 1) fs(s + 1) match {
-              case Tombstone.Kinless => 0
+              case Tombstone.Kinless      => 0
               case Tombstone.NextOfKin(d) => d + 1
-              case _ => 1
+              case _                      => 1
             } else 0
           fs = fs.updated(s, Tombstone(d))
           if (s > 0) {
@@ -142,10 +149,13 @@ final class VectorMap[K, +V] private (
             var prev = fs(t)
             while (t >= 0 && prev.isInstanceOf[Tombstone]) {
               fs = prev match {
-                case Tombstone.Kinless => throw new IllegalStateException("kinless tombstone found in prefix: " + key)
-                case Tombstone.NextOfKin(_) if d == 0 => fs.updated(t, Tombstone.Kinless)
+                case Tombstone.Kinless =>
+                  throw new IllegalStateException(
+                    "kinless tombstone found in prefix: " + key)
+                case Tombstone.NextOfKin(_) if d == 0 =>
+                  fs.updated(t, Tombstone.Kinless)
                 case Tombstone.NextOfKin(d) => fs.updated(t, Tombstone(d + 1))
-                case _ => fs
+                case _                      => fs
               }
               t -= 1
               if (t >= 0) prev = fs(t)
@@ -165,8 +175,7 @@ final class VectorMap[K, +V] private (
   override def head: (K, V) = iterator.next()
 
   override def last: (K, V) = {
-    val last = fields
-      .reverseIterator
+    val last = fields.reverseIterator
       .find(!_.isInstanceOf[Tombstone])
       .get
       .asInstanceOf[K]
@@ -174,8 +183,7 @@ final class VectorMap[K, +V] private (
   }
 
   override def lastOption: Option[(K, V)] = {
-    fields
-      .reverseIterator
+    fields.reverseIterator
       .find(!_.isInstanceOf[Tombstone])
       .map { f =>
         val last = f.asInstanceOf[K]
@@ -191,7 +199,9 @@ final class VectorMap[K, +V] private (
   override def init: VectorMap[K, V] = {
     val lastSlot = size - 1
     val (slot, key) = field(lastSlot)
-    new VectorMap(fields.dropRight(slot - lastSlot + 1), underlying - key, false)
+    new VectorMap(fields.dropRight(slot - lastSlot + 1),
+                  underlying - key,
+                  false)
   }
 
   override def keys: Vector[K] = keysIterator.toVector
@@ -207,7 +217,8 @@ object VectorMap extends MapFactory[VectorMap] {
     case object Kinless extends Tombstone {
       override def toString = "⤞"
     }
-    final case class NextOfKin private[Tombstone] (distance: Int) extends Tombstone {
+    final case class NextOfKin private[Tombstone] (distance: Int)
+        extends Tombstone {
       override def toString = "⥅" + distance
     }
     def apply(distance: Int): Tombstone =
@@ -216,7 +227,8 @@ object VectorMap extends MapFactory[VectorMap] {
   }
 
   private[this] final val EmptyMap: VectorMap[Nothing, Nothing] =
-    new VectorMap[Nothing, Nothing](Vector.empty[Nothing], HashMap.empty[Nothing, (Int, Nothing)])
+    new VectorMap[Nothing, Nothing](Vector.empty[Nothing],
+                                    HashMap.empty[Nothing, (Int, Nothing)])
 
   def empty[K, V]: VectorMap[K, V] = EmptyMap.asInstanceOf[VectorMap[K, V]]
 
@@ -226,10 +238,12 @@ object VectorMap extends MapFactory[VectorMap] {
       case _                   => (newBuilder[K, V] ++= it).result()
     }
 
-  def newBuilder[K, V]: mutable.Builder[(K, V), VectorMap[K, V]] = new VectorMapBuilder[K, V]
+  def newBuilder[K, V]: mutable.Builder[(K, V), VectorMap[K, V]] =
+    new VectorMapBuilder[K, V]
 }
 
-private[immutable] final class VectorMapBuilder[K, V] extends mutable.Builder[(K, V), VectorMap[K, V]] {
+private[immutable] final class VectorMapBuilder[K, V]
+    extends mutable.Builder[(K, V), VectorMap[K, V]] {
   private[this] val vectorBuilder = new VectorBuilder[K]
   private[this] val mapBuilder = new MapBuilderImpl[K, (Int, V)]
   private[this] var aliased: VectorMap[K, V] = _
@@ -242,7 +256,7 @@ private[immutable] final class VectorMapBuilder[K, V] extends mutable.Builder[(K
 
   override def result(): VectorMap[K, V] = {
     if (aliased eq null) {
-        aliased = new VectorMap(vectorBuilder.result(), mapBuilder.result())
+      aliased = new VectorMap(vectorBuilder.result(), mapBuilder.result())
     }
     aliased
   }

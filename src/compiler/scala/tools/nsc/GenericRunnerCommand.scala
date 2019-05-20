@@ -16,10 +16,9 @@ import GenericRunnerCommand._
 import scala.reflect.internal.util.ScalaClassLoader
 
 /** A command for ScriptRunner */
-class GenericRunnerCommand(
-  args: List[String],
-  override val settings: GenericRunnerSettings)
-extends CompilerCommand(args, settings) {
+class GenericRunnerCommand(args: List[String],
+                           override val settings: GenericRunnerSettings)
+    extends CompilerCommand(args, settings) {
 
   def this(args: List[String], error: String => Unit) =
     this(args, new GenericRunnerSettings(error))
@@ -30,17 +29,19 @@ extends CompilerCommand(args, settings) {
   override def cmdName = "scala"
   override def cmdDesc = "code runner"
 
-  def compCmdName = "scalac"  // super.cmdName
+  def compCmdName = "scalac" // super.cmdName
 
   // change CompilerCommand behavior
   override def shouldProcessArguments: Boolean = false
 
-  private val (_ok, targetAndArguments) = settings.processArguments(args, processAll = false)
+  private val (_ok, targetAndArguments) =
+    settings.processArguments(args, processAll = false)
   override def ok = _ok
   private def guessHowToRun(target: String): GenericRunnerCommand.HowToRun = {
     if (!ok) Error
     else if (io.Jar.isJarOrZip(target)) AsJar
-    else if (ScalaClassLoader.classExists(settings.classpathURLs, target)) AsObject
+    else if (ScalaClassLoader.classExists(settings.classpathURLs, target))
+      AsObject
     else {
       val f = io.File(target)
       if (!f.hasExtension("class", "jar", "zip") && f.canRead) AsScript
@@ -50,8 +51,10 @@ extends CompilerCommand(args, settings) {
       }
     }
   }
+
   /** String with either the jar file, class name, or script file name. */
   def thingToRun = targetAndArguments.headOption getOrElse ""
+
   /** Arguments to thingToRun. */
   def arguments = targetAndArguments drop 1
 
@@ -63,7 +66,7 @@ extends CompilerCommand(args, settings) {
   }
 
   def shortUsageMsg =
-s"""|Usage: $cmdName <options> [<script|class|object|jar> <arguments>]
+    s"""|Usage: $cmdName <options> [<script|class|object|jar> <arguments>]
     |   or  $cmdName -help
     |
     |All options to $compCmdName (see $compCmdName -help) are also allowed.

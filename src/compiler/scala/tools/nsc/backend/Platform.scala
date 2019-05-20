@@ -17,7 +17,7 @@ import io.AbstractFile
 import scala.tools.nsc.util.ClassPath
 
 /** The platform dependent pieces of Global.
- */
+  */
 trait Platform {
   val symbolTable: symtab.SymbolTable
   import symbolTable._
@@ -38,11 +38,10 @@ trait Platform {
   def isMaybeBoxed(sym: Symbol): Boolean
 
   /**
-   * Tells whether a class with both a binary and a source representation
-   * (found in classpath and in sourcepath) should be re-compiled. Behaves
-   * on the JVM similar to javac, i.e. if the source file is newer than the classfile,
-   * a re-compile is triggered. On .NET by contrast classfiles always take precedence.
-   */
+    * Tells whether a class with both a binary and a source representation
+    * (found in classpath and in sourcepath) should be re-compiled. Behaves
+    * on the JVM similar to javac, i.e. if the source file is newer than the classfile,
+    * a re-compile is triggered. On .NET by contrast classfiles always take precedence.
+    */
   def needCompile(bin: AbstractFile, src: AbstractFile): Boolean
 }
-

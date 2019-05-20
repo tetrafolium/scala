@@ -5,12 +5,11 @@ class Test {
 
     type _2 = Succ[Succ[Zero.type]]
 
-    val t1: Boolean = null.asInstanceOf[ l1.type#Drop[_2]#Head ]
+    val t1: Boolean = null.asInstanceOf[l1.type#Drop[_2]#Head]
 
-    val t2: Boolean = null.asInstanceOf[ l1.type#Apply[_2] ]
+    val t2: Boolean = null.asInstanceOf[l1.type#Apply[_2]]
   }
 }
-
 
 sealed trait Nat {
   type Fold[U, F[_ <: U] <: U, Z <: U] <: U
@@ -27,10 +26,11 @@ final class Succ[N <: Nat] extends Nat {
 trait HList {
   type Head
   type Tail <: HList
-  type Drop[N <: Nat] = N#Fold[HList, ({ type L[X <: HList] = X#Tail })#L, this.type]
+  type Drop[N <: Nat] =
+    N#Fold[HList, ({ type L[X <: HList] = X#Tail })#L, this.type]
   type Apply[N <: Nat] = Drop[N]#Head
 }
 
-class #: [H, T <: HList] extends HList { type Head = H; type Tail = T }
+class #:[H, T <: HList] extends HList { type Head = H; type Tail = T }
 
-object HNil extends HList { type Head = Nothing;  type Tail = Nothing }
+object HNil extends HList { type Head = Nothing; type Tail = Nothing }

@@ -20,16 +20,17 @@ import scala.collection.immutable.Map.Map4
 import scala.collection.mutable.{Builder, ReusableBuilder}
 import scala.language.higherKinds
 
-
 /** Base type of immutable Maps */
 trait Map[K, +V]
-  extends Iterable[(K, V)]
-     with collection.Map[K, V]
-     with MapOps[K, V, Map, Map[K, V]] {
+    extends Iterable[(K, V)]
+    with collection.Map[K, V]
+    with MapOps[K, V, Map, Map[K, V]] {
 
   override def mapFactory: scala.collection.MapFactory[MapCC] = Map
 
-  override final def toMap[K2, V2](implicit ev: (K, V) <:< (K2, V2)): Map[K2, V2] = this.asInstanceOf[Map[K2, V2]]
+  override final def toMap[K2, V2](
+      implicit ev: (K, V) <:< (K2, V2)): Map[K2, V2] =
+    this.asInstanceOf[Map[K2, V2]]
 
   /** The same map with a given default function.
     *  Note: The default is only used for `apply`. Other methods like `get`, `contains`, `iterator`, `keys`, etc.
@@ -40,7 +41,8 @@ trait Map[K, +V]
     *  @param d     the function mapping keys to values, used for non-present keys
     *  @return      a wrapper of the map with a default value
     */
-  def withDefault[V1 >: V](d: K => V1): Map[K, V1] = new Map.WithDefault[K, V1](this, d)
+  def withDefault[V1 >: V](d: K => V1): Map[K, V1] =
+    new Map.WithDefault[K, V1](this, d)
 
   /** The same map with a given default value.
     *  Note: The default is only used for `apply`. Other methods like `get`, `contains`, `iterator`, `keys`, etc.
@@ -51,7 +53,8 @@ trait Map[K, +V]
     *  @param d     default value used for non-present keys
     *  @return      a wrapper of the map with a default value
     */
-  def withDefaultValue[V1 >: V](d: V1): Map[K, V1] = new Map.WithDefault[K, V1](this, _ => d)
+  def withDefaultValue[V1 >: V](d: V1): Map[K, V1] =
+    new Map.WithDefault[K, V1](this, _ => d)
 }
 
 /** Base trait of immutable Maps implementations
@@ -59,8 +62,9 @@ trait Map[K, +V]
   * @define coll immutable map
   * @define Coll `immutable.Map`
   */
-trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]]
-  extends IterableOps[(K, V), Iterable, C]
+trait MapOps[
+    K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]]
+    extends IterableOps[(K, V), Iterable, C]
     with collection.MapOps[K, V, CC, C] {
 
   protected def coll: C with CC[K, V]
@@ -73,11 +77,15 @@ trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]
   def removed(key: K): C
 
   /** Alias for `remove` */
-  @deprecatedOverriding("This method should be final, but is not due to scala/bug#10853", "2.13.0")
-  /*@`inline` final*/ def - (key: K): C = removed(key)
+  @deprecatedOverriding(
+    "This method should be final, but is not due to scala/bug#10853",
+    "2.13.0")
+  /*@`inline` final*/
+  def -(key: K): C = removed(key)
 
   @deprecated("Use -- with an explicit collection", "2.13.0")
-  def - (key1: K, key2: K, keys: K*): C = removed(key1).removed(key2).removedAll(keys)
+  def -(key1: K, key2: K, keys: K*): C =
+    removed(key1).removed(key2).removedAll(keys)
 
   /** Creates a new $coll from this $coll by removing all elements of another
     *  collection.
@@ -88,11 +96,15 @@ trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]
     *  @return a new $coll that contains all elements of the current $coll
     *  except one less occurrence of each of the elements of `elems`.
     */
-  def removedAll(keys: IterableOnce[K]): C = keys.iterator.foldLeft[C](coll)(_ - _)
+  def removedAll(keys: IterableOnce[K]): C =
+    keys.iterator.foldLeft[C](coll)(_ - _)
 
   /** Alias for `removeAll` */
-  @deprecatedOverriding("This method should be final, but is not due to scala/bug#10853", "2.13.0")
-  /* @`inline` final */ override def -- (keys: IterableOnce[K]): C = removedAll(keys)
+  @deprecatedOverriding(
+    "This method should be final, but is not due to scala/bug#10853",
+    "2.13.0")
+  /* @`inline` final */
+  override def --(keys: IterableOnce[K]): C = removedAll(keys)
 
   /** Creates a new map obtained by updating this map with a given key/value pair.
     *  @param    key the key
@@ -105,25 +117,26 @@ trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]
   def updated[V1 >: V](key: K, value: V1): CC[K, V1]
 
   /**
-   * Update a mapping for the specified key and its current optionally-mapped value
-   * (`Some` if there is current mapping, `None` if not).
-   *
-   * If the remapping function returns `Some(v)`, the mapping is updated with the new value `v`.
-   * If the remapping function returns `None`, the mapping is removed (or remains absent if initially absent).
-   * If the function itself throws an exception, the exception is rethrown, and the current mapping is left unchanged.
-   *
-   * @param key the key value
-   * @param remappingFunction a partial function that receives current optionally-mapped value and return a new mapping
-   * @return A new map with the updated mapping with the key
-   * @since 2.13.0
-   */
-  def updatedWith[V1 >: V](key: K)(remappingFunction: Option[V] => Option[V1]): CC[K,V1] = {
+    * Update a mapping for the specified key and its current optionally-mapped value
+    * (`Some` if there is current mapping, `None` if not).
+    *
+    * If the remapping function returns `Some(v)`, the mapping is updated with the new value `v`.
+    * If the remapping function returns `None`, the mapping is removed (or remains absent if initially absent).
+    * If the function itself throws an exception, the exception is rethrown, and the current mapping is left unchanged.
+    *
+    * @param key the key value
+    * @param remappingFunction a partial function that receives current optionally-mapped value and return a new mapping
+    * @return A new map with the updated mapping with the key
+    * @since 2.13.0
+    */
+  def updatedWith[V1 >: V](key: K)(
+      remappingFunction: Option[V] => Option[V1]): CC[K, V1] = {
     val previousValue = this.get(key)
     val nextValue = remappingFunction(previousValue)
     (previousValue, nextValue) match {
-      case (None, None) => coll
+      case (None, None)    => coll
       case (Some(_), None) => this.removed(key).coll
-      case (_, Some(v)) => this.updated(key, v)
+      case (_, Some(v))    => this.updated(key, v)
     }
   }
 
@@ -134,7 +147,7 @@ trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]
     * @tparam V1 the type of the value in the key/value pair.
     * @return A new map with the new binding added to this map.
     */
-  override def + [V1 >: V](kv: (K, V1)): CC[K, V1] = updated(kv._1, kv._2)
+  override def +[V1 >: V](kv: (K, V1)): CC[K, V1] = updated(kv._1, kv._2)
 
   /** This function transforms all the values of mappings contained
     *  in this map with function `f`.
@@ -142,31 +155,37 @@ trait MapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]
     *  @param f A function over keys and values
     *  @return  the updated map
     */
-  def transform[W](f: (K, V) => W): CC[K, W] = map { case (k, v) => (k, f(k, v)) }
+  def transform[W](f: (K, V) => W): CC[K, W] = map {
+    case (k, v) => (k, f(k, v))
+  }
 
   override def keySet: Set[K] = new ImmutableKeySet
 
   /** The implementation class of the set returned by `keySet` */
-  protected class ImmutableKeySet extends AbstractSet[K] with GenKeySet with DefaultSerializable {
+  protected class ImmutableKeySet
+      extends AbstractSet[K]
+      with GenKeySet
+      with DefaultSerializable {
     def incl(elem: K): Set[K] = if (this(elem)) this else empty ++ this + elem
     def excl(elem: K): Set[K] = if (this(elem)) empty ++ this - elem else this
   }
 
 }
 
-trait StrictOptimizedMapOps[K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]]
-  extends MapOps[K, V, CC, C]
+trait StrictOptimizedMapOps[
+    K, +V, +CC[X, +Y] <: MapOps[X, Y, CC, _], +C <: MapOps[K, V, CC, C]]
+    extends MapOps[K, V, CC, C]
     with collection.StrictOptimizedMapOps[K, V, CC, C]
     with StrictOptimizedIterableOps[(K, V), Iterable, C] {
 
-  override def concat [V1 >: V](that: collection.IterableOnce[(K, V1)]): CC[K, V1] = {
+  override def concat[V1 >: V](
+      that: collection.IterableOnce[(K, V1)]): CC[K, V1] = {
     var result: CC[K, V1] = coll
     val it = that.iterator
     while (it.hasNext) result = result + it.next()
     result
   }
 }
-
 
 /**
   * $factoryInfo
@@ -178,14 +197,16 @@ object Map extends MapFactory[Map] {
 
   @SerialVersionUID(3L)
   class WithDefault[K, +V](val underlying: Map[K, V], val defaultValue: K => V)
-    extends AbstractMap[K, V]
-      with MapOps[K, V, Map, WithDefault[K, V]] with Serializable {
+      extends AbstractMap[K, V]
+      with MapOps[K, V, Map, WithDefault[K, V]]
+      with Serializable {
 
     def get(key: K): Option[V] = underlying.get(key)
 
     override def default(key: K): V = defaultValue(key)
 
-    override def iterableFactory: IterableFactory[Iterable] = underlying.iterableFactory
+    override def iterableFactory: IterableFactory[Iterable] =
+      underlying.iterableFactory
 
     def iterator: Iterator[(K, V)] = underlying.iterator
 
@@ -193,21 +214,28 @@ object Map extends MapFactory[Map] {
 
     override def mapFactory: MapFactory[Map] = underlying.mapFactory
 
-    override def concat [V2 >: V](xs: collection.IterableOnce[(K, V2)]): WithDefault[K, V2] =
+    override def concat[V2 >: V](
+        xs: collection.IterableOnce[(K, V2)]): WithDefault[K, V2] =
       new WithDefault(underlying.concat(xs), defaultValue)
 
-    def removed(key: K): WithDefault[K, V] = new WithDefault[K, V](underlying.removed(key), defaultValue)
+    def removed(key: K): WithDefault[K, V] =
+      new WithDefault[K, V](underlying.removed(key), defaultValue)
 
     def updated[V1 >: V](key: K, value: V1): WithDefault[K, V1] =
       new WithDefault[K, V1](underlying.updated(key, value), defaultValue)
 
-    override def empty: WithDefault[K, V] = new WithDefault[K, V](underlying.empty, defaultValue)
+    override def empty: WithDefault[K, V] =
+      new WithDefault[K, V](underlying.empty, defaultValue)
 
-    override protected def fromSpecific(coll: collection.IterableOnce[(K, V)] @uncheckedVariance): WithDefault[K, V] =
+    override protected def fromSpecific(
+        coll: collection.IterableOnce[(K, V)] @uncheckedVariance)
+      : WithDefault[K, V] =
       new WithDefault[K, V](mapFactory.from(coll), defaultValue)
 
-    override protected def newSpecificBuilder: Builder[(K, V), WithDefault[K, V]] @uncheckedVariance =
-      Map.newBuilder.mapResult((p: Map[K, V]) => new WithDefault[K, V](p, defaultValue))
+    override protected def newSpecificBuilder
+      : Builder[(K, V), WithDefault[K, V]] @uncheckedVariance =
+      Map.newBuilder.mapResult((p: Map[K, V]) =>
+        new WithDefault[K, V](p, defaultValue))
   }
 
   def empty[K, V]: Map[K, V] = EmptyMap.asInstanceOf[Map[K, V]]
@@ -215,8 +243,8 @@ object Map extends MapFactory[Map] {
   def from[K, V](it: collection.IterableOnce[(K, V)]): Map[K, V] =
     it match {
       case it: Iterable[_] if it.isEmpty => empty[K, V]
-      case m: Map[K, V] => m
-      case _ => (newBuilder[K, V] ++= it).result()
+      case m: Map[K, V]                  => m
+      case _                             => (newBuilder[K, V] ++= it).result()
     }
 
   def newBuilder[K, V]: Builder[(K, V), Map[K, V]] = new MapBuilderImpl
@@ -226,25 +254,31 @@ object Map extends MapFactory[Map] {
     override def size: Int = 0
     override def knownSize: Int = 0
     override def isEmpty: Boolean = true
-    override def apply(key: Any) = throw new NoSuchElementException("key not found: " + key)
+    override def apply(key: Any) =
+      throw new NoSuchElementException("key not found: " + key)
     override def contains(key: Any) = false
     def get(key: Any): Option[Nothing] = None
-    override def getOrElse [V1](key: Any, default: => V1): V1 = default
+    override def getOrElse[V1](key: Any, default: => V1): V1 = default
     def iterator: Iterator[(Any, Nothing)] = Iterator.empty
-    def updated [V1] (key: Any, value: V1): Map[Any, V1] = new Map1(key, value)
+    def updated[V1](key: Any, value: V1): Map[Any, V1] = new Map1(key, value)
     def removed(key: Any): Map[Any, Nothing] = this
   }
 
   @SerialVersionUID(3L)
-  final class Map1[K, +V](key1: K, value1: V) extends AbstractMap[K, V] with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]] with Serializable {
+  final class Map1[K, +V](key1: K, value1: V)
+      extends AbstractMap[K, V]
+      with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]]
+      with Serializable {
     override def size: Int = 1
     override def knownSize: Int = 1
     override def isEmpty: Boolean = false
-    override def apply(key: K) = if (key == key1) value1 else throw new NoSuchElementException("key not found: " + key)
+    override def apply(key: K) =
+      if (key == key1) value1
+      else throw new NoSuchElementException("key not found: " + key)
     override def contains(key: K) = key == key1
     def get(key: K): Option[V] =
       if (key == key1) Some(value1) else None
-    override def getOrElse [V1 >: V](key: K, default: => V1): V1 =
+    override def getOrElse[V1 >: V](key: K, default: => V1): V1 =
       if (key == key1) value1 else default
     def iterator = Iterator.single((key1, value1))
     override def keysIterator: Iterator[K] = Iterator.single(key1)
@@ -260,7 +294,10 @@ object Map extends MapFactory[Map] {
   }
 
   @SerialVersionUID(3L)
-  final class Map2[K, +V](key1: K, value1: V, key2: K, value2: V) extends AbstractMap[K, V] with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]] with Serializable {
+  final class Map2[K, +V](key1: K, value1: V, key2: K, value2: V)
+      extends AbstractMap[K, V]
+      with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]]
+      with Serializable {
     override def size: Int = 2
     override def knownSize: Int = 2
     override def isEmpty: Boolean = false
@@ -273,7 +310,7 @@ object Map extends MapFactory[Map] {
       if (key == key1) Some(value1)
       else if (key == key2) Some(value2)
       else None
-    override def getOrElse [V1 >: V](key: K, default: => V1): V1 =
+    override def getOrElse[V1 >: V](key: K, default: => V1): V1 =
       if (key == key1) value1
       else if (key == key2) value2
       else default
@@ -315,7 +352,10 @@ object Map extends MapFactory[Map] {
   }
 
   @SerialVersionUID(3L)
-  class Map3[K, +V](key1: K, value1: V, key2: K, value2: V, key3: K, value3: V) extends AbstractMap[K, V] with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]] with Serializable {
+  class Map3[K, +V](key1: K, value1: V, key2: K, value2: V, key3: K, value3: V)
+      extends AbstractMap[K, V]
+      with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]]
+      with Serializable {
     override def size: Int = 3
     override def knownSize: Int = 3
     override def isEmpty: Boolean = false
@@ -324,13 +364,14 @@ object Map extends MapFactory[Map] {
       else if (key == key2) value2
       else if (key == key3) value3
       else throw new NoSuchElementException("key not found: " + key)
-    override def contains(key: K) = (key == key1) || (key == key2) || (key == key3)
+    override def contains(key: K) =
+      (key == key1) || (key == key2) || (key == key3)
     def get(key: K): Option[V] =
       if (key == key1) Some(value1)
       else if (key == key2) Some(value2)
       else if (key == key3) Some(value3)
       else None
-    override def getOrElse [V1 >: V](key: K, default: => V1): V1 =
+    override def getOrElse[V1 >: V](key: K, default: => V1): V1 =
       if (key == key1) value1
       else if (key == key2) value2
       else if (key == key3) value3
@@ -361,12 +402,12 @@ object Map extends MapFactory[Map] {
       protected def nextResult(k: K, v: V @uncheckedVariance): A
     }
     def updated[V1 >: V](key: K, value: V1): Map[K, V1] =
-      if (key == key1)      new Map3(key1, value, key2, value2, key3, value3)
+      if (key == key1) new Map3(key1, value, key2, value2, key3, value3)
       else if (key == key2) new Map3(key1, value1, key2, value, key3, value3)
       else if (key == key3) new Map3(key1, value1, key2, value2, key3, value)
       else new Map4(key1, value1, key2, value2, key3, value3, key, value)
     def removed(key: K): Map[K, V] =
-      if (key == key1)      new Map2(key2, value2, key3, value3)
+      if (key == key1) new Map2(key2, value2, key3, value3)
       else if (key == key2) new Map2(key1, value1, key3, value3)
       else if (key == key3) new Map2(key1, value1, key2, value2)
       else this
@@ -376,8 +417,17 @@ object Map extends MapFactory[Map] {
   }
 
   @SerialVersionUID(3L)
-  final class Map4[K, +V](key1: K, value1: V, key2: K, value2: V, key3: K, value3: V, key4: K, value4: V)
-    extends AbstractMap[K, V] with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]] with Serializable {
+  final class Map4[K, +V](key1: K,
+                          value1: V,
+                          key2: K,
+                          value2: V,
+                          key3: K,
+                          value3: V,
+                          key4: K,
+                          value4: V)
+      extends AbstractMap[K, V]
+      with StrictOptimizedIterableOps[(K, V), Iterable, Map[K, V]]
+      with Serializable {
 
     override def size: Int = 4
     override def knownSize: Int = 4
@@ -388,14 +438,15 @@ object Map extends MapFactory[Map] {
       else if (key == key3) value3
       else if (key == key4) value4
       else throw new NoSuchElementException("key not found: " + key)
-    override def contains(key: K) = (key == key1) || (key == key2) || (key == key3) || (key == key4)
+    override def contains(key: K) =
+      (key == key1) || (key == key2) || (key == key3) || (key == key4)
     def get(key: K): Option[V] =
       if (key == key1) Some(value1)
       else if (key == key2) Some(value2)
       else if (key == key3) Some(value3)
       else if (key == key4) Some(value4)
       else None
-    override def getOrElse [V1 >: V](key: K, default: => V1): V1 =
+    override def getOrElse[V1 >: V](key: K, default: => V1): V1 =
       if (key == key1) value1
       else if (key == key2) value2
       else if (key == key3) value3
@@ -428,13 +479,24 @@ object Map extends MapFactory[Map] {
       protected def nextResult(k: K, v: V @uncheckedVariance): A
     }
     def updated[V1 >: V](key: K, value: V1): Map[K, V1] =
-      if (key == key1)      new Map4(key1, value, key2, value2, key3, value3, key4, value4)
-      else if (key == key2) new Map4(key1, value1, key2, value, key3, value3, key4, value4)
-      else if (key == key3) new Map4(key1, value1, key2, value2, key3, value, key4, value4)
-      else if (key == key4) new Map4(key1, value1, key2, value2, key3, value3, key4, value)
-      else HashMap.empty[K, V1].updated(key1,value1).updated(key2, value2).updated(key3, value3).updated(key4, value4).updated(key, value)
+      if (key == key1)
+        new Map4(key1, value, key2, value2, key3, value3, key4, value4)
+      else if (key == key2)
+        new Map4(key1, value1, key2, value, key3, value3, key4, value4)
+      else if (key == key3)
+        new Map4(key1, value1, key2, value2, key3, value, key4, value4)
+      else if (key == key4)
+        new Map4(key1, value1, key2, value2, key3, value3, key4, value)
+      else
+        HashMap
+          .empty[K, V1]
+          .updated(key1, value1)
+          .updated(key2, value2)
+          .updated(key3, value3)
+          .updated(key4, value4)
+          .updated(key, value)
     def removed(key: K): Map[K, V] =
-      if (key == key1)      new Map3(key2, value2, key3, value3, key4, value4)
+      if (key == key1) new Map3(key2, value2, key3, value3, key4, value4)
       else if (key == key2) new Map3(key1, value1, key3, value3, key4, value4)
       else if (key == key3) new Map3(key1, value1, key2, value2, key4, value4)
       else if (key == key4) new Map3(key1, value1, key2, value2, key3, value3)
@@ -443,16 +505,24 @@ object Map extends MapFactory[Map] {
       f((key1, value1)); f((key2, value2)); f((key3, value3)); f((key4, value4))
     }
 
-    private[immutable] def buildTo[V1 >: V](builder: HashMapBuilder[K, V1]): builder.type =
-      builder.addOne(key1, value1).addOne(key2, value2).addOne(key3, value3).addOne(key4, value4)
+    private[immutable] def buildTo[V1 >: V](
+        builder: HashMapBuilder[K, V1]): builder.type =
+      builder
+        .addOne(key1, value1)
+        .addOne(key2, value2)
+        .addOne(key3, value3)
+        .addOne(key4, value4)
   }
 }
 
 /** Explicit instantiation of the `Map` trait to reduce class file size in subclasses. */
 @SerialVersionUID(3L)
-abstract class AbstractMap[K, +V] extends scala.collection.AbstractMap[K, V] with Map[K, V]
+abstract class AbstractMap[K, +V]
+    extends scala.collection.AbstractMap[K, V]
+    with Map[K, V]
 
-private[immutable] final class MapBuilderImpl[K, V] extends ReusableBuilder[(K, V), Map[K, V]] {
+private[immutable] final class MapBuilderImpl[K, V]
+    extends ReusableBuilder[(K, V), Map[K, V]] {
   private[this] var elems: Map[K, V] = Map.empty
   private[this] var switchedToHashMapBuilder: Boolean = false
   private[this] var hashMapBuilder: HashMapBuilder[K, V] = _

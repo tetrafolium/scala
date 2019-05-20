@@ -15,10 +15,11 @@ import org.openjdk.jmh.runner.options.VerboseMode
 import benchmark.JmhRunner
 
 /** Replacement JMH application that runs the [[OpenHashMap]] benchmark.
-  * 
+  *
   * Outputs the results in a form consumable by a Gnuplot script.
   */
 object OpenHashMapRunner extends JmhRunner {
+
   /** File that will be created for the output data set. */
   private[this] val outputFile = new File(outputDirectory, "OpenHashMap.dat")
 
@@ -27,6 +28,7 @@ object OpenHashMapRunner extends JmhRunner {
 
   /** Adapter to the JMH result class that simplifies our method calls. */
   private[this] implicit class MyRunResult(r: RunResult) {
+
     /** Return the dataset label. */
     def label = r.getPrimaryResult.getLabel
 
@@ -44,14 +46,16 @@ object OpenHashMapRunner extends JmhRunner {
   }
 
   /** Return the statistics of the given result as a string. */
-  private[this] def stats(r: Result[_]) = r.getScore + " " + r.getStatistics.getStandardDeviation
+  private[this] def stats(r: Result[_]) =
+    r.getScore + " " + r.getStatistics.getStandardDeviation
 
   def main(args: Array[String]): Unit = {
     import scala.collection.JavaConverters._
 
     val opts = new CommandLineOptions(args: _*)
     var builder = new OptionsBuilder().parent(opts).jvmArgsPrepend("-Xmx6000m")
-    if (!opts.verbosity.hasValue)  builder = builder.verbosity(VerboseMode.SILENT)
+    if (!opts.verbosity.hasValue)
+      builder = builder.verbosity(VerboseMode.SILENT)
 
     val results = new Runner(builder.build).run()
 
@@ -88,25 +92,28 @@ object OpenHashMapRunner extends JmhRunner {
       datasetByName.foreach(_ match {
         case (label: String, dataset: Iterable[RunResult]) =>
           outputDataset(f, label, dataset)
-        })
+      })
     } finally {
       f.close()
     }
   }
-  
-  private[this] def outputDataset(f: PrintWriter, label: String, dataset: Iterable[RunResult]): Unit = {
+
+  private[this] def outputDataset(f: PrintWriter,
+                                  label: String,
+                                  dataset: Iterable[RunResult]): Unit = {
     f.println(s"# [$label]")
 
     val isMemoryUsageDataset = label.endsWith(memoryDatasetQualifier)
     dataset.foreach { r =>
-      f.println(r.size + " " + (
-        if (isMemoryUsageDataset && !r.memory.get.getScore.isInfinite)
-          stats(r.entries) + " " + stats(r.memory.get)
-        else
-          stats(r.operations getOrElse r.getPrimaryResult)
-      ))
+      f.println(
+        r.size + " " + (
+          if (isMemoryUsageDataset && !r.memory.get.getScore.isInfinite)
+            stats(r.entries) + " " + stats(r.memory.get)
+          else
+            stats(r.operations getOrElse r.getPrimaryResult)
+        ))
     }
 
-    f.println(); f.println()  // data set separator
+    f.println(); f.println() // data set separator
   }
 }

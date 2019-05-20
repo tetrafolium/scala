@@ -1,4 +1,3 @@
-
 // scalac: -Yrecursion 1
 //
 object ProjTest {
@@ -9,8 +8,7 @@ object ProjTest {
   type _1 = Succ[_0]
   type _2 = Succ[_1]
 
-  type X1 = _0#Type   // Ok
-  type X2 = _1#Type   // Ok
-  type X3 = _2#Type   // Compiler error, illegal cyclic reference involving type Type
+  type X1 = _0#Type // Ok
+  type X2 = _1#Type // Ok
+  type X3 = _2#Type // Compiler error, illegal cyclic reference involving type Type
 }
-

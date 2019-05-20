@@ -4,8 +4,8 @@ object Test {
     val SomeB = new B
     new B() match {
       case SomeB if FALSE =>
-      case SomeB =>
-      case Ext(_) =>
+      case SomeB          =>
+      case Ext(_)         =>
     }
   }
 }

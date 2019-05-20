@@ -3,9 +3,13 @@ import java.io._
 trait NotSerializableInterface { def apply(a: Any): Any }
 abstract class NotSerializableClass { def apply(a: Any): Any }
 // SAM type that supports lambdas-as-invoke-dynamic
-trait IsSerializableInterface extends java.io.Serializable { def apply(a: Any): Any }
+trait IsSerializableInterface extends java.io.Serializable {
+  def apply(a: Any): Any
+}
 // SAM type that still requires lambdas-as-anonhmous-classes
-abstract class IsSerializableClass extends java.io.Serializable { def apply(a: Any): Any }
+abstract class IsSerializableClass extends java.io.Serializable {
+  def apply(a: Any): Any
+}
 
 object Test {
   def main(args: Array[String]): Unit = {
@@ -15,9 +19,15 @@ object Test {
     import SerDes._
     assertNotSerializable(nsi)
     assertNotSerializable(nsc)
-    assert(serializeDeserialize[IsSerializableInterface](x => x).apply("foo") == "foo")
-    assert(serializeDeserialize[IsSerializableClass](x => x).apply("foo") == "foo")
-    assert(ObjectStreamClass.lookup(((x => x): IsSerializableClass).getClass).getSerialVersionUID == 0)
+    assert(
+      serializeDeserialize[IsSerializableInterface](x => x)
+        .apply("foo") == "foo")
+    assert(
+      serializeDeserialize[IsSerializableClass](x => x).apply("foo") == "foo")
+    assert(
+      ObjectStreamClass
+        .lookup(((x => x): IsSerializableClass).getClass)
+        .getSerialVersionUID == 0)
   }
 }
 
@@ -43,5 +53,6 @@ object SerDes {
     in.readObject
   }
 
-  def serializeDeserialize[T <: AnyRef](obj: T) = deserialize(serialize(obj)).asInstanceOf[T]
+  def serializeDeserialize[T <: AnyRef](obj: T) =
+    deserialize(serialize(obj)).asInstanceOf[T]
 }

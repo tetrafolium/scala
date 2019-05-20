@@ -51,7 +51,8 @@ class VectorTest {
     assertSame(m, Vector.apply(m: _*))
   }
 
-  @Test def checkSearch: Unit = SeqTests.checkSearch(Vector(0 to 1000: _*), 15,  implicitly[Ordering[Int]])
+  @Test def checkSearch: Unit =
+    SeqTests.checkSearch(Vector(0 to 1000: _*), 15, implicitly[Ordering[Int]])
 
   @Test
   def emptyIteratorReuse(): Unit = {
@@ -67,7 +68,8 @@ class VectorTest {
 
   @Test
   def concat: Unit = {
-    assertEquals((1 to 100).toVector, (1 to 7).toVector concat (8 to 100).toVector)
+    assertEquals((1 to 100).toVector,
+                 (1 to 7).toVector concat (8 to 100).toVector)
   }
 
   @Test
@@ -104,7 +106,7 @@ class VectorTest {
   def vectorIteratorDropToEnd(): Unit = {
     val underlying = Vector(0)
 
-    for (start <- List(1,2,3,4,99)) {
+    for (start <- List(1, 2, 3, 4, 99)) {
       {
         var it = underlying.iterator.drop(start)
         assertFalse(it.hasNext)
@@ -132,9 +134,8 @@ class VectorTest {
   def vectorIteratorRepeated(): Unit = {
     val underlying = Vector(1 to 10001: _*)
 
-
     for (stepSize <- List(0, 1, 2, 3, 4, 8, 10, 24, 32, 63, 64, 100)) {
-      var it:Iterator[Int] = underlying.iterator
+      var it: Iterator[Int] = underlying.iterator
       for (stepCount <- 1 to 10) {
         it = it.drop(stepSize)
         assertTrue(it.hasNext)
@@ -146,11 +147,11 @@ class VectorTest {
   @Test
   def vectorFill(): Unit = {
     var i = 0
-    val test = Vector.fill(10){
+    val test = Vector.fill(10) {
       i += 1
       i * 10
     }
-    assertEquals(List(10,20,30,40,50,60,70,80,90,100), test)
+    assertEquals(List(10, 20, 30, 40, 50, 60, 70, 80, 90, 100), test)
     assertEquals(10, test.length)
     assertEquals(10, test.head)
     assertEquals(10, test(0))
@@ -168,13 +169,12 @@ class VectorTest {
     val lb = ListBuffer[Int]()
 
     val v =
-      Vector(1,2,3)
-      .tapEach(lb += _)
-      .tapEach(lb += _)
+      Vector(1, 2, 3)
+        .tapEach(lb += _)
+        .tapEach(lb += _)
 
-    assertEquals(ListBuffer(1,2,3,1,2,3), lb)
-    assertEquals(Vector(1,2,3), v)
-
+    assertEquals(ListBuffer(1, 2, 3, 1, 2, 3), lb)
+    assertEquals(Vector(1, 2, 3), v)
 
     val f: Any => Unit = println
 
@@ -190,7 +190,9 @@ class VectorTest {
       j <- -100 to 4000 by 6
     } {
       val v2 = v.take(i)
-      assertArrayEquals(s"<${v2.length}>.take($j)", v2.toArray.take(j), v2.iterator.take(j).toArray)
+      assertArrayEquals(s"<${v2.length}>.take($j)",
+                        v2.toArray.take(j),
+                        v2.iterator.take(j).toArray)
     }
   }
 
@@ -202,7 +204,9 @@ class VectorTest {
       j <- -100 to 4000 by 60
     } {
       val v2 = v.take(i)
-      assertArrayEquals(s"<${v2.length}>.drop($j)", v2.toArray.drop(j), v2.iterator.drop(j).toArray)
+      assertArrayEquals(s"<${v2.length}>.drop($j)",
+                        v2.toArray.drop(j),
+                        v2.iterator.drop(j).toArray)
     }
   }
 
@@ -215,7 +219,9 @@ class VectorTest {
       k <- -100 to 4000 by 60
     } {
       val v2 = v.take(i)
-      assertArrayEquals(s"<${v2.length}>.slice($j, $k)", v2.toArray.slice(j, k), v2.iterator.slice(j, k).toArray)
+      assertArrayEquals(s"<${v2.length}>.slice($j, $k)",
+                        v2.toArray.slice(j, k),
+                        v2.iterator.slice(j, k).toArray)
     }
   }
 }

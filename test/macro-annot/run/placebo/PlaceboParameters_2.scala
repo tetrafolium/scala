@@ -12,12 +12,15 @@ class PlaceboParameters {
 
   // @Test
   def combo: Unit = {
-    assertEquals(typeOf[PlaceboParameterZoo].decls.sorted.map(_.toString).mkString("\n"), """
+    assertEquals(
+      typeOf[PlaceboParameterZoo].decls.sorted.map(_.toString).mkString("\n"),
+      """
       |constructor PlaceboParameterZoo
       |class C
       |object С
       |method m
       |type T
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }

@@ -9,7 +9,7 @@ class C {
   val x = new X(42)
   val y = new Object
   val a: T = null
-  def b = y == x   // warn
-  def c = y == a   // no warn
-  def d = Y == a   // no warn
+  def b = y == x // warn
+  def c = y == a // no warn
+  def d = Y == a // no warn
 }

@@ -5,7 +5,7 @@ trait B extends A
 abstract class C[T <: A] {
   def f(t: T)(s: String): T
 }
-  
+
 class D extends C[B] {
   def f(b: B)(i: Int) = b
 }
@@ -25,7 +25,7 @@ object Derived extends Base[String] {
 abstract class CCC[T <: A] {
   def f(t: T, s: String): T
 }
-  
+
 class DDD extends CCC[B] {
   def f(b: Int, i: String) = b
 }

@@ -6,7 +6,9 @@ class DefaultSignalling extends VolatileAbort
 
 object Test {
   def main(args: Array[String]): Unit = {
-    val field = classOf[DefaultSignalling].getDeclaredFields.find(_.getName.contains("abortflag")).get
+    val field = classOf[DefaultSignalling].getDeclaredFields
+      .find(_.getName.contains("abortflag"))
+      .get
     assert(java.lang.reflect.Modifier.isVolatile(field.getModifiers), field)
   }
 

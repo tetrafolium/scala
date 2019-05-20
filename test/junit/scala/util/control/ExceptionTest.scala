@@ -37,7 +37,9 @@ class ExceptionTest {
 
     locally {
       val audit = ListBuffer[Int]()
-      val katch = nonFatalCatch[Unit].andFinally(audit append 1).andFinally(audit append 2)
+      val katch = nonFatalCatch[Unit]
+        .andFinally(audit append 1)
+        .andFinally(audit append 2)
       val result = katch(20)
       assertEquals(result, 20)
       assertEquals(audit.toList, 1 :: 2 :: Nil)

@@ -39,9 +39,9 @@ import scala.collection.mutable.{Builder, ListBuffer}
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
-
-sealed class Queue[+A] protected(protected val in: List[A], protected val out: List[A])
-  extends AbstractSeq[A]
+sealed class Queue[+A] protected (protected val in: List[A],
+                                  protected val out: List[A])
+    extends AbstractSeq[A]
     with LinearSeq[A]
     with LinearSeqOps[A, Queue, Queue[A]]
     with StrictOptimizedLinearSeqOps[A, Queue, Queue[A]]
@@ -105,10 +105,11 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
 
   override def appended[B >: A](elem: B): Queue[B] = enqueue(elem)
 
-  override def appendedAll[B >: A](that: scala.collection.IterableOnce[B]): Queue[B] = {
+  override def appendedAll[B >: A](
+      that: scala.collection.IterableOnce[B]): Queue[B] = {
     val newIn = that match {
       case that: Queue[B] => that.in ++ (that.out reverse_::: this.in)
-      case _ => ListBuffer.from(that).toList reverse_::: this.in
+      case _              => ListBuffer.from(that).toList reverse_::: this.in
     }
     new Queue[B](newIn, this.out)
   }
@@ -128,8 +129,11 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
     *
     *  @param  iter        an iterable object
     */
-  @deprecated("Use `enqueueAll` instead of `enqueue` to enqueue a collection of elements", "2.13.0")
-  @`inline` final def enqueue[B >: A](iter: scala.collection.Iterable[B]) = enqueueAll(iter)
+  @deprecated(
+    "Use `enqueueAll` instead of `enqueue` to enqueue a collection of elements",
+    "2.13.0")
+  @`inline` final def enqueue[B >: A](iter: scala.collection.Iterable[B]) =
+    enqueueAll(iter)
 
   /** Creates a new queue with all elements provided by an `Iterable` object
     *  added at the end of the old queue.
@@ -139,7 +143,8 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
     *
     *  @param  iter        an iterable object
     */
-  def enqueueAll[B >: A](iter: scala.collection.Iterable[B]) = new Queue(iter.toList reverse_::: in, out)
+  def enqueueAll[B >: A](iter: scala.collection.Iterable[B]) =
+    new Queue(iter.toList reverse_::: in, out)
 
   /** Returns a tuple with the first element in the queue,
     *  and a new queue with this element removed.
@@ -148,9 +153,10 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
     *  @return the first element of the queue.
     */
   def dequeue: (A, Queue[A]) = out match {
-    case Nil if !in.isEmpty => val rev = in.reverse ; (rev.head, new Queue(Nil, rev.tail))
-    case x :: xs            => (x, new Queue(in, xs))
-    case _                  => throw new NoSuchElementException("dequeue on empty queue")
+    case Nil if !in.isEmpty =>
+      val rev = in.reverse; (rev.head, new Queue(Nil, rev.tail))
+    case x :: xs => (x, new Queue(in, xs))
+    case _       => throw new NoSuchElementException("dequeue on empty queue")
   }
 
   /** Optionally retrieves the first element and a queue of the remaining elements.
@@ -158,7 +164,8 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
     * @return A tuple of the first element of the queue, and a new queue with this element removed.
     *         If the queue is empty, `None` is returned.
     */
-  def dequeueOption: Option[(A, Queue[A])] = if(isEmpty) None else Some(dequeue)
+  def dequeueOption: Option[(A, Queue[A])] =
+    if (isEmpty) None else Some(dequeue)
 
   /** Returns the first element in the queue, or throws an error if there
     *  is no element contained in the queue.
@@ -179,16 +186,17 @@ sealed class Queue[+A] protected(protected val in: List[A], protected val out: L
   */
 @SerialVersionUID(3L)
 object Queue extends StrictOptimizedSeqFactory[Queue] {
-  def newBuilder[A]: Builder[A, Queue[A]] = new ListBuffer[A] mapResult (x => new Queue[A](Nil, x.toList))
+  def newBuilder[A]: Builder[A, Queue[A]] =
+    new ListBuffer[A] mapResult (x => new Queue[A](Nil, x.toList))
 
   def from[A](source: IterableOnce[A]): Queue[A] = source match {
-    case q: Queue[A] => q
+    case q: Queue[A]                => q
     case _ if source.knownSize == 0 => empty[A]
-    case _ => new Queue[A](Nil, ListBuffer.from(source).toList)
+    case _                          => new Queue[A](Nil, ListBuffer.from(source).toList)
   }
 
   def empty[A]: Queue[A] = EmptyQueue
   override def apply[A](xs: A*): Queue[A] = new Queue[A](Nil, xs.toList)
 
-  private object EmptyQueue extends Queue[Nothing](Nil, Nil) { }
+  private object EmptyQueue extends Queue[Nothing](Nil, Nil) {}
 }

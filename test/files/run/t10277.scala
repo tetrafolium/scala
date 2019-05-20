@@ -15,7 +15,12 @@ trait TypedColumn[@specialized(Long, Double) T] extends Column {
 
 final class LongColumn extends TypedColumn[Long] {
   override def put(idx: Int, value: Long): Unit = {
-    val frames = Thread.currentThread().getStackTrace.toList.drop(1).takeWhile(_.getMethodName != "main")
+    val frames = Thread
+      .currentThread()
+      .getStackTrace
+      .toList
+      .drop(1)
+      .takeWhile(_.getMethodName != "main")
     println(frames.map(_.getMethodName).mkString("\n"))
   }
 }

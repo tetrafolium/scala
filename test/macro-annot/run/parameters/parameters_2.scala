@@ -12,12 +12,15 @@ object Test extends App {
 
   // @Test  def combo: Unit =
   {
-    assertEquals(typeOf[ParameterZoo].decls.sorted.map(_.toString).mkString("\n"), """
+    assertEquals(
+      typeOf[ParameterZoo].decls.sorted.map(_.toString).mkString("\n"),
+      """
       |constructor ParameterZoo
       |object С
       |class CTx
       |method mTUxy
       |type TU
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }

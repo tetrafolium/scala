@@ -15,4 +15,4 @@ test/files/neg/t2458/test.scala:7: error: type mismatch;
     def test = f(X)
                  ^
 one error found
-*/
+ */

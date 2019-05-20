@@ -2,8 +2,8 @@ object Test extends App {
   val str = "ABCDEFGHIJKLMABCDEFGHIJKLM"
   val surrogateStr = "an old Turkic letter: \uD803\uDC22"
 
-  import scala.collection.mutable.{ StringBuilder => ScalaStringBuilder }
-  import java.lang.{ StringBuilder => JavaStringBuilder }
+  import scala.collection.mutable.{StringBuilder => ScalaStringBuilder}
+  import java.lang.{StringBuilder => JavaStringBuilder}
 
   val sbScala = new ScalaStringBuilder() append str
   val sbJava = new JavaStringBuilder() append str
@@ -13,7 +13,9 @@ object Test extends App {
       if (i == -1) assert(sbScala.lastIndexOf(s) == sbJava.lastIndexOf(s))
       else assert(sbScala.lastIndexOf(s, i) == sbJava.lastIndexOf(s, i))
     } else {
-      if (i == -1) assert(sbScala.indexOf(s) == sbJava.indexOf(s), s"$s -- $sbScala -- $sbJava")
+      if (i == -1)
+        assert(sbScala.indexOf(s) == sbJava.indexOf(s),
+               s"$s -- $sbScala -- $sbJava")
       else assert(sbScala.indexOf(s, i) == sbJava.indexOf(s, i))
     }
   }

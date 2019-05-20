@@ -18,4 +18,3 @@ object Test extends scala.tools.partest.StubErrorMessageTest {
     removeClasses("stuberrors", List("A"))
   }
 }
-

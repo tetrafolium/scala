@@ -5,7 +5,8 @@ import java.lang.management.ManagementFactory
 import org.junit.Assert.{assertEquals, assertTrue, fail}
 
 object AllocationTest {
-  val allocationCounter = ManagementFactory.getThreadMXBean.asInstanceOf[com.sun.management.ThreadMXBean]
+  val allocationCounter = ManagementFactory.getThreadMXBean
+    .asInstanceOf[com.sun.management.ThreadMXBean]
   assertTrue(allocationCounter.isThreadAllocatedMemorySupported)
   allocationCounter.setThreadAllocatedMemoryEnabled(true)
   val cost = {
@@ -28,20 +29,23 @@ trait AllocationTest {
     assertEquals(expected, nonAllocating(a == b))
   }
 
-  def nonAllocating[T](fn: => T)(implicit execution: AllocationExecution = AllocationExecution()): T = {
+  def nonAllocating[T](fn: => T)(implicit execution: AllocationExecution =
+                                   AllocationExecution()): T = {
     val result = allocationInfo(fn)
     val expected = fn
 
     if (result.min != 0) {
-      result.allocations foreach {
-        x => println(s"allocation $x")
+      result.allocations foreach { x =>
+        println(s"allocation $x")
       }
       fail(s"allocating min = ${result.min}")
     }
     result.result
   }
 
-  def allocationInfo[T](fn: => T)(implicit execution: AllocationExecution = AllocationExecution()): AllocationInfo[T] = {
+  def allocationInfo[T](fn: => T)(implicit execution: AllocationExecution =
+                                    AllocationExecution())
+    : AllocationInfo[T] = {
     val expected = fn
     val id = Thread.currentThread().getId
 
@@ -51,7 +55,7 @@ trait AllocationTest {
       assertEquals(s"warmup at index $i $expected $actual", expected, actual)
     }
 
-   //test
+    //test
     val counts = new Array[Long](execution.executionCount)
     for (i <- 0 until execution.executionCount) {
       val before = allocationCounter.getThreadAllocatedBytes(id)
@@ -65,7 +69,8 @@ trait AllocationTest {
 
 }
 
-case class AllocationExecution(executionCount: Int = 1000, warmupCount: Int = 1000)
+case class AllocationExecution(executionCount: Int = 1000,
+                               warmupCount: Int = 1000)
 
 case class AllocationInfo[T](result: T, allocations: Array[Long]) {
   def min = allocations.iterator.min

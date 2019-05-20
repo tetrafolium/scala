@@ -1,6 +1,6 @@
 class C { // C is not serializable
   def foo = (x: Int) => (y: Int) => x + y
-  def bar = (x: Int) => (y: Int) => {toString; x + y}
+  def bar = (x: Int) => (y: Int) => { toString; x + y }
 }
 
 object Test {
@@ -16,7 +16,7 @@ object Test {
       assert(false)
     } catch {
       case _: java.io.NotSerializableException =>
-        // expected, lambda transitively refers to this
+      // expected, lambda transitively refers to this
     }
   }
 

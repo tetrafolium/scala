@@ -1,264 +1,526 @@
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  ObjectInputStream,
+  ObjectOutputStream
+}
 
 object Test {
   val lambdas: List[Any => String] = List(
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" },
-  { (t: Any) => "ab" }
-    )
+    { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }, { (t: Any) =>
+      "ab"
+    }
+  )
 
   def main(args: Array[String]): Unit = {
     for (lambda <- lambdas) {

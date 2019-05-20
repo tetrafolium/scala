@@ -15,7 +15,7 @@ package reflect.internal
 package settings
 
 /** Abstract settings, which is refined for `reflect` and `nsc`.
- */
+  */
 trait AbsSettings {
 
   /** Subclasses should further constrain Setting. */

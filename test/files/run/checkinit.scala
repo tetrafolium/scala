@@ -16,13 +16,14 @@ abstract class V {
 }
 
 object Test {
-  def check(f: => Unit): Unit = try {
-    f
-    println("!!!")
-  } catch {
-    case e: UninitializedFieldError =>
-      println(e.getMessage)
-  }
+  def check(f: => Unit): Unit =
+    try {
+      f
+      println("!!!")
+    } catch {
+      case e: UninitializedFieldError =>
+        println(e.getMessage)
+    }
   def main(args: Array[String]): Unit = {
     check {
       class U1 extends U { val b = "" }

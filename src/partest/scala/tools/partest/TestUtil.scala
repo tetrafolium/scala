@@ -12,12 +12,13 @@
 
 package scala.tools.partest
 
-import scala.reflect.{ classTag, ClassTag }
+import scala.reflect.{classTag, ClassTag}
 
 trait TestUtil {
+
   /** Given function and block of code, evaluates code block,
-   *  calls function with nanoseconds elapsed, and returns block result.
-   */
+    *  calls function with nanoseconds elapsed, and returns block result.
+    */
   def timed[T](f: Long => Unit)(body: => T): T = {
     val start = System.nanoTime
     val result = body
@@ -26,8 +27,9 @@ trait TestUtil {
     f(end - start)
     result
   }
+
   /** Times body and returns (nanos, result).
-   */
+    */
   def alsoNanos[T](body: => T): (Long, T) = {
     var nanos = 0L
     val result = timed(nanos = _)(body)
@@ -36,7 +38,7 @@ trait TestUtil {
   }
   def nanos(body: => Unit): Long = alsoNanos(body)._1
 
-  def intercept[T <: Exception : ClassTag](code: => Unit): Unit =
+  def intercept[T <: Exception: ClassTag](code: => Unit): Unit =
     try {
       code
       assert(false, "did not throw " + classTag[T])
@@ -46,5 +48,4 @@ trait TestUtil {
 }
 
 // Used in tests.
-object TestUtil extends TestUtil {
-}
+object TestUtil extends TestUtil {}

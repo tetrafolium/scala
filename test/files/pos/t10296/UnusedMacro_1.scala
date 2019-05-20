@@ -1,4 +1,3 @@
-
 import scala.reflect.macros.blackbox
 
 object UnusedMacro {

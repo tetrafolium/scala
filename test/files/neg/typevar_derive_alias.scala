@@ -11,7 +11,8 @@ class Test {
     st.map(x => x)
   }
 
-  def toSetMap2(ts: Sq[El]): St[El] = ts.toSt.map(x => x) // B occurs contravariantly, so we maximize
+  def toSetMap2(ts: Sq[El]): St[El] =
+    ts.toSt.map(x => x) // B occurs contravariantly, so we maximize
 
   type Alias = El
   def toSetMap3(ts: Sq[Alias]): St[Alias] = ts.toSt.map(x => x)

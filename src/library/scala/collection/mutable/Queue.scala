@@ -15,7 +15,6 @@ package mutable
 
 import scala.collection.generic.DefaultSerializable
 
-
 /** `Queue` objects implement data structures that allow to
   *  insert and retrieve elements in a first-in-first-out (FIFO) manner.
   *
@@ -31,7 +30,7 @@ import scala.collection.generic.DefaultSerializable
   *  @define willNotTerminateInf
   */
 class Queue[A] protected (array: Array[AnyRef], start: Int, end: Int)
-  extends ArrayDeque[A](array, start, end)
+    extends ArrayDeque[A](array, start, end)
     with IndexedSeqOps[A, Queue, Queue[A]]
     with StrictOptimizedSeqOps[A, Queue, Queue[A]]
     with Cloneable[Queue[A]]
@@ -42,7 +41,7 @@ class Queue[A] protected (array: Array[AnyRef], start: Int, end: Int)
 
   override def iterableFactory: SeqFactory[Queue] = Queue
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "Queue"
 
   /**
@@ -59,7 +58,8 @@ class Queue[A] protected (array: Array[AnyRef], start: Int, end: Int)
     *  @param   elems      the element sequence.
     *  @return this
     */
-  def enqueue(elem1: A, elem2: A, elems: A*): this.type = enqueue(elem1).enqueue(elem2).enqueueAll(elems)
+  def enqueue(elem1: A, elem2: A, elems: A*): this.type =
+    enqueue(elem1).enqueue(elem2).enqueueAll(elems)
 
   /** Enqueues all elements in the given traversable object into the queue. The
     *  last element in the traversable object will be on front of the new queue.
@@ -67,7 +67,8 @@ class Queue[A] protected (array: Array[AnyRef], start: Int, end: Int)
     *  @param elems the traversable object.
     *  @return this
     */
-  def enqueueAll(elems: scala.collection.IterableOnce[A]): this.type = this ++= elems
+  def enqueueAll(elems: scala.collection.IterableOnce[A]): this.type =
+    this ++= elems
 
   /**
     * Removes the from element from this queue and return it
@@ -102,7 +103,8 @@ class Queue[A] protected (array: Array[AnyRef], start: Int, end: Int)
     *  @param f   the predicate used for choosing elements
     *  @return The removed elements
     */
-  def dequeueWhile(f: A => Boolean): scala.collection.Seq[A] = removeHeadWhile(f)
+  def dequeueWhile(f: A => Boolean): scala.collection.Seq[A] =
+    removeHeadWhile(f)
 
   /** Returns the first element in the queue, or throws an error if there
     *  is no element contained in the queue.
@@ -134,6 +136,7 @@ object Queue extends StrictOptimizedSeqFactory[Queue] {
 
   def empty[A]: Queue[A] = new Queue
 
-  def newBuilder[A]: Builder[A, Queue[A]] = new GrowableBuilder[A, Queue[A]](empty)
+  def newBuilder[A]: Builder[A, Queue[A]] =
+    new GrowableBuilder[A, Queue[A]](empty)
 
 }

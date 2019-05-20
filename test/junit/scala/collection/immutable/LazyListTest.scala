@@ -16,12 +16,14 @@ class LazyListTest {
 
   @Test
   def t6727_and_t6440_and_8627(): Unit = {
-    assertTrue(LazyList.continually(()).filter(_ => true).take(2) == Seq((), ()))
-    assertTrue(LazyList.continually(()).filterNot(_ => false).take(2) == Seq((), ()))
-    assertTrue(LazyList(1,2,3,4,5).filter(_ < 4) == Seq(1,2,3))
-    assertTrue(LazyList(1,2,3,4,5).filterNot(_ > 4) == Seq(1,2,3,4))
-    assertTrue(LazyList.from(1).filter(_ > 4).take(3) == Seq(5,6,7))
-    assertTrue(LazyList.from(1).filterNot(_ <= 4).take(3) == Seq(5,6,7))
+    assertTrue(
+      LazyList.continually(()).filter(_ => true).take(2) == Seq((), ()))
+    assertTrue(
+      LazyList.continually(()).filterNot(_ => false).take(2) == Seq((), ()))
+    assertTrue(LazyList(1, 2, 3, 4, 5).filter(_ < 4) == Seq(1, 2, 3))
+    assertTrue(LazyList(1, 2, 3, 4, 5).filterNot(_ > 4) == Seq(1, 2, 3, 4))
+    assertTrue(LazyList.from(1).filter(_ > 4).take(3) == Seq(5, 6, 7))
+    assertTrue(LazyList.from(1).filterNot(_ <= 4).take(3) == Seq(5, 6, 7))
   }
 
   /* GC tests */
@@ -29,26 +31,27 @@ class LazyListTest {
   /** Test helper to verify that the given LazyList operation allows
     * GC of the head during processing of the tail.
     */
-  def assertLazyListOpAllowsGC(op: (=> LazyList[Int], Int => Unit) => Any, f: Int => Unit): Unit = {
+  def assertLazyListOpAllowsGC(op: (=> LazyList[Int], Int => Unit) => Any,
+                               f: Int => Unit): Unit = {
     val msgSuccessGC = "GC success"
     val msgFailureGC = "GC failure"
 
     // A LazyList of 500 elements at most. We will test that the head can be collected
     // while processing the tail. After each element we will GC and wait 10 ms, so a
     // failure to collect will take roughly 5 seconds.
-    val ref = WeakReference( LazyList.from(1).take(500) )
+    val ref = WeakReference(LazyList.from(1).take(500))
 
     def gcAndThrowIfCollected(n: Int): Unit = {
-      System.gc()                                                   // try to GC
-      Thread.sleep(10)                                              // give it 10 ms
+      System.gc() // try to GC
+      Thread.sleep(10) // give it 10 ms
       if (ref.get.isEmpty) throw new RuntimeException(msgSuccessGC) // we're done if head collected
       f(n)
     }
 
-    val res = Try { op(ref(), gcAndThrowIfCollected) }.failed       // success is indicated by an
-    val msg = res.map(_.getMessage).getOrElse(msgFailureGC)         // exception with expected message
-                                                                    // failure is indicated by no
-    assertTrue(msg == msgSuccessGC)                                 // exception, or one with different message
+    val res = Try { op(ref(), gcAndThrowIfCollected) }.failed // success is indicated by an
+    val msg = res.map(_.getMessage).getOrElse(msgFailureGC) // exception with expected message
+    // failure is indicated by no
+    assertTrue(msg == msgSuccessGC) // exception, or one with different message
   }
 
   @Test
@@ -68,7 +71,8 @@ class LazyListTest {
 
   @Test // scala/bug#8990
   def withFilter_after_first_withFilter_foreach_allows_GC: Unit = {
-    assertLazyListOpAllowsGC(_.withFilter(_ > 1).withFilter(_ < 100).foreach(_), _ => ())
+    assertLazyListOpAllowsGC(_.withFilter(_ > 1).withFilter(_ < 100).foreach(_),
+                             _ => ())
   }
 
   /* misc */
@@ -84,9 +88,9 @@ class LazyListTest {
 
     assertEquals(true, Try { wf.map(identity).length }.isFailure) // throws on n == 5
 
-    shouldThrow = false                              // won't throw next time
+    shouldThrow = false // won't throw next time
 
-    assertEquals(5,  wf.map(identity).length)       // success instead of NPE
+    assertEquals(5, wf.map(identity).length) // success instead of NPE
   }
 
   @Test // scala/bug#6881
@@ -94,9 +98,12 @@ class LazyListTest {
     // Make sure we're tested with reference equality
     val s = LazyList.from(0)
     assert(s == s, "Referentially identical LazyLists should be equal (==)")
-    assert(s equals s, "Referentially identical LazyLists should be equal (equals)")
-    assert((0 #:: 1 #:: s) == (0 #:: 1 #:: s), "Cons of referentially identical LazyLists should be equal (==)")
-    assert((0 #:: 1 #:: s) equals (0 #:: 1 #:: s), "Cons of referentially identical LazyLists should be equal (equals)")
+    assert(s equals s,
+           "Referentially identical LazyLists should be equal (equals)")
+    assert((0 #:: 1 #:: s) == (0 #:: 1 #:: s),
+           "Cons of referentially identical LazyLists should be equal (==)")
+    assert((0 #:: 1 #:: s) equals (0 #:: 1 #:: s),
+           "Cons of referentially identical LazyLists should be equal (equals)")
   }
 
   @Test
@@ -226,7 +233,7 @@ class LazyListTest {
   }
 
   @Test
-  def testForceReturnsEvaluatedLazyList() : Unit = {
+  def testForceReturnsEvaluatedLazyList(): Unit = {
     var i = 0
     def f: Int = { i += 1; i }
     val xs = LazyList.from(Iterator.fill(3)(f))
@@ -235,18 +242,18 @@ class LazyListTest {
     assertEquals(3, i)
     // it's possible to implement `force` with incorrect string representation
     // (to forget about `tlEvaluated` update)
-    assertEquals( "LazyList(1, 2, 3)", xs.toString())
+    assertEquals("LazyList(1, 2, 3)", xs.toString())
   }
 
   val cycle1: LazyList[Int] = 1 #:: 2 #:: cycle1
   val cycle2: LazyList[Int] = 1 #:: 2 #:: 3 #:: cycle2
-  @Test(timeout=10000)
+  @Test(timeout = 10000)
   def testSameElements(): Unit = {
     assert(LazyList().sameElements(LazyList()))
     assert(!LazyList().sameElements(LazyList(1)))
-    assert(LazyList(1,2).sameElements(LazyList(1,2)))
-    assert(!LazyList(1,2).sameElements(LazyList(1)))
-    assert(!LazyList(1).sameElements(LazyList(1,2)))
+    assert(LazyList(1, 2).sameElements(LazyList(1, 2)))
+    assert(!LazyList(1, 2).sameElements(LazyList(1)))
+    assert(!LazyList(1).sameElements(LazyList(1, 2)))
     assert(!LazyList(1).sameElements(LazyList(2)))
     assert(cycle1.sameElements(cycle1))
     assert(!cycle1.sameElements(cycle2))
@@ -262,7 +269,9 @@ class LazyListTest {
 
   @Test
   def laziness(): Unit = {
-    lazy val fibs: LazyList[Int] = 0 #:: 1 #:: fibs.zip(fibs.tail).map { n => n._1 + n._2 }
+    lazy val fibs: LazyList[Int] = 0 #:: 1 #:: fibs.zip(fibs.tail).map { n =>
+      n._1 + n._2
+    }
     assert(List(0, 1, 1, 2) == fibs.take(4).to(List))
 
     var lazeCount = 0
@@ -272,7 +281,7 @@ class LazyListTest {
     assertEquals(0, lazeCount)
   }
 
-  @Test  // Strawman issue #529
+  @Test // Strawman issue #529
   def testLazyListMustComputeHeadOnlyOnce(): Unit = {
     var seedCounter = 0
     var fCounter = 0
@@ -329,27 +338,29 @@ class LazyListTest {
     // Check un-forced cyclic and non-cyclic streams
     assertEquals("LazyList(?)", pre(2).toString)
     assertEquals("LazyList(?)", cyc(2).toString)
-    assertEquals("LazyList(?)", precyc(2,2).toString)
+    assertEquals("LazyList(?)", precyc(2, 2).toString)
 
     // Check forced cyclic and non-cyclic streams
     assertEquals("LazyList(-2, -1)", pre(2).force.toString)
     assertEquals("LazyList(0, 1, ...)", cyc(2).force.toString)
-    assertEquals("LazyList(-2, -1, 0, 1, ...)", precyc(2,2).force.toString)
+    assertEquals("LazyList(-2, -1, 0, 1, ...)", precyc(2, 2).force.toString)
 
     // Special cases
     assertEquals("LazyList(0, ...)", cyc(1).force.toString)
-    assertEquals("LazyList(-1, 0, 1, 2, 3, 4, 5, ...)", precyc(1,6).force.toString)
-    assertEquals("LazyList(-6, -5, -4, -3, -2, -1, 0, ...)", precyc(6,1).force.toString)
+    assertEquals("LazyList(-1, 0, 1, 2, 3, 4, 5, ...)",
+                 precyc(1, 6).force.toString)
+    assertEquals("LazyList(-6, -5, -4, -3, -2, -1, 0, ...)",
+                 precyc(6, 1).force.toString)
 
     // Make sure there are no odd/even problems
     for (n <- 3 to 4; m <- 3 to 4) {
-      assertEquals(s"mkString $n $m", precyc(n,m).mkString, goal(n,m))
+      assertEquals(s"mkString $n $m", precyc(n, m).mkString, goal(n, m))
     }
 
     // Make sure there are no cycle/prefix modulus problems
     for (i <- 6 to 8) {
-      assertEquals(s"mkString $i 3", goal(i,3), precyc(i,3).mkString)
-      assertEquals(s"mkString 3 $i", goal(3,i), precyc(3,i).mkString)
+      assertEquals(s"mkString $i 3", goal(i, 3), precyc(i, 3).mkString)
+      assertEquals(s"mkString 3 $i", goal(3, i), precyc(3, i).mkString)
     }
   }
 
@@ -366,6 +377,7 @@ class LazyListTest {
 
   @Test
   def tapEach(): Unit = {
+
     /** @param makeLL must make a lazylist that evaluates to Seq(1,2,3,4,5) */
     def check(makeLL: => LazyList[Int]): Unit = {
       val lb = ListBuffer[Int]()

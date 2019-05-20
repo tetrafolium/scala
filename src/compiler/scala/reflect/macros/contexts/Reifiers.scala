@@ -22,23 +22,30 @@ trait Reifiers {
 
   def reifyTree(universe: Tree, mirror: Tree, tree: Tree): Tree = {
     assert(ExprClass != NoSymbol)
-    val result = scala.reflect.reify.`package`.reifyTree(self.universe)(callsiteTyper, universe, mirror, tree)
+    val result = scala.reflect.reify.`package`
+      .reifyTree(self.universe)(callsiteTyper, universe, mirror, tree)
     logFreeVars(enclosingPosition, result)
     result
   }
 
-  def reifyType(universe: Tree, mirror: Tree, tpe: Type, concrete: Boolean = false): Tree = {
+  def reifyType(universe: Tree,
+                mirror: Tree,
+                tpe: Type,
+                concrete: Boolean = false): Tree = {
     assert(TypeTagsClass != NoSymbol)
-    val result = scala.reflect.reify.`package`.reifyType(self.universe)(callsiteTyper, universe, mirror, tpe, concrete)
+    val result = scala.reflect.reify.`package`
+      .reifyType(self.universe)(callsiteTyper, universe, mirror, tpe, concrete)
     logFreeVars(enclosingPosition, result)
     result
   }
 
   def reifyRuntimeClass(tpe: Type, concrete: Boolean = true): Tree =
-    scala.reflect.reify.`package`.reifyRuntimeClass(universe)(callsiteTyper, tpe, concrete = concrete)
+    scala.reflect.reify.`package`
+      .reifyRuntimeClass(universe)(callsiteTyper, tpe, concrete = concrete)
 
   def reifyEnclosingRuntimeClass: Tree =
-    scala.reflect.reify.`package`.reifyEnclosingRuntimeClass(universe)(callsiteTyper)
+    scala.reflect.reify.`package`
+      .reifyEnclosingRuntimeClass(universe)(callsiteTyper)
 
   def unreifyTree(tree: Tree): Tree = {
     assert(ExprSplice != NoSymbol)
@@ -67,18 +74,20 @@ trait Reifiers {
     def logFreeVars(symtab: SymbolTable): Unit =
       // logging free vars only when they are untyped prevents avalanches of duplicate messages
       symtab.syms map (sym => symtab.symDef(sym)) foreach {
-        case FreeTermDef(_, _, binding, _, origin) if universe.settings.logFreeTerms && binding.tpe == null =>
+        case FreeTermDef(_, _, binding, _, origin)
+            if universe.settings.logFreeTerms && binding.tpe == null =>
           reporter.echo(position, s"free term: ${showRaw(binding)} $origin")
-        case FreeTypeDef(_, _, binding, _, origin) if universe.settings.logFreeTypes && binding.tpe == null =>
+        case FreeTypeDef(_, _, binding, _, origin)
+            if universe.settings.logFreeTypes && binding.tpe == null =>
           reporter.echo(position, s"free type: ${showRaw(binding)} $origin")
         case _ =>
-          // do nothing
+        // do nothing
       }
 
     if (universe.settings.logFreeTerms || universe.settings.logFreeTypes)
       reification match {
         case ReifiedTree(_, _, symtab, _, _, _, _) => logFreeVars(symtab)
-        case ReifiedType(_, _, symtab, _, _, _) => logFreeVars(symtab)
+        case ReifiedType(_, _, symtab, _, _, _)    => logFreeVars(symtab)
       }
   }
 }

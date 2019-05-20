@@ -17,12 +17,12 @@ import scala.collection.mutable.WeakHashMap
 import java.lang.ref.WeakReference
 
 /** A cache that maintains a bijection between Java reflection type `J`
- *  and Scala reflection type `S`.
- *
- *  The cache is two-way weak (i.e. is powered by weak references),
- *  so that neither Java artifacts prevent Scala artifacts from being garbage collected,
- *  nor the other way around.
- */
+  *  and Scala reflection type `S`.
+  *
+  *  The cache is two-way weak (i.e. is powered by weak references),
+  *  so that neither Java artifacts prevent Scala artifacts from being garbage collected,
+  *  nor the other way around.
+  */
 private[runtime] trait TwoWayCaches { self: SymbolTable =>
   class TwoWayCache[J, S] {
 
@@ -76,4 +76,3 @@ private[runtime] trait TwoWayCaches { self: SymbolTable =>
     }
   }
 }
-

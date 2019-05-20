@@ -9,8 +9,8 @@ object Test {
   def x[Y <: _] = null
   def y[X >: _ <: Int] = null
 
-  val ok1 : ((_, Int) => Int) = (_, _) => 1
-  val ok2 : (_, Long) = (1L, 1L)
-  val ok3 : _ => String = (_: Class[_]).toString
+  val ok1: ((_, Int) => Int) = (_, _) => 1
+  val ok2: (_, Long) = (1L, 1L)
+  val ok3: _ => String = (_: Class[_]).toString
 
 }

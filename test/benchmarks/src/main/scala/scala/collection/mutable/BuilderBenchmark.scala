@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra._
 import org.openjdk.jmh.runner.IterationType
 import benchmark._
 import java.util.concurrent.TimeUnit
-import java.util.{ HashSet => JHashSet }
+import java.util.{HashSet => JHashSet}
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @Fork(2)
@@ -34,8 +34,17 @@ class BuilderBenchmark {
     source1 = (1 to 1000).map(_.toString).toList
     source2 = (1 to 1000).map(_.toString).toArray[String]
     source3 = (1 to 1000).map(_.toString).toVector
-    sources = scala.util.Random.shuffle(List.fill(10)(List(source1, source2, source2, source3)).flatten).toArray
-    sinks = Array[Buffer[String]](listBuffer, arrayBuffer, listBuffer, queue, listBuffer, arrayBuffer, listBuffer, listBuffer)
+    sources = scala.util.Random
+      .shuffle(List.fill(10)(List(source1, source2, source2, source3)).flatten)
+      .toArray
+    sinks = Array[Buffer[String]](listBuffer,
+                                  arrayBuffer,
+                                  listBuffer,
+                                  queue,
+                                  listBuffer,
+                                  arrayBuffer,
+                                  listBuffer,
+                                  listBuffer)
   }
 
   @Benchmark def addAllPolymorphic(bh: Blackhole): Unit = {

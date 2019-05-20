@@ -1,4 +1,10 @@
-class PrimitiveNumbers(b: Byte, s: Short, c: Char, i: Int, l: Long, f: Float, d: Double) {
+class PrimitiveNumbers(b: Byte,
+                       s: Short,
+                       c: Char,
+                       i: Int,
+                       l: Long,
+                       f: Float,
+                       d: Double) {
   def noUnderlying(): Unit = {
     b.underlying
     s.underlying

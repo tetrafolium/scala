@@ -12,8 +12,10 @@ object Test {
   object Foo {
     implicit val fooUnit: Foo[Unit] = ???
     implicit val fooInt: Foo[Int] = ???
-    implicit def fooPair[T, U](implicit fooT: Foo[T], fooU: Foo[U]): Foo[(T, U)] = ???
-    implicit def fooGen[T, R](implicit gen: Generic.Aux[T, R], fr: Foo[R]): Foo[T] = ???
+    implicit def fooPair[T, U](implicit fooT: Foo[T],
+                               fooU: Foo[U]): Foo[(T, U)] = ???
+    implicit def fooGen[T, R](implicit gen: Generic.Aux[T, R],
+                              fr: Foo[R]): Foo[T] = ???
   }
 
   trait A
@@ -23,7 +25,8 @@ object Test {
 
   trait B
   object B {
-    implicit val genB: Generic[B] { type Repr = (Int, (Int, (Int, Unit))) } = ???
+    implicit val genB: Generic[B] { type Repr = (Int, (Int, (Int, Unit))) } =
+      ???
   }
 
   implicitly[Foo[A]]

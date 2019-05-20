@@ -20,10 +20,12 @@ class HashSetTest {
   @Test
   def earlyReturnWhenRemoveAllIterator(): Unit = {
     val xs = (1 to 10).to(HashSet)
-    def iter(n: Int) = (1 to n).iterator.concat(new Iterator[Int] {
-      override def hasNext = true
-      override def next() = throw new RuntimeException("This iterator should not be evaluated")
-    })
+    def iter(n: Int) =
+      (1 to n).iterator.concat(new Iterator[Int] {
+        override def hasNext = true
+        override def next() =
+          throw new RuntimeException("This iterator should not be evaluated")
+      })
 
     assertSame(HashSet.empty, xs.removedAll(iter(10)))
     assertSame(HashSet.empty, xs.removedAll(iter(100)))

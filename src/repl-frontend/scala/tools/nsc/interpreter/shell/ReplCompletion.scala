@@ -25,10 +25,12 @@ class ReplCompletion(intp: Repl) extends jline.JLineCompletion {
   override def withPartialInput[T](code: String)(body: => T): T = {
     val saved = partialInput
     _partialInput = code
-    try body finally _partialInput = saved
+    try body
+    finally _partialInput = saved
   }
 
-  def shellCompletion(buffer: String, cursor: Int): Option[CompletionResult] = None
+  def shellCompletion(buffer: String, cursor: Int): Option[CompletionResult] =
+    None
 
   def complete(buffer: String, cursor: Int): CompletionResult = {
     shellCompletion(buffer, cursor) getOrElse {
@@ -50,10 +52,11 @@ class ReplCompletion(intp: Repl) extends jline.JLineCompletion {
   private var lastRequest = NoRequest
   private var tabCount = 0
 
-  def resetVerbosity(): Unit = { tabCount = 0 ; lastRequest = NoRequest }
+  def resetVerbosity(): Unit = { tabCount = 0; lastRequest = NoRequest }
 
   // A convenience for testing
-  def complete(before: String, after: String = ""): CompletionResult = complete(before + after, before.length)
+  def complete(before: String, after: String = ""): CompletionResult =
+    complete(before + after, before.length)
   private def codeCompletion(buf: String, cursor: Int): CompletionResult = {
     require(cursor >= 0 && cursor <= buf.length)
 
@@ -66,20 +69,28 @@ class ReplCompletion(intp: Repl) extends jline.JLineCompletion {
     }
 
     // secret handshakes
-    val slashPrint  = """.*// *print *""".r
-    val slashPrintRaw  = """.*// *printRaw *""".r
+    val slashPrint = """.*// *print *""".r
+    val slashPrintRaw = """.*// *printRaw *""".r
     val slashTypeAt = """.*// *typeAt *(\d+) *(\d+) *""".r
     try {
       intp.presentationCompile(cursor, buf) match {
         case Left(_) => NoCompletions
-        case Right(result) => try {
-          buf match {
-            case slashPrint() if cursor == buf.length => CompletionResult(cursor, "" :: Naming.unmangle(result.print) :: Nil)
-            case slashPrintRaw() if cursor == buf.length => CompletionResult(cursor, "" :: result.print :: Nil)
-            case slashTypeAt(start, end) if cursor == buf.length => CompletionResult(cursor, "" :: result.typeAt(start.toInt, end.toInt) :: Nil)
-            case _ => val (c, r) = result.candidates(tabCount); CompletionResult(c, r)
-          }
-        } finally result.cleanup()
+        case Right(result) =>
+          try {
+            buf match {
+              case slashPrint() if cursor == buf.length =>
+                CompletionResult(cursor,
+                                 "" :: Naming.unmangle(result.print) :: Nil)
+              case slashPrintRaw() if cursor == buf.length =>
+                CompletionResult(cursor, "" :: result.print :: Nil)
+              case slashTypeAt(start, end) if cursor == buf.length =>
+                CompletionResult(
+                  cursor,
+                  "" :: result.typeAt(start.toInt, end.toInt) :: Nil)
+              case _ =>
+                val (c, r) = result.candidates(tabCount); CompletionResult(c, r)
+            }
+          } finally result.cleanup()
       }
     } catch {
       case NonFatal(e) =>

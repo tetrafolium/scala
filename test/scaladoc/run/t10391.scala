@@ -9,11 +9,13 @@ object Test extends ScaladocModelTest {
     import access._
 
     val pkg = root._package("test")
-    val intparam    = pkg._object("Test")._method("int").valueParams.head.head
-    val longparam   = pkg._object("Test")._method("long").valueParams.head.head
-    val floatparam  = pkg._object("Test")._method("float").valueParams.head.head
-    val doubleparam = pkg._object("Test")._method("double").valueParams.head.head
-    val spacesparam = pkg._object("Test")._method("spaces").valueParams.head.head
+    val intparam = pkg._object("Test")._method("int").valueParams.head.head
+    val longparam = pkg._object("Test")._method("long").valueParams.head.head
+    val floatparam = pkg._object("Test")._method("float").valueParams.head.head
+    val doubleparam =
+      pkg._object("Test")._method("double").valueParams.head.head
+    val spacesparam =
+      pkg._object("Test")._method("spaces").valueParams.head.head
 
     println(intparam.defaultValue)
     println(longparam.defaultValue)

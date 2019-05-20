@@ -18,11 +18,12 @@ class PositionFilterTest {
 
   val store = new StoreReporter
 
-  def createFilter: PositionFiltering = new InternalReporter with PositionFiltering with CountingReporter {
-    def noWarnings = false
-    def suppressed(pos: Position, msg: String, severity: Severity): Unit = ()
-    val delegate = store
-  }
+  def createFilter: PositionFiltering =
+    new InternalReporter with PositionFiltering with CountingReporter {
+      def noWarnings = false
+      def suppressed(pos: Position, msg: String, severity: Severity): Unit = ()
+      val delegate = store
+    }
 
   @Test
   def `filters split messages`(): Unit = {

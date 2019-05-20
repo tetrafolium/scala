@@ -23,11 +23,11 @@ import scala.tools.nsc.Settings
 import scala.tools.nsc.interpreter.Results.Result
 import scala.tools.nsc.reporters.Reporter
 
-
 /** The subset of the Repl used by sbt.
   *
   */
 trait ReplCore {
+
   /**
     * Interpret one line of input. All feedback, including parse errors
     * and evaluation results, are printed via the supplied compiler's
@@ -51,15 +51,22 @@ trait ReplCore {
     * @param value     the object value to bind to it
     * @return an indication of whether the binding succeeded
     */
-  def bind(name: String, boundType: String, value: Any, modifiers: List[String] = Nil): Result
+  def bind(name: String,
+           boundType: String,
+           value: Any,
+           modifiers: List[String] = Nil): Result
 
   /** Bind a specified `name` to a specified `value`.
     * The type is derived from the run-time class of the value.
     */
-  def bindValue(name: String, value: Any): Result = bind(name, value.asInstanceOf[AnyRef].getClass.getName, value)
+  def bindValue(name: String, value: Any): Result =
+    bind(name, value.asInstanceOf[AnyRef].getClass.getName, value)
 
-  @deprecated("The thread context classloader is now set and restored around execution of REPL line, this method is now a no-op.", since = "2.12.0")
-  final def setContextClassLoader() = () // Called from sbt-interface/0.12.4/src/ConsoleInterface.scala:39
+  @deprecated(
+    "The thread context classloader is now set and restored around execution of REPL line, this method is now a no-op.",
+    since = "2.12.0")
+  final def setContextClassLoader() =
+    () // Called from sbt-interface/0.12.4/src/ConsoleInterface.scala:39
 }
 
 /**
@@ -135,17 +142,20 @@ trait Repl extends ReplCore {
 
   def interpret(line: String, synthetic: Boolean): Result
 
-  final def beQuietDuring(body: => Unit): Unit = reporter.withoutPrintingResults(body)
+  final def beQuietDuring(body: => Unit): Unit =
+    reporter.withoutPrintingResults(body)
 
-
-
-  def namedParam[T: reflect.runtime.universe.TypeTag : ClassTag](name: String, value: T): NamedParam
+  def namedParam[T: reflect.runtime.universe.TypeTag: ClassTag](
+      name: String,
+      value: T): NamedParam
 
   def quietBind(p: NamedParam): Result
 
   def bind(p: NamedParam): Result
 
-  def presentationCompile(cursor: Int, buf: String): Either[Result, PresentationCompilationResult]
+  def presentationCompile(
+      cursor: Int,
+      buf: String): Either[Result, PresentationCompilationResult]
 
   /** Reset this interpreter, forgetting all user-specified requests. */
   def reset(): Unit
@@ -156,7 +166,6 @@ trait Repl extends ReplCore {
   def close(): Unit
 
   val power: Power[StdReplVals]
-
 
   def requestDefining(name: String): Option[ReplRequest]
 
@@ -241,7 +250,6 @@ trait ReplReporter extends Reporter {
   /** Change indentation due to prompt. */
   def indenting(n: Int)(body: => Unit): Unit
 
-
   /** Print result (Right --> success, Left --> error)
     */
   def printResult(result: Either[String, String]): Unit
@@ -257,7 +265,6 @@ trait ReplReporter extends Reporter {
   /** Toggle whether to print results (should only be used from the shell).
     */
   def togglePrintResults(): Unit
-
 
   //// println debugging ftw
   def isDebug: Boolean
@@ -276,7 +283,7 @@ trait ReplReporter extends Reporter {
 
   /** Set currently executing request.
     */
-  def currentRequest_= (req: ReplRequest): Unit
+  def currentRequest_=(req: ReplRequest): Unit
 }
 
 trait ReplRequest {
@@ -290,6 +297,7 @@ trait ReplRequest {
   * Created by scala.tools.nsc.interpreter.Repl#presentationCompile
   */
 trait PresentationCompilationResult {
+
   /** The start and end of this range position correspond to the start and end of user input inside `buf`
     * Start may not be zero if there's leading whitespace/comments, which are not represented as trees.
     * Similarly for the end position.

@@ -1,7 +1,5 @@
-
 import scala.tools.partest.ReplTest
 import scala.tools.nsc.Settings
-
 
 /*
  * Add // show to witness:
@@ -12,7 +10,7 @@ object Test extends ReplTest {
     settings.Yreplclassbased.value = true
     settings
   }
-  def code = 
+  def code =
     """
 :paste < EOF
 case class C(i: Int)

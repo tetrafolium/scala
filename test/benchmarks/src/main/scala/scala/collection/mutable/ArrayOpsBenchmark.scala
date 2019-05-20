@@ -30,18 +30,24 @@ class ArrayOpsBenchmark {
     strings = integers.map(_.toString)
     integersA = integers.toArray
     stringsA = strings.toArray
-    intIntA = integersA.map { x => integersA }
+    intIntA = integersA.map { x =>
+      integersA
+    }
   }
 
   @Benchmark def foreachInt(bh: Blackhole): Unit = {
     var i = 0
-    integersA.foreach { x => i += x }
+    integersA.foreach { x =>
+      i += x
+    }
     bh.consume(i)
   }
 
   @Benchmark def foreachString(bh: Blackhole): Unit = {
     var i = 0
-    stringsA.foreach { x => i += x.length }
+    stringsA.foreach { x =>
+      i += x.length
+    }
     bh.consume(i)
   }
 
@@ -93,11 +99,15 @@ class ArrayOpsBenchmark {
   }
 
   @Benchmark def foldLeftSum(bh: Blackhole): Unit = {
-    bh.consume(integersA.foldLeft(0){ (z,n) => z + n })
+    bh.consume(integersA.foldLeft(0) { (z, n) =>
+      z + n
+    })
   }
 
   @Benchmark def foldSum(bh: Blackhole): Unit = {
-    bh.consume(integersA.fold(0){ (a,b) => a + b })
+    bh.consume(integersA.fold(0) { (a, b) =>
+      a + b
+    })
   }
 
   @Benchmark def sortedStringOld(bh: Blackhole): Unit =
@@ -118,29 +128,31 @@ class ArrayOpsBenchmark {
   @Benchmark def sortedIntCustomNew(bh: Blackhole): Unit =
     bh.consume(integersA.sorted(Ordering.Int.reverse))
 
-  def oldSorted[A, B >: A](xs: Array[A])(implicit ord: Ordering[B]): Array[A] = {
+  def oldSorted[A, B >: A](xs: Array[A])(
+      implicit ord: Ordering[B]): Array[A] = {
     implicit def ct = ClassTag[A](xs.getClass.getComponentType)
     val len = xs.length
-    if(xs.getClass.getComponentType.isPrimitive && len > 1) {
+    if (xs.getClass.getComponentType.isPrimitive && len > 1) {
       // need to copy into a boxed representation to use Java's Arrays.sort
       val a = new Array[AnyRef](len)
       var i = 0
-      while(i < len) {
+      while (i < len) {
         a(i) = xs(i).asInstanceOf[AnyRef]
         i += 1
       }
       Arrays.sort(a, ord.asInstanceOf[Ordering[AnyRef]])
       val res = new Array[A](len)
       i = 0
-      while(i < len) {
+      while (i < len) {
         res(i) = a(i).asInstanceOf[A]
         i += 1
       }
       res
     } else {
       val copy = xs.slice(0, len)
-      if(len > 1)
-        Arrays.sort(copy.asInstanceOf[Array[AnyRef]], ord.asInstanceOf[Ordering[AnyRef]])
+      if (len > 1)
+        Arrays.sort(copy.asInstanceOf[Array[AnyRef]],
+                    ord.asInstanceOf[Ordering[AnyRef]])
       copy
     }
   }

@@ -6,7 +6,7 @@ import math.{Pi, log}
 
 object M0 {
 
-  def addLazyList (s1: LazyList[Int], s2: LazyList[Int]): LazyList[Int] =
+  def addLazyList(s1: LazyList[Int], s2: LazyList[Int]): LazyList[Int] =
     LazyList.cons(s1.head + s2.head, addLazyList(s1.tail, s2.tail));
 
   val fib: LazyList[Int] =
@@ -14,7 +14,9 @@ object M0 {
 
   def test = {
     var i = 0;
-    fib.take(20).foreach(n => {Console.println("fib("+i+") = "+n); i=i+1});
+    fib
+      .take(20)
+      .foreach(n => { Console.println("fib(" + i + ") = " + n); i = i + 1 });
     Console.println;
   }
 }
@@ -24,35 +26,44 @@ object M0 {
 object M1 {
 
   def scale(x: Double, s: LazyList[Double]): LazyList[Double] =
-    s map { e: Double => e*x }
+    s map { e: Double =>
+      e * x
+    }
 
   def partialSums(s: LazyList[Double]): LazyList[Double] =
     LazyList.cons(s.head, partialSums(s.tail) map (x => x + s.head));
 
   def euler(s: LazyList[Double]): LazyList[Double] = {
     val nm1 = s apply 0;
-    val n   = s apply 1;
+    val n = s apply 1;
     val np1 = s apply 2;
-    LazyList.cons(np1 - ((np1 - n)*(np1 - n) / (nm1 - 2*n + np1)),euler(s.tail))
+    LazyList.cons(np1 - ((np1 - n) * (np1 - n) / (nm1 - 2 * n + np1)),
+                  euler(s.tail))
   };
 
-  def better(s: LazyList[Double], transform: LazyList[Double] => LazyList[Double])
+  def better(s: LazyList[Double],
+             transform: LazyList[Double] => LazyList[Double])
     : LazyList[LazyList[Double]] =
     LazyList.cons(s, better(transform(s), transform));
 
-  def veryGood(s: LazyList[Double], transform: LazyList[Double] => LazyList[Double])
-    : LazyList[Double] =
+  def veryGood(
+      s: LazyList[Double],
+      transform: LazyList[Double] => LazyList[Double]): LazyList[Double] =
     better(s, transform) map (x => x.head);
 
   def lnSummands(n: Double): LazyList[Double] =
-    LazyList.cons(1.0 / n, lnSummands(n + 1.0) map { x: Double => -x })
+    LazyList.cons(1.0 / n, lnSummands(n + 1.0) map { x: Double =>
+      -x
+    })
 
   var ln0 = partialSums(lnSummands(1.0));
   var ln1 = euler(ln0);
   var ln2 = veryGood(ln0, euler);
 
   def piSummands(n: Double): LazyList[Double] =
-    LazyList.cons(1.0 / n, piSummands(n + 2.0) map { x: Double => -x })
+    LazyList.cons(1.0 / n, piSummands(n + 2.0) map { x: Double =>
+      -x
+    })
 
   var pi0 = scale(4.0, partialSums(piSummands(1.0)));
   var pi1 = euler(pi0);
@@ -66,7 +77,7 @@ object M1 {
   def test = {
     var i = 0;
     while (i < 10) {
-      Console.print("pi("+i+") = ");
+      Console.print("pi(" + i + ") = ");
       Console.print(str(pi0.apply(i)) + ", ");
       Console.print(str(pi1.apply(i)) + ", ");
       Console.print(str(pi2.apply(i)) + "\n");
@@ -79,7 +90,7 @@ object M1 {
     Console.println;
     i = 0;
     while (i < 10) {
-      Console.print("ln("+i+") = ");
+      Console.print("ln(" + i + ") = ");
       Console.print(str(ln0.apply(i)) + ", ");
       Console.print(str(ln1.apply(i)) + ", ");
       Console.print(str(ln2.apply(i)) + "\n");
@@ -108,7 +119,9 @@ object M2 {
     def hasNext = true;
     def next = {
       val p = current.next;
-      current = current filter { x => !((x % p) == 0) };
+      current = current filter { x =>
+        !((x % p) == 0)
+      };
       p
     }
   }

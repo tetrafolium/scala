@@ -1,4 +1,3 @@
-
 package scala.collection
 
 import java.io.{BufferedReader, StringReader}
@@ -26,10 +25,10 @@ object StringOpsTest extends Properties("StringOps") {
 
   property("stripped lines are shorter except maybe last") = forAll(line) { s =>
     val stripped = s.linesIterator.toList
-    val lines    = s.linesWithSeparators.toList
-    val zipped   = stripped.zip(lines)
-    def shorter  = zipped.init.forall { case (s, l) => s.length < l.length }
-    def maybe    = zipped.last match { case (s, l) => s.length <= l.length }
+    val lines = s.linesWithSeparators.toList
+    val zipped = stripped.zip(lines)
+    def shorter = zipped.init.forall { case (s, l) => s.length < l.length }
+    def maybe = zipped.last match { case (s, l) => s.length <= l.length }
 
     (stripped.length == lines.length && (lines.isEmpty || shorter && maybe))
   }

@@ -18,10 +18,10 @@ import scala.reflect.internal.util.FreshNameCreator
 import symtab.Flags._
 
 /** This trait ...
- *
- *  @author  Martin Odersky
- *  @version 1.0
- */
+  *
+  *  @author  Martin Odersky
+  *  @version 1.0
+  */
 trait EtaExpansion { self: Analyzer =>
   import global._
 
@@ -46,7 +46,8 @@ trait EtaExpansion { self: Analyzer =>
     *   - typedEta (when type checking a method value, `m _`).
     *
     **/
-  def etaExpand(unit: CompilationUnit, tree: Tree, owner: Symbol)(implicit creator: FreshNameCreator): Tree = {
+  def etaExpand(unit: CompilationUnit, tree: Tree, owner: Symbol)(
+      implicit creator: FreshNameCreator): Tree = {
     val tpe = tree.tpe
     var cnt = 0 // for NoPosition
     def freshName() = {
@@ -64,7 +65,8 @@ trait EtaExpansion { self: Analyzer =>
         else {
           val vname: Name = freshName()
           // Problem with ticket #2351 here
-          val valSym = owner.newValue(vname.toTermName, tree.pos.focus, SYNTHETIC)
+          val valSym =
+            owner.newValue(vname.toTermName, tree.pos.focus, SYNTHETIC)
           defs += atPos(tree.pos) {
             val rhs = if (byName) {
               val funSym = valSym.newAnonymousFunctionValue(tree.pos.focus)
@@ -94,7 +96,8 @@ trait EtaExpansion { self: Analyzer =>
           defs ++= stats
           liftoutPrefix(fun)
         case Apply(fn, args) =>
-          val byName: Int => Option[Boolean] = fn.tpe.params.map(p => definitions.isByNameParamType(p.tpe)).lift
+          val byName: Int => Option[Boolean] =
+            fn.tpe.params.map(p => definitions.isByNameParamType(p.tpe)).lift
           val newArgs = mapWithIndex(args) { (arg, i) =>
             // with repeated params, there might be more or fewer args than params
             liftout(arg, byName(i).getOrElse(false))
@@ -104,7 +107,9 @@ trait EtaExpansion { self: Analyzer =>
           treeCopy.TypeApply(tree, liftoutPrefix(fn), args).clearType()
         case Select(qual, name) =>
           val name = tree.symbol.name // account for renamed imports, scala/bug#7233
-          treeCopy.Select(tree, liftout(qual, byName = false), name).clearType() setSymbol NoSymbol
+          treeCopy
+            .Select(tree, liftout(qual, byName = false), name)
+            .clearType() setSymbol NoSymbol
         case Ident(name) =>
           tree
       }
@@ -115,18 +120,21 @@ trait EtaExpansion { self: Analyzer =>
     /* Eta-expand lifted tree. */
     def expand(tree: Tree, tpe: Type): Tree = tpe match {
       case mt @ MethodType(paramSyms, restpe) if !mt.isImplicit =>
-        val params: List[(ValDef, Boolean)] = paramSyms.map {
-          sym =>
-            val origTpe = sym.tpe
-            val isRepeated = definitions.isRepeatedParamType(origTpe)
-            // scala/bug#4176 Don't leak A* in eta-expanded function types. See t4176b.scala
-            val droppedStarTpe = dropIllegalStarTypes(origTpe)
-            val valDef = ValDef(Modifiers(SYNTHETIC | PARAM), sym.name.toTermName, TypeTree(droppedStarTpe), EmptyTree)
-            (valDef, isRepeated)
+        val params: List[(ValDef, Boolean)] = paramSyms.map { sym =>
+          val origTpe = sym.tpe
+          val isRepeated = definitions.isRepeatedParamType(origTpe)
+          // scala/bug#4176 Don't leak A* in eta-expanded function types. See t4176b.scala
+          val droppedStarTpe = dropIllegalStarTypes(origTpe)
+          val valDef = ValDef(Modifiers(SYNTHETIC | PARAM),
+                              sym.name.toTermName,
+                              TypeTree(droppedStarTpe),
+                              EmptyTree)
+          (valDef, isRepeated)
         }
         atPos(tree.pos.makeTransparent) {
           val args = params.map {
-            case (valDef, isRepeated) => gen.paramToArg(Ident(valDef.name), isRepeated)
+            case (valDef, isRepeated) =>
+              gen.paramToArg(Ident(valDef.name), isRepeated)
           }
           Function(params.map(_._1), expand(Apply(tree, args), restpe))
         }

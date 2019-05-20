@@ -1,4 +1,4 @@
-import scala.language.{ dynamics, implicitConversions }
+import scala.language.{dynamics, implicitConversions}
 
 class ID(s: String)
 

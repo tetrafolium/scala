@@ -6,8 +6,8 @@ object Test {
   def main(args: Array[String]): Unit = { println(foo) }
 
   def foo: String = {
-    try return "Hello" finally 10 match {case x => ()}
+    try return "Hello"
+    finally 10 match { case x => () }
   }
 
 }
-

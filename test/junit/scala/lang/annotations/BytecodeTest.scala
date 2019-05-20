@@ -61,12 +61,18 @@ class BytecodeTest extends BytecodeTesting {
       """.stripMargin
 
     val run = new global.Run()
-    run.compileSources(List(new BatchSourceFile("AnnotA.java", annotA), new BatchSourceFile("AnnotB.java", annotB), new BatchSourceFile("Test.scala", scalaSrc)))
+    run.compileSources(
+      List(new BatchSourceFile("AnnotA.java", annotA),
+           new BatchSourceFile("AnnotB.java", annotB),
+           new BatchSourceFile("Test.scala", scalaSrc)))
     val outDir = global.settings.outputDirs.getSingleOutput.get
-    val outfiles = (for (f <- outDir.iterator if !f.isDirectory) yield (f.name, f.toByteArray)).toList
+    val outfiles = (for (f <- outDir.iterator if !f.isDirectory)
+      yield (f.name, f.toByteArray)).toList
 
     def check(classfile: String, annotName: String) = {
-      val f = (outfiles collect { case (`classfile`, bytes) => AsmUtils.readClass(bytes) }).head
+      val f = (outfiles collect {
+        case (`classfile`, bytes) => AsmUtils.readClass(bytes)
+      }).head
       val descs = f.visibleAnnotations.asScala.map(_.desc).toList
       assertTrue(descs.toString, descs exists (_ contains annotName))
     }

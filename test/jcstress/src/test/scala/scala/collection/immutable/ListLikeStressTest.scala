@@ -5,10 +5,15 @@ import org.openjdk.jcstress.annotations.Outcome.Outcomes
 import org.openjdk.jcstress.infra.results._
 
 @JCStressTest
-@Outcomes(Array(
-  new Outcome(id = Array("-1, 0"), expect = Expect.ACCEPTABLE, desc = "Read before write"),
-  new Outcome(id = Array("16, 0"), expect = Expect.ACCEPTABLE, desc = "Read after all writes")  
-))
+@Outcomes(
+  Array(
+    new Outcome(id = Array("-1, 0"),
+                expect = Expect.ACCEPTABLE,
+                desc = "Read before write"),
+    new Outcome(id = Array("16, 0"),
+                expect = Expect.ACCEPTABLE,
+                desc = "Read after all writes")
+  ))
 @State
 class ListLikeStressTest {
 
@@ -65,7 +70,7 @@ class ListLikeStressTest {
     var len = 0
     var nulls = 0
     while (l ne NilLike) {
-      if (l eq null) {r.r1 = len; r.r2 = nulls + 1; return}
+      if (l eq null) { r.r1 = len; r.r2 = nulls + 1; return }
       if (l.head eq null) nulls += 1
       assert(l ne l.tail)
       l = l.tail

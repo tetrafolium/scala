@@ -14,43 +14,43 @@ package scala
 package math
 
 /** A class for partially ordered data.
- *
- *  @author  Martin Odersky
- */
+  *
+  *  @author  Martin Odersky
+  */
 trait PartiallyOrdered[+A] extends Any {
 
   type AsPartiallyOrdered[B] = B => PartiallyOrdered[B]
 
   /** Result of comparing `'''this'''` with operand `that`.
-   *  Returns `None` if operands are not comparable.
-   *  If operands are comparable, returns `Some(x)` where
-   *  - `x < 0`    iff   `'''this''' &lt; that`
-   *  - `x == 0`   iff   `'''this''' == that`
-   *  - `x > 0`    iff   `'''this''' &gt; that`
-   */
-  def tryCompareTo [B >: A: AsPartiallyOrdered](that: B): Option[Int]
+    *  Returns `None` if operands are not comparable.
+    *  If operands are comparable, returns `Some(x)` where
+    *  - `x < 0`    iff   `'''this''' &lt; that`
+    *  - `x == 0`   iff   `'''this''' == that`
+    *  - `x > 0`    iff   `'''this''' &gt; that`
+    */
+  def tryCompareTo[B >: A: AsPartiallyOrdered](that: B): Option[Int]
 
-  def < [B >: A: AsPartiallyOrdered](that: B): Boolean =
+  def <[B >: A: AsPartiallyOrdered](that: B): Boolean =
     (this tryCompareTo that) match {
       case Some(x) if x < 0 => true
-      case _ => false
+      case _                => false
     }
 
-  def > [B >: A: AsPartiallyOrdered](that: B): Boolean =
+  def >[B >: A: AsPartiallyOrdered](that: B): Boolean =
     (this tryCompareTo that) match {
       case Some(x) if x > 0 => true
-      case _ => false
+      case _                => false
     }
 
-  def <= [B >: A: AsPartiallyOrdered](that: B): Boolean =
+  def <=[B >: A: AsPartiallyOrdered](that: B): Boolean =
     (this tryCompareTo that) match {
       case Some(x) if x <= 0 => true
-      case _ => false
+      case _                 => false
     }
 
-  def >= [B >: A: AsPartiallyOrdered](that: B): Boolean =
+  def >=[B >: A: AsPartiallyOrdered](that: B): Boolean =
     (this tryCompareTo that) match {
       case Some(x) if x >= 0 => true
-      case _ => false
+      case _                 => false
     }
 }

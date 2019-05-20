@@ -12,7 +12,6 @@
 
 package scala.collection.mutable
 
-
 /** A trait for cloneable collections.
   *
   *  @since 2.8

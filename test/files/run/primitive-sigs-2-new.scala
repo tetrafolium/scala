@@ -1,9 +1,9 @@
 // scalac: -Ydelambdafy:inline
 //
 
-import scala.language.{ postfixOps }
+import scala.language.{postfixOps}
 import scala.reflect.{ClassTag, classTag}
-import java.{ lang => jl }
+import java.{lang => jl}
 
 trait T[A] {
   def f(): A

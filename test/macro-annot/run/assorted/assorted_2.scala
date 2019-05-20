@@ -13,7 +13,9 @@ object Test extends App {
 
   // @Test  def nested: Unit =
   {
-    assertEquals(typeOf[AssortedZoo].decls.sorted.map(_.toString).mkString("\n"), """
+    assertEquals(
+      typeOf[AssortedZoo].decls.sorted.map(_.toString).mkString("\n"),
+      """
       |constructor AssortedZoo
       |method foofoo
       |value barbar
@@ -23,7 +25,8 @@ object Test extends App {
       |variable bazbaz
       |lazy value baxbax
       |type TT
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 
   // @Test def local: Unit =

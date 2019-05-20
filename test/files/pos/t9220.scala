@@ -5,7 +5,7 @@ object Test {
   object Command {
     sealed trait Execution extends Command
   }
-   
+
   case class Buzz() extends Command.Execution
   case class Door() extends Command.Execution
 

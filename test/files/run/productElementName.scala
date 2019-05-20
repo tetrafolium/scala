@@ -1,4 +1,3 @@
-
 case class User(name: String, age: Int)
 
 case class ユーザ(名前: String, 年齢: Int)
@@ -42,15 +41,22 @@ case class InheritsProductElementName_Override(a: String, b: Int) extends B
 trait C { self: Product =>
   override def productElementName(n: Int): String = "overriden"
 }
-case class InheritsProductElementName_Override_SelfType(a: String, b: Int) extends C
+case class InheritsProductElementName_Override_SelfType(a: String, b: Int)
+    extends C
 
-case class PrivateMembers(a: Int, private val b: Int, c: Int, private val d: Int, e: Int, private val f: Int)
+case class PrivateMembers(a: Int,
+                          private val b: Int,
+                          c: Int,
+                          private val d: Int,
+                          e: Int,
+                          private val f: Int)
 
 object Test extends App {
   def pretty(p: Product): String =
-    p.productElementNames.zip(p.productIterator)
-     .map { case (name, value) => s"$name=$value" }
-     .mkString(p.productPrefix + "(", ", ", ")")
+    p.productElementNames
+      .zip(p.productIterator)
+      .map { case (name, value) => s"$name=$value" }
+      .mkString(p.productPrefix + "(", ", ", ")")
 
   println(pretty(User("Susan", 42)))
   println(pretty(ユーザ("Susan", 42)))
@@ -74,4 +80,3 @@ object Test extends App {
 
   println(pretty(PrivateMembers(10, 20, 30, 40, 50, 60)))
 }
-

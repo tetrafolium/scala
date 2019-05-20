@@ -10,7 +10,7 @@ class SetTest {
   @Test
   def test_SI8346_toSet_soundness(): Unit = {
     val any2stringadd = "Disabled string conversions so as not to get confused!"
-    
+
     def any[A](set: Set[A]): Set[Any] = {
       val anyset = set.toSet[Any]
       assert((anyset + "fish") contains "fish")
@@ -22,7 +22,7 @@ class SetTest {
     var si = Set.empty[Int]
     assert(si eq si.toSet[Any])
     for (i <- 1 to 5) {
-      val s1 = Set(Array.range(1, i+1): _*)
+      val s1 = Set(Array.range(1, i + 1): _*)
       val s2 = si + i
       val s1a = any(s1)
       val s2a = any(s2)
@@ -33,8 +33,9 @@ class SetTest {
 
     // Make sure BitSet correctly rebuilds itself on widening with toSet
     // Need to cover empty, values 0-63, values 0-127 as special cases
-    val bitsets = Seq(BitSet.empty, BitSet(23), BitSet(23, 99), BitSet(23, 99, 141))
-    bitsets.foreach{ b =>
+    val bitsets =
+      Seq(BitSet.empty, BitSet(23), BitSet(23, 99), BitSet(23, 99, 141))
+    bitsets.foreach { b =>
       val ba = any(b)
       assert(b ne ba)
       assertEquals(b, ba)
@@ -55,10 +56,12 @@ class SetTest {
     // Make sure SortedSets correctly rebuild themselves on widening with toSet
     // Covers TreeSet and keySet of SortedMap also
     val sortedsets = Seq(
-      SortedSet.empty[Int], SortedSet(5), SortedSet(1,2,3,5,4),
+      SortedSet.empty[Int],
+      SortedSet(5),
+      SortedSet(1, 2, 3, 5, 4),
       SortedMap(1 -> "cod", 2 -> "herring").keySet
     )
-    sortedsets.foreach{ set => 
+    sortedsets.foreach { set =>
       val seta = any(set)
       assert(set ne seta)
       assertEquals(set, seta)
@@ -105,13 +108,16 @@ class SetTest {
       // a key that has many hashCode collisions
       case class Collision(i: Int) { override def hashCode = i / 5 }
 
-      def subsetTest[T](emptyA:Set[T], emptyB:Set[T], mkKey:Int => T, n:Int): Unit = {
+      def subsetTest[T](emptyA: Set[T],
+                        emptyB: Set[T],
+                        mkKey: Int => T,
+                        n: Int): Unit = {
         val outside = mkKey(n + 1)
-        for(i <- 0 to n) {
+        for (i <- 0 to n) {
           val a = emptyA ++ (0 until i).map(mkKey)
           // every set must be a subset of itself
           require(a.subsetOf(a), "A set must be the subset of itself")
-          for(k <- 0 to i) {
+          for (k <- 0 to i) {
             // k <= i, so b is definitely a subset
             val b = emptyB ++ (0 until k).map(mkKey)
             // c has less elements than a, but contains a value that is not in a
@@ -130,10 +136,16 @@ class SetTest {
       subsetTest(HashSet.empty[Int], ListSet.empty[Int], identity, 100)
 
       // test the HashSet/HashSet case for Collision keys
-      subsetTest(HashSet.empty[Collision], HashSet.empty[Collision], Collision, 100)
+      subsetTest(HashSet.empty[Collision],
+                 HashSet.empty[Collision],
+                 Collision,
+                 100)
 
       // test the HashSet/other set case for Collision keys
-      subsetTest(HashSet.empty[Collision], ListSet.empty[Collision], Collision, 100)
+      subsetTest(HashSet.empty[Collision],
+                 ListSet.empty[Collision],
+                 Collision,
+                 100)
     }
 
     /**
@@ -143,7 +155,7 @@ class SetTest {
     def testNoHashCodeInvocationsDuringSubsetOf() = {
       var count = 0
 
-      case class HashCodeCounter(i:Int) {
+      case class HashCodeCounter(i: Int) {
         override def hashCode = {
           count += 1
           i
@@ -154,7 +166,8 @@ class SetTest {
       val b = HashSet.empty ++ (0 until 50).map(HashCodeCounter)
       val count0 = count
       val result = b.subsetOf(a)
-      require(count == count0, "key.hashCode must not be called during subsetOf of two HashSets")
+      require(count == count0,
+              "key.hashCode must not be called during subsetOf of two HashSets")
       result
     }
     testCorrectness()

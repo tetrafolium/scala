@@ -29,13 +29,13 @@ object Test {
 
 //  of.foo(_.toString) // not allowed -- different argument types for the hof arg
 
-  of.poly(x => x / 2 )
+  of.poly(x => x / 2)
 //  of.polySam(x => x / 2) // not allowed -- need at least one regular function type in the mix
   of.polyJavaSam(x => x)
 
   val sl = new StringLike("a")
-  sl.map(_ == 'a')  // : Array[Boolean]
-  sl.map(x => 'a')  // : String
+  sl.map(_ == 'a') // : Array[Boolean]
+  sl.map(x => 'a') // : String
 }
 
 object sorting {

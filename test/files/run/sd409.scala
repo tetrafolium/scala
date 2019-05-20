@@ -6,7 +6,8 @@ object Test {
     for (i <- 1 to 22; j <- 1 to 8) {
       val t = new Thread {
         override def run(): Unit = {
-          internal.reificationSupport.SyntacticTuple.apply(List.fill(i)(EmptyTree))
+          internal.reificationSupport.SyntacticTuple
+            .apply(List.fill(i)(EmptyTree))
         }
       }
       threads += t

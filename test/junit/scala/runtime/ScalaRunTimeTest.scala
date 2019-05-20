@@ -14,7 +14,7 @@ class ScalaRunTimeTest {
     import scala.collection._
 
     assertEquals("null", stringOf(null))
-    assertEquals( "\"\"", stringOf(""))
+    assertEquals("\"\"", stringOf(""))
 
     assertEquals("abc", stringOf("abc"))
     assertEquals("\" abc\"", stringOf(" abc"))
@@ -23,12 +23,14 @@ class ScalaRunTimeTest {
     assertEquals("""Array()""", stringOf(Array.empty[AnyRef]))
     assertEquals("""Array()""", stringOf(Array.empty[Int]))
     assertEquals("""Array(1, 2, 3)""", stringOf(Array(1, 2, 3)))
-    assertEquals("""Array(a, "", " c", null)""", stringOf(Array("a", "", " c", null)))
+    assertEquals("""Array(a, "", " c", null)""",
+                 stringOf(Array("a", "", " c", null)))
     assertEquals("""Array(Array("", 1, Array(5)), Array(1))""",
-        stringOf(Array(Array("", 1, Array(5)), Array(1))))
+                 stringOf(Array(Array("", 1, Array(5)), Array(1))))
 
-    val map = Map(1->"", 2->"a", 3->" a", 4->null)
-    assertEquals(s"""Map(1 -> "", 2 -> a, 3 -> " a", 4 -> null)""", stringOf(map))
+    val map = Map(1 -> "", 2 -> "a", 3 -> " a", 4 -> null)
+    assertEquals(s"""Map(1 -> "", 2 -> a, 3 -> " a", 4 -> null)""",
+                 stringOf(map))
     assertEquals(s"""Map(1 -> "", 2 -> a)""", stringOf(map, 2))
 
     val iterable = Iterable("a", "", " c", null)

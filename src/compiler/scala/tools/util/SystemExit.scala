@@ -20,4 +20,5 @@ import scala.util.control.ControlThrowable
   *
   * @param code the exit code
   */
-final case class SystemExit(code: Int) extends ControlThrowable(s"exit code $code")
+final case class SystemExit(code: Int)
+    extends ControlThrowable(s"exit code $code")

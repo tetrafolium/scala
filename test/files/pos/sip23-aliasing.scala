@@ -4,7 +4,7 @@ object Test {
   }
 
   object Foo0 {
-    type Aux[T] = Foo0 {type T0 = T}
+    type Aux[T] = Foo0 { type T0 = T }
     implicit def apply[T](implicit v: ValueOf[T]): Aux[T] = new Foo0 {
       type T0 = T
     }
@@ -20,7 +20,6 @@ object Test {
   Foo[5] //OK
   implicitly[Foo.Aux[5]] //OK!
   implicitly[Foo[5]] //implicit not found error!
-
 
   val three: 3 = 3
   type Three = three.type

@@ -5,7 +5,7 @@ import org.openjdk.jmh.infra._
 import org.openjdk.jmh.runner.IterationType
 import benchmark._
 import java.util.concurrent.TimeUnit
-import java.util.{ HashSet => JHashSet }
+import java.util.{HashSet => JHashSet}
 
 @BenchmarkMode(Array(Mode.AverageTime))
 @Fork(2)
@@ -15,7 +15,7 @@ import java.util.{ HashSet => JHashSet }
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark)
 class HashSetBenchmark {
-  @Param(Array(/*"0", "1",*/ "10", "100", "1000", "10000"))
+  @Param(Array( /*"0", "1",*/ "10", "100", "1000", "10000"))
   var size: Int = _
   @Param(Array("true"))
   var stringsOnly = false
@@ -24,7 +24,7 @@ class HashSetBenchmark {
     override def hashCode: Int = h
     override def equals(o: Any): Boolean = o match {
       case o: Collider => x == o.x
-      case _ => false
+      case _           => false
     }
   }
 
@@ -36,13 +36,16 @@ class HashSetBenchmark {
   var colliders: Array[Collider] = _
 
   @Setup(Level.Trial) def init: Unit = {
-    existingKeys = (0 until size).map(i => (i % 4) match {
-      case _ if stringsOnly => i.toString
-      case 0 => i.toString
-      case 1 => i.toChar
-      case 2 => i.toDouble
-      case 3 => i.toInt
-    }).toArray
+    existingKeys = (0 until size)
+      .map(i =>
+        (i % 4) match {
+          case _ if stringsOnly => i.toString
+          case 0                => i.toString
+          case 1                => i.toChar
+          case 2                => i.toDouble
+          case 3                => i.toInt
+      })
+      .toArray
     missingKeys = (size until (2 * size.max(100))).toArray.map(_.toString)
     s1 = HashSet.from(existingKeys)
     m1 = HashMap.from(existingKeys.map(k => (k, null)))
@@ -67,7 +70,7 @@ class HashSetBenchmark {
 
   @Benchmark def hsIterate(bh: Blackhole): Unit = {
     val it = s1.iterator
-    while(it.hasNext) bh.consume(it.next())
+    while (it.hasNext) bh.consume(it.next())
   }
 
   @Benchmark def hsContainsTrue(bh: Blackhole): Unit = {
@@ -99,14 +102,15 @@ class HashSetBenchmark {
   }
 
   @Benchmark def javaBuild(bh: Blackhole): Unit = {
-    val h = new JHashSet[Any](((existingKeys.length+1).toDouble/0.75).toInt, 0.75f)
+    val h = new JHashSet[Any](((existingKeys.length + 1).toDouble / 0.75).toInt,
+                              0.75f)
     existingKeys.foreach(k => h.add(k))
     bh.consume(h)
   }
 
   @Benchmark def javaIterate(bh: Blackhole): Unit = {
     val it = j1.iterator
-    while(it.hasNext) bh.consume(it.next())
+    while (it.hasNext) bh.consume(it.next())
   }
 
   @Benchmark def javaContainsTrue(bh: Blackhole): Unit = {
@@ -152,5 +156,5 @@ class HashSetBenchmark {
       i += 1
     }
   }
-  */
+ */
 }

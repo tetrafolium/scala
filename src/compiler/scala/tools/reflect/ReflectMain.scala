@@ -20,9 +20,11 @@ import scala.tools.util.PathResolver
 object ReflectMain extends Driver {
 
   private def classloaderFromSettings(settings: Settings) = {
-    val classPathURLs = new PathResolver(settings, new CloseableRegistry).resultAsURLs
+    val classPathURLs =
+      new PathResolver(settings, new CloseableRegistry).resultAsURLs
     ScalaClassLoader.fromURLs(classPathURLs, getClass.getClassLoader)
   }
 
-  override def newCompiler(): Global = new ReflectGlobal(settings, reporter, classloaderFromSettings(settings))
+  override def newCompiler(): Global =
+    new ReflectGlobal(settings, reporter, classloaderFromSettings(settings))
 }

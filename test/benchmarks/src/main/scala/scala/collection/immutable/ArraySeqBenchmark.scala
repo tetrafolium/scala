@@ -47,7 +47,9 @@ class ArraySeqBenchmark {
   @Benchmark def sortedIntCustomNew(bh: Blackhole): Unit =
     bh.consume(integersS.sorted(Ordering.Int.reverse))
 
-  private[this] def oldSorted[A](seq: ArraySeq[A])(implicit ord: Ordering[A], tag: ClassTag[A]): ArraySeq[A] = {
+  private[this] def oldSorted[A](seq: ArraySeq[A])(
+      implicit ord: Ordering[A],
+      tag: ClassTag[A]): ArraySeq[A] = {
     val len = seq.length
     val b = ArraySeq.newBuilder[A](tag)
     if (len == 1) b ++= seq.toIterable

@@ -1,7 +1,3 @@
-
-
-
-
 object Test {
   def main(args: Array[String]): Unit = {
     val q = scala.collection.mutable.Queue[String]()

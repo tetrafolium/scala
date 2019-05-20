@@ -18,7 +18,7 @@ class LinearSeqOptimizedTest {
   }
 
   @Test def test_efficientTails_list_SI9892: Unit = {
-    val tails = List(1,2,3,4).tails.toList
+    val tails = List(1, 2, 3, 4).tails.toList
 
     assert(tails(0).tail eq tails(1))
     assert(tails(0).tail.tail eq tails(2))

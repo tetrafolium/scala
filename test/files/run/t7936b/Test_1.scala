@@ -1,5 +1,5 @@
 import a._
- 
+
 class C extends B {
   override def m() = super.m() + 1
   def emm = m()

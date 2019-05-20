@@ -29,6 +29,7 @@ abstract class IndexedTest[T, E] {
     * @return the value at the specified index
     */
   protected def expectedValueAtIndex(index: Int): E
+
   /**
     * check some simple indexed access
     */
@@ -57,8 +58,14 @@ abstract class IndexedTest[T, E] {
     expectSameContent("basic equallity", false, test1, test2, 0, size)
   }
 
-  protected def expectSameContent(txt: String, canBeSame:Boolean, orig: T, test: T, offset: Int, len: Int): Unit = {
-    val txtAndState = s"$txt canBeSame $canBeSame isMutableContent $isMutableContent isTakeAllSame $isTakeAllSame offset $offset len $len length(test) ${length(test)}"
+  protected def expectSameContent(txt: String,
+                                  canBeSame: Boolean,
+                                  orig: T,
+                                  test: T,
+                                  offset: Int,
+                                  len: Int): Unit = {
+    val txtAndState =
+      s"$txt canBeSame $canBeSame isMutableContent $isMutableContent isTakeAllSame $isTakeAllSame offset $offset len $len length(test) ${length(test)}"
     val isValidSame = canBeSame && !isMutableContent && offset == 0 && len == size
     if (isValidSame && isTakeAllSame)
       assertSame(txtAndState, orig, test)
@@ -66,7 +73,9 @@ abstract class IndexedTest[T, E] {
       assertNotSame(txtAndState, orig, test)
     assertSame(txtAndState, len, length(test))
     for (i <- 0 until len) {
-      assertEquals(s" $txtAndState $i $offset $len", expectedValueAtIndex(i + offset), get(test, i))
+      assertEquals(s" $txtAndState $i $offset $len",
+                   expectedValueAtIndex(i + offset),
+                   get(test, i))
     }
   }
 
@@ -86,12 +95,16 @@ abstract class IndexedTest[T, E] {
     */
   @Test def checkSliceNormal: Unit = {
     val orig = underTest(size)
-    for (
-      from <- 0 until size;
-      to <- from until size) {
+    for (from <- 0 until size;
+         to <- from until size) {
 
       val sliced = slice(orig, from, to)
-      expectSameContent(s"from $from, to $to", true, orig, sliced, from, to - from)
+      expectSameContent(s"from $from, to $to",
+                        true,
+                        orig,
+                        sliced,
+                        from,
+                        to - from)
     }
   }
 
@@ -186,11 +199,15 @@ abstract class IndexedTest[T, E] {
     */
   @Test def checkSliceFromNeg: Unit = {
     val orig = underTest(size)
-    for (
-      from <- List(-1, -10, -99, Int.MinValue);
-      to <- List(-1, 0, 1, 5)) {
+    for (from <- List(-1, -10, -99, Int.MinValue);
+         to <- List(-1, 0, 1, 5)) {
       val start = slice(orig, from, to)
-      expectSameContent(s"from $from, to $to", true, orig, start, 0, Math.max(0, to))
+      expectSameContent(s"from $from, to $to",
+                        true,
+                        orig,
+                        start,
+                        0,
+                        Math.max(0, to))
     }
   }
 
@@ -200,13 +217,17 @@ abstract class IndexedTest[T, E] {
     */
   @Test def checkSliceToTooBig: Unit = {
     val orig = underTest(size)
-    for (
-      from <- List(-1, -10, -99, Int.MinValue, 0, 1, 5);
-      to <- List(size + 1, size + 10, Int.MaxValue)) {
+    for (from <- List(-1, -10, -99, Int.MinValue, 0, 1, 5);
+         to <- List(size + 1, size + 10, Int.MaxValue)) {
       val start = slice(orig, from, to)
       val realStart = Math.max(0, from)
       val realLen = size - realStart
-      expectSameContent(s"from $from, to $to", true, orig, start, realStart, realLen)
+      expectSameContent(s"from $from, to $to",
+                        true,
+                        orig,
+                        start,
+                        realStart,
+                        realLen)
     }
   }
 
@@ -216,21 +237,21 @@ abstract class IndexedTest[T, E] {
     */
   @Test def checkSliceFromNegAndToTooBig: Unit = {
     val orig = underTest(size)
-    for (
-      from <- List(-1, -10, -99, Int.MinValue);
-      to <- List(size + 1, size + 10, Int.MaxValue)) {
+    for (from <- List(-1, -10, -99, Int.MinValue);
+         to <- List(size + 1, size + 10, Int.MaxValue)) {
       val all = slice(orig, from, to)
       expectSameContent(s"from $from, to $to", true, orig, all, 0, size)
     }
   }
 
-  protected def intercept[EX <: Exception : Manifest](fn: => Any): Unit = {
+  protected def intercept[EX <: Exception: Manifest](fn: => Any): Unit = {
     try {
       val res = fn
       fail(s"expected exception was not thrown: $res")
     } catch {
       case failed: AssertionError => throw failed
-      case e: Exception if manifest[EX].runtimeClass.isAssignableFrom(e.getClass) =>
+      case e: Exception
+          if manifest[EX].runtimeClass.isAssignableFrom(e.getClass) =>
     }
   }
 
@@ -289,47 +310,50 @@ package IndexedTestImpl {
 
     protected def toType(n: Int): E
   }
-  trait StringTestData extends DataProvider [String] {
+  trait StringTestData extends DataProvider[String] {
     def toType(n: Int) = n.toString
   }
-  trait ByteTestData extends DataProvider [Byte] {
+  trait ByteTestData extends DataProvider[Byte] {
     def toType(n: Int) = n.toByte
   }
-  trait ShortTestData extends DataProvider [Short] {
+  trait ShortTestData extends DataProvider[Short] {
     def toType(n: Int) = n.toShort
   }
-  trait IntTestData extends DataProvider [Int] {
+  trait IntTestData extends DataProvider[Int] {
     def toType(n: Int) = n
   }
-  trait LongTestData extends DataProvider [Long] {
+  trait LongTestData extends DataProvider[Long] {
     def toType(n: Int) = n
   }
-  trait FloatTestData extends DataProvider [Float] {
+  trait FloatTestData extends DataProvider[Float] {
     def toType(n: Int) = n
   }
-  trait DoubleTestData extends DataProvider [Double] {
+  trait DoubleTestData extends DataProvider[Double] {
     def toType(n: Int) = n
   }
-  trait CharTestData extends DataProvider [Char] {
-    def toType(n: Int)= (n+64).toChar
+  trait CharTestData extends DataProvider[Char] {
+    def toType(n: Int) = (n + 64).toChar
   }
-  trait BooleanTestData extends DataProvider [Boolean] {
-    def toType(n: Int)= (n & 0) == 0
+  trait BooleanTestData extends DataProvider[Boolean] {
+    def toType(n: Int) = (n & 0) == 0
   }
-  trait UnitTestData extends DataProvider [BoxedUnit] {
-    def toType(n: Int)= if ((n & 0) == 0) null else BoxedUnit.UNIT
+  trait UnitTestData extends DataProvider[BoxedUnit] {
+    def toType(n: Int) = if ((n & 0) == 0) null else BoxedUnit.UNIT
   }
 
-  abstract class ArrayTest[E] (
-                               //the object or primitive type of the array
-                               val TYPE: Class[_]) extends IndexedTest[Array[E], E]{
+  abstract class ArrayTest[E](
+      //the object or primitive type of the array
+      val TYPE: Class[_])
+      extends IndexedTest[Array[E], E] {
     override final def length(underTest: Array[E]) = underTest.length
 
-    override final def lengthCompare(underTest: Array[E], len: Int): Int = underTest.lengthCompare(len)
+    override final def lengthCompare(underTest: Array[E], len: Int): Int =
+      underTest.lengthCompare(len)
 
     override def get(underTest: Array[E], i: Int) = underTest(i)
 
-    override def slice(underTest: Array[E], from: Int, to: Int) = underTest.slice(from, to)
+    override def slice(underTest: Array[E], from: Int, to: Int) =
+      underTest.slice(from, to)
 
     override def take(underTest: Array[E], size: Int) = underTest.take(size)
 
@@ -339,7 +363,9 @@ package IndexedTestImpl {
 
     override def isTakeAllSame = false
 
-    override def doAssertEquals(txt: String, expected: Array[E], actual: Array[E]): Unit = {
+    override def doAssertEquals(txt: String,
+                                expected: Array[E],
+                                actual: Array[E]): Unit = {
       assertEquals(txt, expected.mkString("'"), actual.mkString("'"))
     }
 
@@ -353,16 +379,20 @@ package IndexedTestImpl {
   }
 
   abstract class ArraySeqTest[E](
-                                      //the object or primitive type of the array
-                                      val TYPE: Class[_]) extends IndexedTest[mutable.ArraySeq[E], E]  with DataProvider[E]{
+      //the object or primitive type of the array
+      val TYPE: Class[_])
+      extends IndexedTest[mutable.ArraySeq[E], E]
+      with DataProvider[E] {
     import mutable.ArraySeq
     override final def length(underTest: ArraySeq[E]) = underTest.length
 
-    override final def lengthCompare(underTest: ArraySeq[E], len: Int): Int = underTest.lengthCompare(len)
+    override final def lengthCompare(underTest: ArraySeq[E], len: Int): Int =
+      underTest.lengthCompare(len)
 
     override def get(underTest: ArraySeq[E], i: Int) = underTest(i)
 
-    override def slice(underTest: ArraySeq[E], from: Int, to: Int) = underTest.slice(from, to)
+    override def slice(underTest: ArraySeq[E], from: Int, to: Int) =
+      underTest.slice(from, to)
 
     override def take(underTest: ArraySeq[E], size: Int) = underTest.take(size)
 
@@ -372,7 +402,9 @@ package IndexedTestImpl {
 
     override def isTakeAllSame = false
 
-    override def doAssertEquals(txt: String, expected: ArraySeq[E], actual: ArraySeq[E]): Unit = {
+    override def doAssertEquals(txt: String,
+                                expected: ArraySeq[E],
+                                actual: ArraySeq[E]): Unit = {
       assertEquals(txt, expected.mkString("'"), actual.mkString("'"))
     }
 
@@ -387,16 +419,21 @@ package IndexedTestImpl {
 
   //construct the data using java as much as possible to avoid invalidating the test
 
-  abstract class MutableIndexedSeqTest[T <: mutable.Seq[E], E] extends IndexedTest[T, E]   with DataProvider[E]{
+  abstract class MutableIndexedSeqTest[T <: mutable.Seq[E], E]
+      extends IndexedTest[T, E]
+      with DataProvider[E] {
     override final def length(underTest: T) = underTest.length
 
-    override final def lengthCompare(underTest: T, len: Int): Int = underTest.lengthCompare(len)
+    override final def lengthCompare(underTest: T, len: Int): Int =
+      underTest.lengthCompare(len)
 
     override def get(underTest: T, i: Int) = underTest(i)
 
-    override def slice(underTest: T, from: Int, to: Int) = underTest.slice(from, to).asInstanceOf[T]
+    override def slice(underTest: T, from: Int, to: Int) =
+      underTest.slice(from, to).asInstanceOf[T]
 
-    override def take(underTest: T, size: Int) = underTest.take(size).asInstanceOf[T]
+    override def take(underTest: T, size: Int) =
+      underTest.take(size).asInstanceOf[T]
 
     override def isEmptyConstant = false
 
@@ -408,10 +445,10 @@ package IndexedTestImpl {
       assertEquals(txt, expected, actual)
     }
 
-    def createEmpty(size: Int) : T
+    def createEmpty(size: Int): T
 
     override protected def underTest(size: Int): T = {
-      val res:T  = createEmpty(size)
+      val res: T = createEmpty(size)
       for (i <- 0 until size)
         res(i) = expectedValueAtIndex(i)
       res
@@ -419,14 +456,18 @@ package IndexedTestImpl {
 
   }
 
-  abstract class ImmutableIndexedSeqTest[T <: SeqOps[E, Seq, T], E] extends IndexedTest[T, E]   with DataProvider[E] {
+  abstract class ImmutableIndexedSeqTest[T <: SeqOps[E, Seq, T], E]
+      extends IndexedTest[T, E]
+      with DataProvider[E] {
     override final def length(underTest: T) = underTest.length
 
-    override final def lengthCompare(underTest: T, len: Int): Int = underTest.lengthCompare(len)
+    override final def lengthCompare(underTest: T, len: Int): Int =
+      underTest.lengthCompare(len)
 
     override def get(underTest: T, i: Int) = underTest(i)
 
-    override def slice(underTest: T, from: Int, to: Int) = underTest.slice(from, to)
+    override def slice(underTest: T, from: Int, to: Int) =
+      underTest.slice(from, to)
 
     override def take(underTest: T, size: Int) = underTest.take(size)
 
@@ -442,14 +483,18 @@ package IndexedTestImpl {
 
   }
 
-  abstract class StringOpsBaseTest extends IndexedTest[StringOps, Char] with DataProvider[Char]  {
+  abstract class StringOpsBaseTest
+      extends IndexedTest[StringOps, Char]
+      with DataProvider[Char] {
     override final def length(underTest: StringOps) = underTest.size
 
-    override final def lengthCompare(underTest: StringOps, len: Int): Int = underTest.lengthCompare(len)
+    override final def lengthCompare(underTest: StringOps, len: Int): Int =
+      underTest.lengthCompare(len)
 
     override def get(underTest: StringOps, i: Int) = underTest(i)
 
-    override def slice(underTest: StringOps, from: Int, to: Int) = underTest.slice(from, to)
+    override def slice(underTest: StringOps, from: Int, to: Int) =
+      underTest.slice(from, to)
 
     override def take(underTest: StringOps, size: Int) = underTest.take(size)
 
@@ -459,18 +504,24 @@ package IndexedTestImpl {
 
     override def isTakeAllSame = false
 
-    override def doAssertEquals(txt: String, expected: StringOps, actual: StringOps): Unit = {
+    override def doAssertEquals(txt: String,
+                                expected: StringOps,
+                                actual: StringOps): Unit = {
       assertEquals(txt, expected, actual)
     }
 
   }
 
-  class BooleanArrayTest extends ArrayTest[Boolean](jlBoolean.TYPE) with BooleanTestData
+  class BooleanArrayTest
+      extends ArrayTest[Boolean](jlBoolean.TYPE)
+      with BooleanTestData
   class ByteArrayTest extends ArrayTest[Byte](jlByte.TYPE) with ByteTestData
   class ShortArrayTest extends ArrayTest[Short](jlShort.TYPE) with ShortTestData
   class IntArrayTest extends ArrayTest[Int](jlInt.TYPE) with IntTestData
   class LongArrayTest extends ArrayTest[Long](jlLong.TYPE) with LongTestData
-  class DoubleArrayTest extends ArrayTest[Double](jlDouble.TYPE) with DoubleTestData
+  class DoubleArrayTest
+      extends ArrayTest[Double](jlDouble.TYPE)
+      with DoubleTestData
   class FloatArrayTest extends ArrayTest[Float](jlFloat.TYPE) with FloatTestData
   class CharArrayTest extends ArrayTest[Char](jlChar.TYPE) with CharTestData
   class UnitArrayTest extends ArrayTest[BoxedUnit](null) with UnitTestData {
@@ -482,17 +533,35 @@ package IndexedTestImpl {
       res.asInstanceOf[Array[BoxedUnit]]
     }
   }
-  class RefArrayTest extends ArrayTest[String](classOf[String]) with StringTestData
+  class RefArrayTest
+      extends ArrayTest[String](classOf[String])
+      with StringTestData
 
-  class BooleanArraySeqTest extends ArraySeqTest[Boolean](jlBoolean.TYPE) with BooleanTestData
-  class ByteArraySeqTest extends ArraySeqTest[Byte](jlByte.TYPE) with ByteTestData
-  class ShortArraySeqTest extends ArraySeqTest[Short](jlShort.TYPE) with ShortTestData
+  class BooleanArraySeqTest
+      extends ArraySeqTest[Boolean](jlBoolean.TYPE)
+      with BooleanTestData
+  class ByteArraySeqTest
+      extends ArraySeqTest[Byte](jlByte.TYPE)
+      with ByteTestData
+  class ShortArraySeqTest
+      extends ArraySeqTest[Short](jlShort.TYPE)
+      with ShortTestData
   class IntArraySeqTest extends ArraySeqTest[Int](jlInt.TYPE) with IntTestData
-  class LongArraySeqTest extends ArraySeqTest[Long](jlLong.TYPE) with LongTestData
-  class DoubleArraySeqTest extends ArraySeqTest[Double](jlDouble.TYPE) with DoubleTestData
-  class FloatArraySeqTest extends ArraySeqTest[Float](jlFloat.TYPE) with FloatTestData
-  class CharArraySeqTest extends ArraySeqTest[Char](jlChar.TYPE) with CharTestData
-  class UnitArraySeqTest extends ArraySeqTest[BoxedUnit](null) with UnitTestData {
+  class LongArraySeqTest
+      extends ArraySeqTest[Long](jlLong.TYPE)
+      with LongTestData
+  class DoubleArraySeqTest
+      extends ArraySeqTest[Double](jlDouble.TYPE)
+      with DoubleTestData
+  class FloatArraySeqTest
+      extends ArraySeqTest[Float](jlFloat.TYPE)
+      with FloatTestData
+  class CharArraySeqTest
+      extends ArraySeqTest[Char](jlChar.TYPE)
+      with CharTestData
+  class UnitArraySeqTest
+      extends ArraySeqTest[BoxedUnit](null)
+      with UnitTestData {
     import mutable.ArraySeq
     override def underTest(size: Int): ArraySeq[BoxedUnit] = {
       val res = new Array[Unit](size)
@@ -502,9 +571,13 @@ package IndexedTestImpl {
       ArraySeq.make(res).asInstanceOf[ArraySeq[BoxedUnit]]
     }
   }
-  class RefArraySeqTest extends ArraySeqTest[String](classOf[String]) with StringTestData
+  class RefArraySeqTest
+      extends ArraySeqTest[String](classOf[String])
+      with StringTestData
 
-  class ListBufferTest extends MutableIndexedSeqTest[mutable.ListBuffer[String], String]  with StringTestData {
+  class ListBufferTest
+      extends MutableIndexedSeqTest[mutable.ListBuffer[String], String]
+      with StringTestData {
     import mutable.ListBuffer
     override def createEmpty(size: Int): ListBuffer[String] = {
       val res = new ListBuffer[String]
@@ -522,7 +595,9 @@ package IndexedTestImpl {
       res
     }
   }*/
-  class ArrayBufferTest extends MutableIndexedSeqTest[mutable.ArrayBuffer[String], String]  with StringTestData {
+  class ArrayBufferTest
+      extends MutableIndexedSeqTest[mutable.ArrayBuffer[String], String]
+      with StringTestData {
     import mutable.ArrayBuffer
     override def createEmpty(size: Int): ArrayBuffer[String] = {
       val res = new ArrayBuffer[String](size)
@@ -531,11 +606,13 @@ package IndexedTestImpl {
       res
     }
   }
-  class ListTest extends ImmutableIndexedSeqTest[List[String], String]  with StringTestData {
+  class ListTest
+      extends ImmutableIndexedSeqTest[List[String], String]
+      with StringTestData {
 
     override protected def underTest(size: Int): List[String] = {
-      var res:List[String] = Nil
-      var index = size-1
+      var res: List[String] = Nil
+      var index = size - 1
       while (index >= 0) {
         res = expectedValueAtIndex(index) :: res
         index -= 1
@@ -543,7 +620,9 @@ package IndexedTestImpl {
       res
     }
   }
-  class StringBuilderTest extends MutableIndexedSeqTest[StringBuilder, Char]  with CharTestData {
+  class StringBuilderTest
+      extends MutableIndexedSeqTest[StringBuilder, Char]
+      with CharTestData {
 
     override def createEmpty(size: Int): StringBuilder = new StringBuilder(size)
 
@@ -563,18 +642,22 @@ package IndexedTestImpl {
       res.toString
     }
   }
-  class WrappedStringTest extends ImmutableIndexedSeqTest[WrappedString, Char]  with CharTestData {
+  class WrappedStringTest
+      extends ImmutableIndexedSeqTest[WrappedString, Char]
+      with CharTestData {
 
     override def isTakeAllSame: Boolean = false
 
-    override protected def underTest(size: Int):  WrappedString = {
+    override protected def underTest(size: Int): WrappedString = {
       val res = new StringBuilder(size)
       for (i <- 0 until size)
         res += expectedValueAtIndex(i)
       new WrappedString(res.toString)
     }
   }
-  class VectorTest extends ImmutableIndexedSeqTest[Vector[String], String]  with StringTestData {
+  class VectorTest
+      extends ImmutableIndexedSeqTest[Vector[String], String]
+      with StringTestData {
 
     override protected def underTest(size: Int): Vector[String] = {
       val res = Vector.newBuilder[String]

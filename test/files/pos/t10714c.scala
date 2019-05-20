@@ -13,4 +13,3 @@ object Test {
 
   (new Foo).baz
 }
-

@@ -12,7 +12,6 @@
 
 package scala.collection.immutable
 
-
 import java.lang.Integer.bitCount
 import java.lang.Math.ceil
 import java.lang.System.arraycopy
@@ -29,13 +28,16 @@ private[immutable] object Node {
 
   final val BranchingFactor = 1 << BitPartitionSize
 
-  final def maskFrom(hash: Int, shift: Int): Int = (hash >>> shift) & BitPartitionMask
+  final def maskFrom(hash: Int, shift: Int): Int =
+    (hash >>> shift) & BitPartitionMask
 
   final def bitposFrom(mask: Int): Int = 1 << mask
 
-  final def indexFrom(bitmap: Int, bitpos: Int): Int = bitCount(bitmap & (bitpos - 1))
+  final def indexFrom(bitmap: Int, bitpos: Int): Int =
+    bitCount(bitmap & (bitpos - 1))
 
-  final def indexFrom(bitmap: Int, mask: Int, bitpos: Int): Int = if (bitmap == -1) mask else indexFrom(bitmap, bitpos)
+  final def indexFrom(bitmap: Int, mask: Int, bitpos: Int): Int =
+    if (bitmap == -1) mask else indexFrom(bitmap, bitpos)
 
 }
 
@@ -57,8 +59,11 @@ private[immutable] abstract class Node[T <: Node[T]] {
 
   def cachedJavaKeySetHashCode: Int
 
-  private final def arrayIndexOutOfBounds(as: Array[_], ix:Int): ArrayIndexOutOfBoundsException =
-    new ArrayIndexOutOfBoundsException(s"$ix is out of bounds (min 0, max ${as.length-1}")
+  private final def arrayIndexOutOfBounds(
+      as: Array[_],
+      ix: Int): ArrayIndexOutOfBoundsException =
+    new ArrayIndexOutOfBoundsException(
+      s"$ix is out of bounds (min 0, max ${as.length - 1}")
 
   protected final def removeElement(as: Array[Int], ix: Int): Array[Int] = {
     if (ix < 0) throw arrayIndexOutOfBounds(as, ix)
@@ -78,7 +83,9 @@ private[immutable] abstract class Node[T <: Node[T]] {
     result
   }
 
-  protected final def insertElement(as: Array[Int], ix: Int, elem: Int): Array[Int] = {
+  protected final def insertElement(as: Array[Int],
+                                    ix: Int,
+                                    elem: Int): Array[Int] = {
     if (ix < 0) throw arrayIndexOutOfBounds(as, ix)
     if (ix > as.length) throw arrayIndexOutOfBounds(as, ix)
     val result = new Array[Int](as.length + 1)
@@ -87,7 +94,9 @@ private[immutable] abstract class Node[T <: Node[T]] {
     arraycopy(as, ix, result, ix + 1, as.length - ix)
     result
   }
-  protected final def insertAnyElement(as: Array[Any], ix: Int, elem: Int): Array[Any] = {
+  protected final def insertAnyElement(as: Array[Any],
+                                       ix: Int,
+                                       elem: Int): Array[Any] = {
     if (ix < 0) throw arrayIndexOutOfBounds(as, ix)
     if (ix > as.length) throw arrayIndexOutOfBounds(as, ix)
     val result = new Array[Any](as.length + 1)
@@ -170,8 +179,8 @@ private[immutable] abstract class ChampBaseIterator[T <: Node[T]] {
 
         val nextNode = nodes(currentStackLevel).getNode(nodeCursor)
 
-        if (nextNode.hasNodes)   { pushNode(nextNode) }
-        if (nextNode.hasPayload) { setupPayloadNode(nextNode) ; return true }
+        if (nextNode.hasNodes) { pushNode(nextNode) }
+        if (nextNode.hasPayload) { setupPayloadNode(nextNode); return true }
       } else {
         popNode()
       }
@@ -180,7 +189,8 @@ private[immutable] abstract class ChampBaseIterator[T <: Node[T]] {
     return false
   }
 
-  final def hasNext = (currentValueCursor < currentValueLength) || searchNextValueNode()
+  final def hasNext =
+    (currentValueCursor < currentValueLength) || searchNextValueNode()
 
 }
 
@@ -201,7 +211,8 @@ private[immutable] abstract class ChampBaseReverseIterator[T <: Node[T]] {
 
   private[this] var currentStackLevel: Int = -1
   private[this] val nodeIndex: Array[Int] = new Array[Int](MaxDepth + 1)
-  private[this] val nodeStack: Array[T] = new Array[Node[T]](MaxDepth + 1).asInstanceOf[Array[T]]
+  private[this] val nodeStack: Array[T] =
+    new Array[Node[T]](MaxDepth + 1).asInstanceOf[Array[T]]
 
   def this(rootNode: T) = {
     this()
@@ -231,7 +242,8 @@ private[immutable] abstract class ChampBaseReverseIterator[T <: Node[T]] {
     */
   private final def searchNextValueNode(): Boolean = {
     while (currentStackLevel >= 0) {
-      val nodeCursor = nodeIndex(currentStackLevel) ; nodeIndex(currentStackLevel) = nodeCursor - 1
+      val nodeCursor = nodeIndex(currentStackLevel);
+      nodeIndex(currentStackLevel) = nodeCursor - 1
 
       if (nodeCursor >= 0) {
         val nextNode = nodeStack(currentStackLevel).getNode(nodeCursor)
@@ -240,7 +252,7 @@ private[immutable] abstract class ChampBaseReverseIterator[T <: Node[T]] {
         val currNode = nodeStack(currentStackLevel)
         popNode()
 
-        if (currNode.hasPayload) { setupPayloadNode(currNode) ; return true }
+        if (currNode.hasPayload) { setupPayloadNode(currNode); return true }
       }
     }
 

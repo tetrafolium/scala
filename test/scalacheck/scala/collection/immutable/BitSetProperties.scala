@@ -22,7 +22,8 @@ object BitSetProperties extends Properties("immutable.BitSet") {
     bs.nonEmpty ==> (bs.min ?= bs.toList.min)
   }
   property("min reverse") = forAll { (bs: BitSet) =>
-    bs.nonEmpty ==> (bs.min(Ordering.Int.reverse) ?= bs.toList.min(Ordering.Int.reverse))
+    bs.nonEmpty ==> (bs.min(Ordering.Int.reverse) ?= bs.toList.min(
+      Ordering.Int.reverse))
   }
 
   property("max") = forAll { (bs: BitSet) =>
@@ -30,14 +31,17 @@ object BitSetProperties extends Properties("immutable.BitSet") {
   }
 
   property("max reverse") = forAll { (bs: BitSet) =>
-    bs.nonEmpty ==> (bs.max(Ordering.Int.reverse) ?= bs.toList.max(Ordering.Int.reverse))
+    bs.nonEmpty ==> (bs.max(Ordering.Int.reverse) ?= bs.toList.max(
+      Ordering.Int.reverse))
   }
 
   property("diff bitSet") = forAll { (left: BitSet, right: BitSet) =>
     (left.diff(right): Set[Int]) ?= left.to(HashSet).diff(right.to(HashSet))
   }
   property("diff hashSet") = forAll { (left: BitSet, right: BitSet) =>
-    (left.diff(right.to(HashSet)) : Set[Int]) ?= left.to(HashSet).diff(right.to(HashSet))
+    (left.diff(right.to(HashSet)): Set[Int]) ?= left
+      .to(HashSet)
+      .diff(right.to(HashSet))
   }
 
   property("filter") = forAll { (bs: BitSet) =>

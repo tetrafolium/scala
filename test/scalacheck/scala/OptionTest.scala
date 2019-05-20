@@ -5,13 +5,13 @@ import org.scalacheck.Properties
 import org.scalacheck.Prop.AnyOperators
 
 /**
- * Property tests for code in [[scala.Option]]'s documentation.
- */
+  * Property tests for code in [[scala.Option]]'s documentation.
+  */
 object OptionTest extends Properties("scala.Option") {
 
   property("map") = {
     Prop.forAll { (option: Option[Int], i: Int) =>
-      val f: Function1[Int,Int] = (_ => i)
+      val f: Function1[Int, Int] = (_ => i)
       option.map(f(_)) ?= {
         option match {
           case Some(x) => Some(f(x))
@@ -23,7 +23,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("flatMap") = {
     Prop.forAll { (option: Option[Int], i: Int) =>
-      val f: Function1[Int,Option[Int]] = (_ => Some(i))
+      val f: Function1[Int, Option[Int]] = (_ => Some(i))
       option.flatMap(f(_)) ?= {
         option match {
           case Some(x) => f(x)
@@ -46,7 +46,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("foreach") = {
     Prop.forAll { (option: Option[Int], unit: Unit) =>
-      val proc: Function1[Int,Unit] = (_ => unit)
+      val proc: Function1[Int, Unit] = (_ => unit)
       option.foreach(proc(_)) ?= {
         option match {
           case Some(x) => proc(x)
@@ -58,7 +58,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("fold") = {
     Prop.forAll { (option: Option[Int], i: Int, y: Int) =>
-      val f: Function1[Int,Int] = (_ => i)
+      val f: Function1[Int, Int] = (_ => i)
       option.fold(y)(f(_)) ?= {
         option match {
           case Some(x) => f(x)
@@ -70,7 +70,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("foldLeft") = {
     Prop.forAll { (option: Option[Int], i: Int, y: Int) =>
-      val f: Function2[Int,Int,Int] = ((_, _) => i)
+      val f: Function2[Int, Int, Int] = ((_, _) => i)
       option.foldLeft(y)(f(_, _)) ?= {
         option match {
           case Some(x) => f(y, x)
@@ -82,7 +82,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("foldRight") = {
     Prop.forAll { (option: Option[Int], i: Int, y: Int) =>
-      val f: Function2[Int,Int,Int] = ((_, _) => i)
+      val f: Function2[Int, Int, Int] = ((_, _) => i)
       option.foldRight(y)(f(_, _)) ?= {
         option match {
           case Some(x) => f(x, y)
@@ -94,7 +94,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("collect") = {
     Prop.forAll { (option: Option[Int], i: Int) =>
-      val pf: PartialFunction[Int,Int] = {
+      val pf: PartialFunction[Int, Int] = {
         case x if x > 0 => i
       }
       option.collect(pf) ?= {
@@ -192,7 +192,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("filter") = {
     Prop.forAll { (option: Option[Int], bool: Boolean) =>
-      val pred: Function1[Int,Boolean] = (_ => bool)
+      val pred: Function1[Int, Boolean] = (_ => bool)
       option.filter(pred(_)) ?= {
         option match {
           case Some(x) if pred(x) => Some(x)
@@ -204,7 +204,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("filterNot") = {
     Prop.forAll { (option: Option[Int], bool: Boolean) =>
-      val pred: Function1[Int,Boolean] = (_ => bool)
+      val pred: Function1[Int, Boolean] = (_ => bool)
       option.filterNot(pred(_)) ?= {
         option match {
           case Some(x) if !pred(x) => Some(x)
@@ -216,7 +216,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("exists") = {
     Prop.forAll { (option: Option[Int], bool: Boolean) =>
-      val pred: Function1[Int,Boolean] = (_ => bool)
+      val pred: Function1[Int, Boolean] = (_ => bool)
       option.exists(pred(_)) ?= {
         option match {
           case Some(x) => pred(x)
@@ -228,7 +228,7 @@ object OptionTest extends Properties("scala.Option") {
 
   property("forall") = {
     Prop.forAll { (option: Option[Int], bool: Boolean) =>
-      val pred: Function1[Int,Boolean] = (_ => bool)
+      val pred: Function1[Int, Boolean] = (_ => bool)
       option.forall(pred(_)) ?= {
         option match {
           case Some(x) => pred(x)
@@ -276,7 +276,7 @@ object OptionTest extends Properties("scala.Option") {
       option.unzip ?= {
         option match {
           case Some((x, y)) => (Some(x), Some(y))
-          case _            => (None,    None)
+          case _            => (None, None)
         }
       }
     }
@@ -287,7 +287,7 @@ object OptionTest extends Properties("scala.Option") {
       option.unzip3 ?= {
         option match {
           case Some((x, y, z)) => (Some(x), Some(y), Some(z))
-          case _               => (None,    None,    None)
+          case _               => (None, None, None)
         }
       }
     }

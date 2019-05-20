@@ -1,7 +1,8 @@
 import scala.tools.partest._
 
 object Test extends StoreReporterDirectTest {
-  override def extraSettings: String = "-usejavacp -Xprint:typer -Ystop-after:typer"
+  override def extraSettings: String =
+    "-usejavacp -Xprint:typer -Ystop-after:typer"
 
   override def code =
     """class C {
@@ -16,7 +17,8 @@ object Test extends StoreReporterDirectTest {
     Console.withOut(baos)(Console.withErr(baos)(compile()))
     val out = baos.toString("UTF-8")
 
-    val inferredType = out.linesIterator.filter(_.contains("C.this.id[")).map(_.trim).toList
+    val inferredType =
+      out.linesIterator.filter(_.contains("C.this.id[")).map(_.trim).toList
     assert(inferredType.length == 1)
     assert(inferredType.forall(_.startsWith("C.this.id[Int]")), inferredType)
   }

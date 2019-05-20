@@ -1,7 +1,5 @@
-
 import scala.tools.nsc._
 import scala.tools.partest.ReplTest
-
 
 object Test extends ReplTest {
   override def extraSettings = "-opt:l:inline -opt-inline-from:**"
@@ -17,4 +15,3 @@ object Test extends ReplTest {
     lines.map(l => r.replaceAllIn(l, "<function0>"))
   }
 }
-

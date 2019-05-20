@@ -6,7 +6,7 @@ object A {
 
 class B[T]
 object B {
-  type Any = B[ _ <: String]
+  type Any = B[_ <: String]
   manifest[B[_ <: String]]
   manifest[B.Any]
 }

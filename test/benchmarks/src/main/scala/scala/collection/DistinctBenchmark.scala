@@ -33,19 +33,29 @@ class DistinctBenchmark {
       b2 += i.toString
     }
 
-    val adjustCollectionType: (Seq[String] => Seq[String]) = collectionType match {
-      case "List" => (col: Seq[String]) => col.toList
-      case "Vector" => (col: Seq[String]) => col.toVector
-      case "ListBuffer" => (col: Seq[String]) => mutable.ListBuffer.from(col)
-    }
+    val adjustCollectionType: (Seq[String] => Seq[String]) =
+      collectionType match {
+        case "List" =>
+          (col: Seq[String]) =>
+            col.toList
+        case "Vector" =>
+          (col: Seq[String]) =>
+            col.toVector
+        case "ListBuffer" =>
+          (col: Seq[String]) =>
+            mutable.ListBuffer.from(col)
+      }
 
     distinctDataSet = adjustCollectionType(b1.result())
     interleavedDuplicationDataSet = adjustCollectionType(b2.result())
-    sequentialDuplicationDataSet = adjustCollectionType(distinctDataSet ++ distinctDataSet)
+    sequentialDuplicationDataSet = adjustCollectionType(
+      distinctDataSet ++ distinctDataSet)
 
     if (size > 0) {
-      firstDuplicatedDataSet = adjustCollectionType(distinctDataSet.head +: distinctDataSet)
-      lastDuplicatedDataSet = adjustCollectionType(distinctDataSet :+ distinctDataSet.head)
+      firstDuplicatedDataSet = adjustCollectionType(
+        distinctDataSet.head +: distinctDataSet)
+      lastDuplicatedDataSet = adjustCollectionType(
+        distinctDataSet :+ distinctDataSet.head)
     }
   }
 

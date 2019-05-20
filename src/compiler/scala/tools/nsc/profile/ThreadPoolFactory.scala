@@ -33,23 +33,26 @@ sealed trait ThreadPoolFactory {
 }
 
 object ThreadPoolFactory {
-  def apply(global: Global, phase: Phase): ThreadPoolFactory = global.currentRun.profiler match {
-    case NoOpProfiler => new BasicThreadPoolFactory(phase)
-    case r: RealProfiler => new ProfilingThreadPoolFactory(phase, r)
-  }
+  def apply(global: Global, phase: Phase): ThreadPoolFactory =
+    global.currentRun.profiler match {
+      case NoOpProfiler    => new BasicThreadPoolFactory(phase)
+      case r: RealProfiler => new ProfilingThreadPoolFactory(phase, r)
+    }
 
-  private abstract class BaseThreadPoolFactory(phase: Phase) extends ThreadPoolFactory {
+  private abstract class BaseThreadPoolFactory(phase: Phase)
+      extends ThreadPoolFactory {
     val baseGroup = new ThreadGroup(s"scalac-${phase.name}")
 
     private def childGroup(name: String) = new ThreadGroup(baseGroup, name)
 
     // Invoked when a new `Worker` is created, see `CommonThreadFactory.newThread`
-    protected def wrapWorker(worker: Runnable, shortId: String): Runnable = worker
+    protected def wrapWorker(worker: Runnable, shortId: String): Runnable =
+      worker
 
-    protected final class CommonThreadFactory(
-        shortId: String,
-        daemon: Boolean = true,
-        priority: Int) extends ThreadFactory {
+    protected final class CommonThreadFactory(shortId: String,
+                                              daemon: Boolean = true,
+                                              priority: Int)
+        extends ThreadFactory {
       private val group: ThreadGroup = childGroup(shortId)
       private val threadNumber: AtomicInteger = new AtomicInteger(1)
       private val namePrefix = s"${baseGroup.getName}-$shortId-"
@@ -59,7 +62,10 @@ object ThreadPoolFactory {
       // the thread pool and executes them (on the thread created here).
       override def newThread(worker: Runnable): Thread = {
         val wrapped = wrapWorker(worker, shortId)
-        val t: Thread = new Thread(group, wrapped, namePrefix + threadNumber.getAndIncrement, 0)
+        val t: Thread = new Thread(group,
+                                   wrapped,
+                                   namePrefix + threadNumber.getAndIncrement,
+                                   0)
         if (t.isDaemon != daemon) t.setDaemon(daemon)
         if (t.getPriority != priority) t.setPriority(priority)
         t
@@ -67,41 +73,91 @@ object ThreadPoolFactory {
     }
   }
 
-  private final class BasicThreadPoolFactory(phase: Phase) extends BaseThreadPoolFactory(phase) {
-    override def newUnboundedQueueFixedThreadPool(nThreads: Int, shortId: String, priority: Int): ThreadPoolExecutor = {
+  private final class BasicThreadPoolFactory(phase: Phase)
+      extends BaseThreadPoolFactory(phase) {
+    override def newUnboundedQueueFixedThreadPool(
+        nThreads: Int,
+        shortId: String,
+        priority: Int): ThreadPoolExecutor = {
       val threadFactory = new CommonThreadFactory(shortId, priority = priority)
       //like Executors.newFixedThreadPool
-      new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable], threadFactory)
+      new ThreadPoolExecutor(nThreads,
+                             nThreads,
+                             0L,
+                             TimeUnit.MILLISECONDS,
+                             new LinkedBlockingQueue[Runnable],
+                             threadFactory)
     }
 
-    override def newBoundedQueueFixedThreadPool(nThreads: Int, maxQueueSize: Int, rejectHandler: RejectedExecutionHandler, shortId: String, priority: Int): ThreadPoolExecutor = {
+    override def newBoundedQueueFixedThreadPool(
+        nThreads: Int,
+        maxQueueSize: Int,
+        rejectHandler: RejectedExecutionHandler,
+        shortId: String,
+        priority: Int): ThreadPoolExecutor = {
       val threadFactory = new CommonThreadFactory(shortId, priority = priority)
       //like Executors.newFixedThreadPool
-      new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue[Runnable](maxQueueSize), threadFactory, rejectHandler)
+      new ThreadPoolExecutor(nThreads,
+                             nThreads,
+                             0L,
+                             TimeUnit.MILLISECONDS,
+                             new ArrayBlockingQueue[Runnable](maxQueueSize),
+                             threadFactory,
+                             rejectHandler)
     }
   }
 
-  private class ProfilingThreadPoolFactory(phase: Phase, profiler: RealProfiler) extends BaseThreadPoolFactory(phase) {
-    override def newUnboundedQueueFixedThreadPool(nThreads: Int, shortId: String, priority: Int): ThreadPoolExecutor = {
+  private class ProfilingThreadPoolFactory(phase: Phase, profiler: RealProfiler)
+      extends BaseThreadPoolFactory(phase) {
+    override def newUnboundedQueueFixedThreadPool(
+        nThreads: Int,
+        shortId: String,
+        priority: Int): ThreadPoolExecutor = {
       val threadFactory = new CommonThreadFactory(shortId, priority = priority)
       //like Executors.newFixedThreadPool
-      new SinglePhaseInstrumentedThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue[Runnable], threadFactory, new AbortPolicy)
+      new SinglePhaseInstrumentedThreadPoolExecutor(
+        nThreads,
+        nThreads,
+        0L,
+        TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue[Runnable],
+        threadFactory,
+        new AbortPolicy)
     }
 
-    override def newBoundedQueueFixedThreadPool(nThreads: Int, maxQueueSize: Int, rejectHandler: RejectedExecutionHandler, shortId: String, priority: Int): ThreadPoolExecutor = {
+    override def newBoundedQueueFixedThreadPool(
+        nThreads: Int,
+        maxQueueSize: Int,
+        rejectHandler: RejectedExecutionHandler,
+        shortId: String,
+        priority: Int): ThreadPoolExecutor = {
       val threadFactory = new CommonThreadFactory(shortId, priority = priority)
       //like Executors.newFixedThreadPool
-      new SinglePhaseInstrumentedThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new ArrayBlockingQueue[Runnable](maxQueueSize), threadFactory, rejectHandler)
+      new SinglePhaseInstrumentedThreadPoolExecutor(
+        nThreads,
+        nThreads,
+        0L,
+        TimeUnit.MILLISECONDS,
+        new ArrayBlockingQueue[Runnable](maxQueueSize),
+        threadFactory,
+        rejectHandler)
     }
 
-    override protected def wrapWorker(worker: Runnable, shortId: String): Runnable = () => {
+    override protected def wrapWorker(worker: Runnable,
+                                      shortId: String): Runnable = () => {
       val data = new ThreadProfileData
       localData.set(data)
 
       val profileStart = RealProfiler.snapThread(0)
-      try worker.run finally {
+      try worker.run
+      finally {
         val snap = RealProfiler.snapThread(data.idleNs)
-        val threadRange = ProfileRange(profileStart, snap, phase, shortId, data.taskCount, Thread.currentThread())
+        val threadRange = ProfileRange(profileStart,
+                                       snap,
+                                       phase,
+                                       shortId,
+                                       data.taskCount,
+                                       Thread.currentThread())
         profiler.completeBackground(threadRange)
       }
     }
@@ -123,9 +179,20 @@ object ThreadPoolFactory {
     val localData = new ThreadLocal[ThreadProfileData]
 
     private class SinglePhaseInstrumentedThreadPoolExecutor(
-        corePoolSize: Int, maximumPoolSize: Int, keepAliveTime: Long, unit: TimeUnit,
-        workQueue: BlockingQueue[Runnable], threadFactory: ThreadFactory, handler: RejectedExecutionHandler)
-      extends ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler) {
+        corePoolSize: Int,
+        maximumPoolSize: Int,
+        keepAliveTime: Long,
+        unit: TimeUnit,
+        workQueue: BlockingQueue[Runnable],
+        threadFactory: ThreadFactory,
+        handler: RejectedExecutionHandler)
+        extends ThreadPoolExecutor(corePoolSize,
+                                   maximumPoolSize,
+                                   keepAliveTime,
+                                   unit,
+                                   workQueue,
+                                   threadFactory,
+                                   handler) {
 
       override def beforeExecute(t: Thread, r: Runnable): Unit = {
         val data = localData.get

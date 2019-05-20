@@ -27,23 +27,30 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
   // the Symbol's field directly.  For Type, a new AnnotatedType is
   // created which wraps the original type.
   trait Annotatable[Self] {
+
     /** The annotations on this type. */
-    def annotations: List[AnnotationInfo]                     // Annotations on this type.
-    def setAnnotations(annots: List[AnnotationInfo]): Self    // Replace annotations with argument list.
-    def withAnnotations(annots: List[AnnotationInfo]): Self   // Add annotations to this type.
+    def annotations: List[AnnotationInfo] // Annotations on this type.
+    def setAnnotations(annots: List[AnnotationInfo]): Self // Replace annotations with argument list.
+    def withAnnotations(annots: List[AnnotationInfo]): Self // Add annotations to this type.
     def filterAnnotations(p: AnnotationInfo => Boolean): Self // Retain only annotations meeting the condition.
-    def withoutAnnotations: Self                              // Remove all annotations from this type.
+    def withoutAnnotations: Self // Remove all annotations from this type.
 
     def staticAnnotations = annotations filter (_.isStatic)
 
     def addThrowsAnnotation(throwableSym: Symbol): Self = {
-      val throwableTpe = if (throwableSym.isMonomorphicType) throwableSym.tpe else {
-        debuglog(s"Encountered polymorphic exception `${throwableSym.fullName}` while parsing class file.")
-        // in case we encounter polymorphic exception the best we can do is to convert that type to
-        // monomorphic one by introducing existentials, see scala/bug#7009 for details
-        existentialAbstraction(throwableSym.typeParams, throwableSym.tpe)
-      }
-      this withAnnotation AnnotationInfo(appliedType(ThrowsClass, throwableTpe :: Nil), List(Literal(Constant(throwableTpe))), Nil)
+      val throwableTpe =
+        if (throwableSym.isMonomorphicType) throwableSym.tpe
+        else {
+          debuglog(
+            s"Encountered polymorphic exception `${throwableSym.fullName}` while parsing class file.")
+          // in case we encounter polymorphic exception the best we can do is to convert that type to
+          // monomorphic one by introducing existentials, see scala/bug#7009 for details
+          existentialAbstraction(throwableSym.typeParams, throwableSym.tpe)
+        }
+      this withAnnotation AnnotationInfo(
+        appliedType(ThrowsClass, throwableTpe :: Nil),
+        List(Literal(Constant(throwableTpe))),
+        Nil)
     }
 
     /** Tests for, get, or remove an annotation */
@@ -55,44 +62,50 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
       //OPT inlined from exists to save on #closures; was:  annotations find (_ matches cls)
       dropOtherAnnotations(annotations, cls) match {
         case ann :: _ => Some(ann)
-        case _ => None
+        case _        => None
       }
 
-    def removeAnnotation(cls: Symbol): Self = filterAnnotations(ann => !(ann matches cls))
+    def removeAnnotation(cls: Symbol): Self =
+      filterAnnotations(ann => !(ann matches cls))
 
-    final def withAnnotation(annot: AnnotationInfo): Self = withAnnotations(List(annot))
+    final def withAnnotation(annot: AnnotationInfo): Self =
+      withAnnotations(List(annot))
 
-    @tailrec private
-    def dropOtherAnnotations(anns: List[AnnotationInfo], cls: Symbol): List[AnnotationInfo] = anns match {
-      case ann :: rest => if (ann matches cls) anns else dropOtherAnnotations(rest, cls)
+    @tailrec private def dropOtherAnnotations(
+        anns: List[AnnotationInfo],
+        cls: Symbol): List[AnnotationInfo] = anns match {
+      case ann :: rest =>
+        if (ann matches cls) anns else dropOtherAnnotations(rest, cls)
       case Nil => Nil
     }
   }
 
   /**
-   * Arguments to constant annotations (Annotations defined in Java or extending
-   * ConstantAnnotation). Arguments are either:
-   *  - constants
-   *  - arrays of constants
-   *  - or nested classfile annotations (only for Java annotation)
-   *
-   * TODO: rename to `ConstantAnnotationArg`
-   */
+    * Arguments to constant annotations (Annotations defined in Java or extending
+    * ConstantAnnotation). Arguments are either:
+    *  - constants
+    *  - arrays of constants
+    *  - or nested classfile annotations (only for Java annotation)
+    *
+    * TODO: rename to `ConstantAnnotationArg`
+    */
   sealed abstract class ClassfileAnnotArg extends Product with JavaArgumentApi
   type JavaArgument = ClassfileAnnotArg
-  implicit val JavaArgumentTag = ClassTag[ClassfileAnnotArg](classOf[ClassfileAnnotArg])
+  implicit val JavaArgumentTag =
+    ClassTag[ClassfileAnnotArg](classOf[ClassfileAnnotArg])
   case object UnmappableAnnotArg extends ClassfileAnnotArg
 
   /** Represents a compile-time Constant (`Boolean`, `Byte`, `Short`,
-   *  `Char`, `Int`, `Long`, `Float`, `Double`, `String`, `java.lang.Class` or
-   *  an instance of a Java enumeration value).
-   */
+    *  `Char`, `Int`, `Long`, `Float`, `Double`, `String`, `java.lang.Class` or
+    *  an instance of a Java enumeration value).
+    */
   case class LiteralAnnotArg(const: Constant) extends ClassfileAnnotArg {
     override def toString = const.escapedStringValue
   }
 
   /** Represents an array of classfile annotation arguments */
-  case class ArrayAnnotArg(args: Array[ClassfileAnnotArg]) extends ClassfileAnnotArg {
+  case class ArrayAnnotArg(args: Array[ClassfileAnnotArg])
+      extends ClassfileAnnotArg {
     override def toString = args.mkString("[", ", ", "]")
   }
 
@@ -110,13 +123,17 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
     def lazily(lazyInfo: => AnnotationInfo) =
       new LazyAnnotationInfo(lazyInfo)
 
-    def apply(atp: Type, args: List[Tree], assocs: List[(Name, ClassfileAnnotArg)]): AnnotationInfo =
+    def apply(atp: Type,
+              args: List[Tree],
+              assocs: List[(Name, ClassfileAnnotArg)]): AnnotationInfo =
       new CompleteAnnotationInfo(atp, args, assocs)
 
-    def unapply(info: AnnotationInfo): Option[(Type, List[Tree], List[(Name, ClassfileAnnotArg)])] =
+    def unapply(info: AnnotationInfo)
+      : Option[(Type, List[Tree], List[(Name, ClassfileAnnotArg)])] =
       Some((info.atp, info.args, info.assocs))
 
-    def mkFilter(category: Symbol, defaultRetention: Boolean)(ann: AnnotationInfo) =
+    def mkFilter(category: Symbol, defaultRetention: Boolean)(
+        ann: AnnotationInfo) =
       (ann.metaAnnotations, ann.defaultTargets) match {
         case (Nil, Nil)      => defaultRetention
         case (Nil, defaults) => defaults contains category
@@ -125,9 +142,9 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
   }
 
   class CompleteAnnotationInfo(
-    val atp: Type,
-    val args: List[Tree],
-    val assocs: List[(Name, ClassfileAnnotArg)]
+      val atp: Type,
+      val args: List[Tree],
+      val assocs: List[(Name, ClassfileAnnotArg)]
   ) extends AnnotationInfo {
     // Classfile annot: args empty. Scala annot: assocs empty.
     assert(args.isEmpty || assocs.isEmpty, atp)
@@ -147,22 +164,27 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
   private[scala] def completeAnnotationToString(annInfo: AnnotationInfo) = {
     import annInfo._
     val s_args = if (!args.isEmpty) args.mkString("(", ", ", ")") else ""
-    val s_assocs = if (!assocs.isEmpty) (assocs map { case (x, y) => s"$x = $y" } mkString ("(", ", ", ")")) else ""
+    val s_assocs = if (!assocs.isEmpty) (assocs map {
+      case (x, y) => s"$x = $y"
+    } mkString ("(", ", ", ")"))
+    else ""
     s"${atp}${s_args}${s_assocs}"
   }
 
   /** Symbol annotations parsed in `Namer` (typeCompleter of
-   *  definitions) have to be lazy (#1782)
-   */
-  final class LazyAnnotationInfo(lazyInfo: => AnnotationInfo) extends AnnotationInfo {
+    *  definitions) have to be lazy (#1782)
+    */
+  final class LazyAnnotationInfo(lazyInfo: => AnnotationInfo)
+      extends AnnotationInfo {
     private[this] var forced = false
-    private lazy val forcedInfo = try lazyInfo finally forced = true
+    private lazy val forcedInfo = try lazyInfo
+    finally forced = true
 
-    def atp: Type                               = forcedInfo.atp
-    def args: List[Tree]                        = forcedInfo.args
+    def atp: Type = forcedInfo.atp
+    def args: List[Tree] = forcedInfo.args
     def assocs: List[(Name, ClassfileAnnotArg)] = forcedInfo.assocs
-    def original: Tree                          = forcedInfo.original
-    def setOriginal(t: Tree): this.type         = { forcedInfo.setOriginal(t); this }
+    def original: Tree = forcedInfo.original
+    def setOriginal(t: Tree): this.type = { forcedInfo.setOriginal(t); this }
 
     // We should always be able to print things without forcing them.
     override def toString = if (forced) forcedInfo.toString else "@<?>"
@@ -173,21 +195,21 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
   }
 
   /** Typed information about an annotation. It can be attached to either
-   *  a symbol or an annotated type.
-   *
-   *  Annotations are written to the classfile as Java annotations
-   *  if `atp` conforms to `ClassfileAnnotation` (the classfile parser adds
-   *  this interface to any Java annotation class).
-   *
-   *  Annotations are pickled (written to scala symtab attribute in the
-   *  classfile) if `atp` inherits form `StaticAnnotation`.
-   *
-   *  `args` stores arguments to Scala annotations, represented as typed
-   *  trees. Note that these trees are not transformed by any phases
-   *  following the type-checker.
-   *
-   *  `assocs` stores arguments to classfile annotations as name-value pairs.
-   */
+    *  a symbol or an annotated type.
+    *
+    *  Annotations are written to the classfile as Java annotations
+    *  if `atp` conforms to `ClassfileAnnotation` (the classfile parser adds
+    *  this interface to any Java annotation class).
+    *
+    *  Annotations are pickled (written to scala symtab attribute in the
+    *  classfile) if `atp` inherits form `StaticAnnotation`.
+    *
+    *  `args` stores arguments to Scala annotations, represented as typed
+    *  trees. Note that these trees are not transformed by any phases
+    *  following the type-checker.
+    *
+    *  `assocs` stores arguments to classfile annotations as name-value pairs.
+    */
   abstract class AnnotationInfo extends AnnotationApi {
     def atp: Type
     def args: List[Tree]
@@ -215,28 +237,28 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
     def completeInfo(): Unit = ()
 
     /** Annotations annotating annotations are confusing so I drew
-     *  an example.  Given the following code:
-     *
-     *  class A {
-     *    @(deprecated @setter) @(inline @getter)
-     *    var x: Int = 0
-     *  }
-     *
-     *  For the setter `x_=` in A, annotations contains one AnnotationInfo =
-     *    List(deprecated @setter)
-     *  The single AnnotationInfo in that list, i.e. `@(deprecated @setter)`, has metaAnnotations =
-     *    List(setter)
-     *
-     *  Similarly, the getter `x` in A has an @inline annotation, which has
-     *  metaAnnotations = List(getter).
-     */
+      *  an example.  Given the following code:
+      *
+      *  class A {
+      *    @(deprecated @setter) @(inline @getter)
+      *    var x: Int = 0
+      *  }
+      *
+      *  For the setter `x_=` in A, annotations contains one AnnotationInfo =
+      *    List(deprecated @setter)
+      *  The single AnnotationInfo in that list, i.e. `@(deprecated @setter)`, has metaAnnotations =
+      *    List(setter)
+      *
+      *  Similarly, the getter `x` in A has an @inline annotation, which has
+      *  metaAnnotations = List(getter).
+      */
     def symbol = atp.typeSymbol
 
     /** These are meta-annotations attached at the use site; they
-     *  only apply to this annotation usage.  For instance, in
-     *    `@(deprecated @setter @field) val ...`
-     *  metaAnnotations = List(setter, field).
-     */
+      *  only apply to this annotation usage.  For instance, in
+      *    `@(deprecated @setter @field) val ...`
+      *  metaAnnotations = List(setter, field).
+      */
     def metaAnnotations: List[AnnotationInfo] = atp match {
       case AnnotatedType(metas, _) => metas
       case _                       => Nil
@@ -248,10 +270,12 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
       *
       * NOTE: have to call symbol.initialize, since we won't get any annotations if the symbol hasn't yet been completed
       */
-    def defaultTargets = symbol.initialize.annotations map (_.symbol) filter isMetaAnnotation
+    def defaultTargets =
+      symbol.initialize.annotations map (_.symbol) filter isMetaAnnotation
 
     // Test whether the typeSymbol of atp conforms to the given class.
-    def matches(clazz: Symbol) = !symbol.isInstanceOf[StubSymbol] && (symbol isNonBottomSubClass clazz)
+    def matches(clazz: Symbol) =
+      !symbol.isInstanceOf[StubSymbol] && (symbol isNonBottomSubClass clazz)
     // All subtrees of all args are considered.
     def hasArgWhich(p: Tree => Boolean) = args exists (_ exists p)
 
@@ -263,11 +287,12 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
     /** Check whether any of the arguments mention a symbol */
     def refsSymbol(sym: Symbol) = hasArgWhich(_.symbol == sym)
 
-    def stringArg(index: Int)  = constantAtIndex(index) map (_.stringValue)
-    def intArg(index: Int)     = constantAtIndex(index) map (_.intValue)
+    def stringArg(index: Int) = constantAtIndex(index) map (_.stringValue)
+    def intArg(index: Int) = constantAtIndex(index) map (_.intValue)
     def booleanArg(index: Int) = constantAtIndex(index) map (_.booleanValue)
     def symbolArg(index: Int) = argAtIndex(index) collect {
-      case Apply(fun, Literal(str) :: Nil) if fun.symbol == definitions.Symbol_apply =>
+      case Apply(fun, Literal(str) :: Nil)
+          if fun.symbol == definitions.Symbol_apply =>
         newTermName(str.stringValue)
     }
 
@@ -285,16 +310,20 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
 
     override def hashCode = atp.## + args.## + assocs.##
     override def equals(other: Any) = other match {
-      case x: AnnotationInfo  => (atp == x.atp) && (args == x.args) && (assocs == x.assocs)
-      case _                  => false
+      case x: AnnotationInfo =>
+        (atp == x.atp) && (args == x.args) && (assocs == x.assocs)
+      case _ => false
     }
   }
 
   type Annotation = AnnotationInfo
   object Annotation extends AnnotationExtractor {
-    def apply(tpe: Type, scalaArgs: List[Tree], javaArgs: ListMap[Name, ClassfileAnnotArg]): Annotation =
+    def apply(tpe: Type,
+              scalaArgs: List[Tree],
+              javaArgs: ListMap[Name, ClassfileAnnotArg]): Annotation =
       AnnotationInfo(tpe, scalaArgs, javaArgs.toList)
-    def unapply(annotation: Annotation): Option[(Type, List[Tree], ListMap[Name, ClassfileAnnotArg])] =
+    def unapply(annotation: Annotation)
+      : Option[(Type, List[Tree], ListMap[Name, ClassfileAnnotArg])] =
       Some((annotation.tpe, annotation.scalaArgs, annotation.javaArgs))
   }
   implicit val AnnotationTag = ClassTag[AnnotationInfo](classOf[AnnotationInfo])
@@ -320,8 +349,11 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
         case _ =>
           EmptyTree
       }
-      def reverseEngineerArgs(jargs: List[(Name, ClassfileAnnotArg)]): List[Tree] = jargs match {
-        case (name, jarg) :: rest => NamedArg(Ident(name), reverseEngineerArg(jarg)) :: reverseEngineerArgs(rest)
+      def reverseEngineerArgs(
+          jargs: List[(Name, ClassfileAnnotArg)]): List[Tree] = jargs match {
+        case (name, jarg) :: rest =>
+          NamedArg(Ident(name), reverseEngineerArg(jarg)) :: reverseEngineerArgs(
+            rest)
         case Nil => Nil
       }
       if (ann.assocs.isEmpty) ann.args
@@ -339,27 +371,42 @@ trait AnnotationInfos extends api.Annotations { self: SymbolTable =>
     case Apply(Select(New(tpt), nme.CONSTRUCTOR), args) =>
       def encodeJavaArg(arg: Tree): ClassfileAnnotArg = arg match {
         case Literal(const) => LiteralAnnotArg(const)
-        case Apply(ArrayModule, args) => ArrayAnnotArg(args map encodeJavaArg toArray)
-        case Apply(Select(New(tpt), nme.CONSTRUCTOR), args) => NestedAnnotArg(treeToAnnotation(arg))
-        case _ => throw new Exception(s"unexpected java argument shape $arg: literals, arrays and nested annotations are supported")
+        case Apply(ArrayModule, args) =>
+          ArrayAnnotArg(args map encodeJavaArg toArray)
+        case Apply(Select(New(tpt), nme.CONSTRUCTOR), args) =>
+          NestedAnnotArg(treeToAnnotation(arg))
+        case _ =>
+          throw new Exception(
+            s"unexpected java argument shape $arg: literals, arrays and nested annotations are supported")
       }
       // TODO: Java annotations with a single `value` parameter can be created without a named argument.
-      def encodeJavaArgs(args: List[Tree]): List[(Name, ClassfileAnnotArg)] = args match {
-        case NamedArg(Ident(name), arg) :: rest => (name, encodeJavaArg(arg)) :: encodeJavaArgs(rest)
-        case arg :: rest => throw new Exception(s"unexpected java argument shape $arg: only NamedArg trees are supported")
-        case Nil => Nil
-      }
+      def encodeJavaArgs(args: List[Tree]): List[(Name, ClassfileAnnotArg)] =
+        args match {
+          case NamedArg(Ident(name), arg) :: rest =>
+            (name, encodeJavaArg(arg)) :: encodeJavaArgs(rest)
+          case arg :: rest =>
+            throw new Exception(
+              s"unexpected java argument shape $arg: only NamedArg trees are supported")
+          case Nil => Nil
+        }
       val atp = tpt.tpe
-      if (atp != null && (atp.typeSymbol isNonBottomSubClass StaticAnnotationClass)) AnnotationInfo(atp, args, Nil)
-      else if (atp != null && (atp.typeSymbol.isJavaDefined || atp.typeSymbol.isNonBottomSubClass(ConstantAnnotationClass))) AnnotationInfo(atp, Nil, encodeJavaArgs(args))
-      else throw new Exception(s"unexpected annotation type $atp: only subclasses of StaticAnnotation and ClassfileAnnotation are supported")
+      if (atp != null && (atp.typeSymbol isNonBottomSubClass StaticAnnotationClass))
+        AnnotationInfo(atp, args, Nil)
+      else if (atp != null && (atp.typeSymbol.isJavaDefined || atp.typeSymbol
+                 .isNonBottomSubClass(ConstantAnnotationClass)))
+        AnnotationInfo(atp, Nil, encodeJavaArgs(args))
+      else
+        throw new Exception(
+          s"unexpected annotation type $atp: only subclasses of StaticAnnotation and ClassfileAnnotation are supported")
     case _ =>
-      throw new Exception("""unexpected tree shape: only q"new $annType(..$args)" is supported""")
+      throw new Exception(
+        """unexpected tree shape: only q"new $annType(..$args)" is supported""")
   }
 
   object UnmappableAnnotation extends CompleteAnnotationInfo(NoType, Nil, Nil)
 
-  class ErroneousAnnotation() extends CompleteAnnotationInfo(ErrorType, Nil, Nil)
+  class ErroneousAnnotation()
+      extends CompleteAnnotationInfo(ErrorType, Nil, Nil)
 
   /** Extracts the type of the thrown exception from an AnnotationInfo.
     *

@@ -1,8 +1,10 @@
-
-@kase class KaseClassPreToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class KaseClassPreToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                            w: String = "")
 object KaseClassPreToplevelPrecomp
-@kase class KaseClassPreToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-@kase class KaseClassPreToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class KaseClassPreToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                             w: String = "")
+@kase class KaseClassPreToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
 object KaseClassPreToplevelPostcomp
 
 class KaseClass {
@@ -16,10 +18,13 @@ class KaseClass {
   objects += KaseClassPostToplevelPrecomp(42)(true)
   objects += KaseClassPostToplevelPostcomp(42)(true)
 
-  @kase class KaseClassPreMemberNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class KaseClassPreMemberNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                            w: String = "")
   object KaseClassPreMemberPrecomp
-  @kase class KaseClassPreMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-  @kase class KaseClassPreMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class KaseClassPreMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                             w: String = "")
+  @kase class KaseClassPreMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
   object KaseClassPreMemberPostcomp
   objects += KaseClassPreMemberNocomp(42)(true)
   objects += KaseClassPreMemberPrecomp(42)(true)
@@ -27,18 +32,24 @@ class KaseClass {
   objects += KaseClassPostMemberNocomp(42)(true)
   objects += KaseClassPostMemberPrecomp(42)(true)
   objects += KaseClassPostMemberPostcomp(42)(true)
-  @kase class KaseClassPostMemberNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class KaseClassPostMemberNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                             w: String = "")
   object KaseClassPostMemberPrecomp
-  @kase class KaseClassPostMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-  @kase class KaseClassPostMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+  @kase class KaseClassPostMemberPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
+  @kase class KaseClassPostMemberPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                               w: String = "")
   object KaseClassPostMemberPostcomp
 
   // @Test
   def combo: Unit = {
-    @kase class KaseClassPreLocalNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class KaseClassPreLocalNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                             w: String = "")
     object KaseClassPreLocalPrecomp
-    @kase class KaseClassPreLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-    @kase class KaseClassPreLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class KaseClassPreLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
+    @kase class KaseClassPreLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                               w: String = "")
     object KaseClassPreLocalPostcomp
     objects += KaseClassPreLocalNocomp(42)(true)
     objects += KaseClassPreLocalPrecomp(42)(true)
@@ -46,13 +57,18 @@ class KaseClass {
     objects += KaseClassPostLocalNocomp(42)(true)
     objects += KaseClassPostLocalPrecomp(42)(true)
     objects += KaseClassPostLocalPostcomp(42)(true)
-    @kase class KaseClassPostLocalNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class KaseClassPostLocalNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
     object KaseClassPostLocalPrecomp
-    @kase class KaseClassPostLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-    @kase class KaseClassPostLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+    @kase class KaseClassPostLocalPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                               w: String = "")
+    @kase class KaseClassPostLocalPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                                w: String = "")
     object KaseClassPostLocalPostcomp
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |KaseClassPreToplevelNocomp(42,2)
       |KaseClassPreToplevelPrecomp(42,2)
       |KaseClassPreToplevelPostcomp(42,2)
@@ -71,12 +87,16 @@ class KaseClass {
       |KaseClassPostLocalNocomp(42,2)
       |KaseClassPostLocalPrecomp(42,2)
       |KaseClassPostLocalPostcomp(42,2)
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 
-@kase class KaseClassPostToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class KaseClassPostToplevelNocomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                             w: String = "")
 object KaseClassPostToplevelPrecomp
-@kase class KaseClassPostToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
-@kase class KaseClassPostToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean, w: String = "")
+@kase class KaseClassPostToplevelPrecomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                              w: String = "")
+@kase class KaseClassPostToplevelPostcomp[T](x: T, y: Int = 2)(z: Boolean,
+                                                               w: String = "")
 object KaseClassPostToplevelPostcomp

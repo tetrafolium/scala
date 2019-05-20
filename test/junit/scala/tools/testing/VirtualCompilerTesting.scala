@@ -19,6 +19,7 @@ import scala.tools.nsc.{Global, Settings}
   * presumably because one doesn't wish to deal with platform idiosyncracies.
   */
 class VirtualCompiler {
+
   /** A java compiler instance that we can use. */
   lazy val javac = ToolProvider.getSystemJavaCompiler
 
@@ -27,7 +28,8 @@ class VirtualCompiler {
 
   /** A javac file manager that places classfiles in `output`. */
   lazy val fileManager: JavaFileManager = {
-    val dflt = javac.getStandardFileManager(null, Locale.ENGLISH, StandardCharsets.UTF_8)
+    val dflt =
+      javac.getStandardFileManager(null, Locale.ENGLISH, StandardCharsets.UTF_8)
     new VirtualFileManager(output, dflt)
   }
 
@@ -38,10 +40,11 @@ class VirtualCompiler {
     settings.outputDirs setSingleOutput output
     new Global(settings) {
       override lazy val platform = new super.GlobalPlatform() {
-        override val classPath = AggregateClassPath(List(
-          super.classPath,
-          VirtualDirectoryClassPath(output),
-        ))
+        override val classPath = AggregateClassPath(
+          List(
+            super.classPath,
+            VirtualDirectoryClassPath(output),
+          ))
       }
     }
   }
@@ -71,16 +74,17 @@ class VirtualCompiler {
     new AbstractFileClassLoader(output, getClass.getClassLoader)
 }
 
-final class VirtualFileManager(dir: VirtualDirectory, del: StandardJavaFileManager)
+final class VirtualFileManager(dir: VirtualDirectory,
+                               del: StandardJavaFileManager)
     extends ForwardingJavaFileManager[StandardJavaFileManager](del) {
   import JavaFileManager.Location
   import JavaFileObject.Kind
 
   override def getJavaFileForOutput(
-    loc: Location,
-    clasz: String,
-    kind: Kind,
-    sibling: FileObject,
+      loc: Location,
+      clasz: String,
+      kind: Kind,
+      sibling: FileObject,
   ): JavaFileObject = {
     assert(loc == StandardLocation.CLASS_OUTPUT, loc)
     assert(kind == Kind.CLASS, kind)
@@ -90,7 +94,9 @@ final class VirtualFileManager(dir: VirtualDirectory, del: StandardJavaFileManag
     }
   }
 
-  override def getJavaFileForInput(loc: Location, clasz: String, kind: Kind): JavaFileObject = {
+  override def getJavaFileForInput(loc: Location,
+                                   clasz: String,
+                                   kind: Kind): JavaFileObject = {
     if (loc == StandardLocation.CLASS_PATH) {
       assert(kind == Kind.CLASS, kind)
       val (file, uri) = mkFile(clasz)
@@ -108,7 +114,6 @@ final class VirtualFileManager(dir: VirtualDirectory, del: StandardJavaFileManag
     (file, uri)
   }
 }
-
 
 final class InMemorySourcefile(uri: URI, contents: String)
     extends SimpleJavaFileObject(uri, JavaFileObject.Kind.SOURCE) {

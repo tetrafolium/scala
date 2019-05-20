@@ -21,53 +21,58 @@ trait Constants extends api.Constants {
 
   import definitions._
 
-  final val NoTag      = 0
-  final val UnitTag    = 1
+  final val NoTag = 0
+  final val UnitTag = 1
   final val BooleanTag = 2
-  final val ByteTag    = 3
-  final val ShortTag   = 4
-  final val CharTag    = 5
-  final val IntTag     = 6
-  final val LongTag    = 7
-  final val FloatTag   = 8
-  final val DoubleTag  = 9
-  final val StringTag  = 10
-  final val NullTag    = 11
-  final val ClazzTag   = 12
+  final val ByteTag = 3
+  final val ShortTag = 4
+  final val CharTag = 5
+  final val IntTag = 6
+  final val LongTag = 7
+  final val FloatTag = 8
+  final val DoubleTag = 9
+  final val StringTag = 10
+  final val NullTag = 11
+  final val ClazzTag = 12
   // For supporting java enumerations inside java annotations (see ClassfileParser)
-  final val EnumTag    = 13
+  final val EnumTag = 13
 
   case class Constant(value: Any) extends ConstantApi {
     import java.lang.Double.doubleToRawLongBits
     import java.lang.Float.floatToRawIntBits
 
     val tag: Int = value match {
-      case null         => NullTag
-      case x: Unit      => UnitTag
-      case x: Boolean   => BooleanTag
-      case x: Byte      => ByteTag
-      case x: Short     => ShortTag
-      case x: Int       => IntTag
-      case x: Long      => LongTag
-      case x: Float     => FloatTag
-      case x: Double    => DoubleTag
-      case x: String    => StringTag
-      case x: Char      => CharTag
-      case x: Type      => ClazzTag
-      case x: Symbol    => EnumTag
-      case _            => throw new Error("bad constant value: " + value + " of class " + value.getClass)
+      case null       => NullTag
+      case x: Unit    => UnitTag
+      case x: Boolean => BooleanTag
+      case x: Byte    => ByteTag
+      case x: Short   => ShortTag
+      case x: Int     => IntTag
+      case x: Long    => LongTag
+      case x: Float   => FloatTag
+      case x: Double  => DoubleTag
+      case x: String  => StringTag
+      case x: Char    => CharTag
+      case x: Type    => ClazzTag
+      case x: Symbol  => EnumTag
+      case _ =>
+        throw new Error(
+          "bad constant value: " + value + " of class " + value.getClass)
     }
 
-    def isByteRange: Boolean  = isIntRange && Byte.MinValue <= intValue && intValue <= Byte.MaxValue
-    def isShortRange: Boolean = isIntRange && Short.MinValue <= intValue && intValue <= Short.MaxValue
-    def isCharRange: Boolean  = isIntRange && Char.MinValue <= intValue && intValue <= Char.MaxValue
-    def isIntRange: Boolean   = ByteTag <= tag && tag <= IntTag
-    def isLongRange: Boolean  = ByteTag <= tag && tag <= LongTag
+    def isByteRange: Boolean =
+      isIntRange && Byte.MinValue <= intValue && intValue <= Byte.MaxValue
+    def isShortRange: Boolean =
+      isIntRange && Short.MinValue <= intValue && intValue <= Short.MaxValue
+    def isCharRange: Boolean =
+      isIntRange && Char.MinValue <= intValue && intValue <= Char.MaxValue
+    def isIntRange: Boolean = ByteTag <= tag && tag <= IntTag
+    def isLongRange: Boolean = ByteTag <= tag && tag <= LongTag
     def isFloatRange: Boolean = ByteTag <= tag && tag <= FloatTag
-    def isNumeric: Boolean    = ByteTag <= tag && tag <= DoubleTag
-    def isNonUnitAnyVal       = BooleanTag <= tag && tag <= DoubleTag
+    def isNumeric: Boolean = ByteTag <= tag && tag <= DoubleTag
+    def isNonUnitAnyVal = BooleanTag <= tag && tag <= DoubleTag
     def isSuitableLiteralType = BooleanTag <= tag && tag <= NullTag
-    def isAnyVal              = UnitTag <= tag && tag <= DoubleTag
+    def isAnyVal = UnitTag <= tag && tag <= DoubleTag
 
     def tpe: Type = tag match {
       case UnitTag    => UnitTpe
@@ -86,7 +91,7 @@ trait Constants extends api.Constants {
     }
 
     /** We need the equals method to take account of tags as well as values.
-     */
+      */
     // !!! In what circumstance could `equalHashValue == that.equalHashValue && tag != that.tag` be true?
     override def equals(other: Any): Boolean = other match {
       case that: Constant =>
@@ -105,9 +110,11 @@ trait Constants extends api.Constants {
             case NullTag =>
               true
             case FloatTag =>
-              floatToRawIntBits(value.asInstanceOf[Float]) == floatToRawIntBits(that.value.asInstanceOf[Float])
+              floatToRawIntBits(value.asInstanceOf[Float]) == floatToRawIntBits(
+                that.value.asInstanceOf[Float])
             case DoubleTag =>
-              doubleToRawLongBits(value.asInstanceOf[Double]) == doubleToRawLongBits(that.value.asInstanceOf[Double])
+              doubleToRawLongBits(value.asInstanceOf[Double]) == doubleToRawLongBits(
+                that.value.asInstanceOf[Double])
             case _ =>
               this.value.equals(that.value)
           }
@@ -118,7 +125,7 @@ trait Constants extends api.Constants {
     def isNaN = value match {
       case f: Float  => java.lang.Float.isNaN(f)
       case d: Double => java.lang.Double.isNaN(d)
-      case _ => false
+      case _         => false
     }
 
     def booleanValue: Boolean =
@@ -203,7 +210,7 @@ trait Constants extends api.Constants {
     }
 
     /** Convert constant value to conform to given type.
-     */
+      */
     def convertTo(pt: Type): Constant = {
       val target = pt.typeSymbol
       if (target == tpe.typeSymbol)
@@ -240,7 +247,8 @@ trait Constants extends api.Constants {
       case '"'  => "\\\""
       case '\'' => "\\\'"
       case '\\' => "\\\\"
-      case _    => if (ch.isControl) "\\u%04X".format(ch.toInt) else String.valueOf(ch)
+      case _ =>
+        if (ch.isControl) "\\u%04X".format(ch.toInt) else String.valueOf(ch)
     }
 
     def escapedStringValue: String = {
@@ -248,7 +256,7 @@ trait Constants extends api.Constants {
       tag match {
         case NullTag   => "null"
         case StringTag => "\"" + escape(stringValue) + "\""
-        case ClazzTag  =>
+        case ClazzTag =>
           def show(tpe: Type) = "classOf[" + signature(tpe) + "]"
           typeValue match {
             case ErasedValueType(clazz, underlying) =>
@@ -262,13 +270,13 @@ trait Constants extends api.Constants {
               show(clazz.tpe_*)
             case _ => show(typeValue)
           }
-        case CharTag   => "'" + escapedChar(charValue) + "'"
-        case LongTag   => longValue.toString() + "L"
-        case EnumTag   => symbolValue.name.toString()
-        case _         => String.valueOf(value)
+        case CharTag => "'" + escapedChar(charValue) + "'"
+        case LongTag => longValue.toString() + "L"
+        case EnumTag => symbolValue.name.toString()
+        case _       => String.valueOf(value)
       }
     }
-    def typeValue: Type     = value.asInstanceOf[Type]
+    def typeValue: Type = value.asInstanceOf[Type]
     def symbolValue: Symbol = value.asInstanceOf[Symbol]
 
     override def hashCode: Int = {
@@ -279,8 +287,12 @@ trait Constants extends api.Constants {
       val valueHash = tag match {
         case NullTag => 0
         // We could just use value.hashCode here, at the cost of a collition between different NaNs
-        case FloatTag => java.lang.Integer.hashCode(floatToRawIntBits(value.asInstanceOf[Float]))
-        case DoubleTag => java.lang.Long.hashCode(doubleToRawLongBits(value.asInstanceOf[Double]))
+        case FloatTag =>
+          java.lang.Integer
+            .hashCode(floatToRawIntBits(value.asInstanceOf[Float]))
+        case DoubleTag =>
+          java.lang.Long
+            .hashCode(doubleToRawLongBits(value.asInstanceOf[Double]))
         case _ => value.hashCode()
       }
       h = mix(h, valueHash)

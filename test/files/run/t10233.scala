@@ -1,15 +1,20 @@
-import java.io.{ByteArrayOutputStream, NotSerializableException, ObjectOutputStream}
+import java.io.{
+  ByteArrayOutputStream,
+  NotSerializableException,
+  ObjectOutputStream
+}
 
 object Test {
   def plus(x: Int): Int = x + 1
-  def notSerialize(name: String, fn: Int => Int): Unit = try {
-    val oos = new ObjectOutputStream(new ByteArrayOutputStream)
-    oos.writeObject(fn)
-    assert(false)
-  } catch {
-    case e: NotSerializableException =>
+  def notSerialize(name: String, fn: Int => Int): Unit =
+    try {
+      val oos = new ObjectOutputStream(new ByteArrayOutputStream)
+      oos.writeObject(fn)
+      assert(false)
+    } catch {
+      case e: NotSerializableException =>
       // expected
-  }
+    }
   def serialize(name: String, fn: Int => Int): Unit = {
     try {
       val oos = new ObjectOutputStream(new ByteArrayOutputStream)
@@ -21,7 +26,7 @@ object Test {
     }
   }
   object Inner {
-    def minus(x: Int): Int = x - 1 
+    def minus(x: Int): Int = x - 1
     def testInner(): Unit = {
       serialize("plus", plus)
       serialize("this.plus", Test.this.plus)
@@ -32,7 +37,7 @@ object Test {
       serialize("Inner.minus", Inner.minus)
     }
     def testLocal(): Unit = {
-     object Local {
+      object Local {
         def zero(x: Int) = 0
         def apply(): Unit = {
           serialize("plus", plus)

@@ -3,7 +3,10 @@ object Test {
     if (depth == 0)
       LazyList(bias)
     else {
-      (LazyList.iterate(1, 99)(_+1).map((x: Int) => walk(depth-1, bias + x))).flatten
+      (LazyList
+        .iterate(1, 99)(_ + 1)
+        .map((x: Int) => walk(depth - 1, bias + x)))
+        .flatten
     }
   }
 

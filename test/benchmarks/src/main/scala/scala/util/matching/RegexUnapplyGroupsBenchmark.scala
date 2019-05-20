@@ -21,7 +21,8 @@ class RegexUnapplyGroupsBenchmark {
 
   @Setup(Level.Trial) def initKeys(): Unit = {
     groupCorpus = List.tabulate(groupCount)(idx => s"$idx:$idx").mkString(" ")
-    groupPattern = List.tabulate(groupCount)(_ => """(\d+:\d+)""").mkString(" ").r
+    groupPattern =
+      List.tabulate(groupCount)(_ => """(\d+:\d+)""").mkString(" ").r
   }
 
   @Benchmark def groupingBenchmark(bh: Blackhole) = {
@@ -29,7 +30,7 @@ class RegexUnapplyGroupsBenchmark {
 
     val res = groupCorpus match {
       case r(all @ _*) => all
-      case _ => null
+      case _           => null
     }
 
     bh.consume(res)

@@ -141,7 +141,9 @@ object Test {
 
   object Unroll {
     implicit def zero: Unroll[_0] { type Out = HNil } = ???
-    implicit def succ[N <: Nat](implicit un: Unroll[N]): Unroll[Succ[N]] { type Out = Int :: un.Out } = ???
+    implicit def succ[N <: Nat](
+        implicit un: Unroll[N]): Unroll[Succ[N]] { type Out = Int :: un.Out } =
+      ???
   }
 
   def unroll(n: Nat)(implicit u: Unroll[n.type]): u.Out = ???

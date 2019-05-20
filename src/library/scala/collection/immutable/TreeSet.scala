@@ -18,7 +18,6 @@ import mutable.{Builder, ReusableBuilder}
 import immutable.{RedBlackTree => RB}
 import scala.collection.generic.DefaultSerializable
 
-
 /** This class implements immutable sorted sets using a tree.
   *
   *  @tparam A         the type of the elements contained in this tree set
@@ -36,20 +35,24 @@ import scala.collection.generic.DefaultSerializable
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
-final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[A, Any])(implicit val ordering: Ordering[A])
-  extends AbstractSet[A]
+final class TreeSet[A] private[immutable] (
+    private[immutable] val tree: RB.Tree[A, Any])(
+    implicit val ordering: Ordering[A])
+    extends AbstractSet[A]
     with SortedSet[A]
     with SortedSetOps[A, TreeSet, TreeSet[A]]
     with StrictOptimizedSortedSetOps[A, TreeSet, TreeSet[A]]
     with DefaultSerializable {
 
-  if (ordering eq null) throw new NullPointerException("ordering must not be null")
+  if (ordering eq null)
+    throw new NullPointerException("ordering must not be null")
 
   def this()(implicit ordering: Ordering[A]) = this(null)(ordering)
 
   override def sortedIterableFactory = TreeSet
 
-  private[this] def newSetOrSelf(t: RB.Tree[A, Any]) = if(t eq tree) this else new TreeSet[A](t)
+  private[this] def newSetOrSelf(t: RB.Tree[A, Any]) =
+    if (t eq tree) this else new TreeSet[A](t)
 
   override def size: Int = RB.count(tree)
 
@@ -96,7 +99,8 @@ final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[
 
   override def takeWhile(p: A => Boolean): TreeSet[A] = take(countWhile(p))
 
-  override def span(p: A => Boolean): (TreeSet[A], TreeSet[A]) = splitAt(countWhile(p))
+  override def span(p: A => Boolean): (TreeSet[A], TreeSet[A]) =
+    splitAt(countWhile(p))
 
   override def foreach[U](f: A => U): Unit = RB.foreachKey(tree, f)
 
@@ -121,9 +125,11 @@ final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[
     */
   def contains(elem: A): Boolean = RB.contains(tree, elem)
 
-  override def range(from: A, until: A): TreeSet[A] = newSetOrSelf(RB.range(tree, from, until))
+  override def range(from: A, until: A): TreeSet[A] =
+    newSetOrSelf(RB.range(tree, from, until))
 
-  def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] = newSetOrSelf(RB.rangeImpl(tree, from, until))
+  def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] =
+    newSetOrSelf(RB.rangeImpl(tree, from, until))
 
   /** Creates a new `TreeSet` with the entry added.
     *
@@ -141,7 +147,8 @@ final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[
   def excl(elem: A): TreeSet[A] =
     newSetOrSelf(RB.delete(tree, elem))
 
-  override def concat(that: collection.IterableOnce[A])(implicit dummy: DummyImplicit): TreeSet[A] = {
+  override def concat(that: collection.IterableOnce[A])(
+      implicit dummy: DummyImplicit): TreeSet[A] = {
     val t = that match {
       case ts: TreeSet[A] if ordering == ts.ordering =>
         RB.union(tree, ts.tree)
@@ -174,7 +181,8 @@ final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[
       super.diff(that)
   }
 
-  override def filter(f: A => Boolean): TreeSet[A] = newSetOrSelf(RB.filterKeys(tree, f))
+  override def filter(f: A => Boolean): TreeSet[A] =
+    newSetOrSelf(RB.filterKeys(tree, f))
 
   override def partition(p: A => Boolean): (TreeSet[A], TreeSet[A]) = {
     val (l, r) = RB.partitionKeys(tree, p)
@@ -195,16 +203,20 @@ object TreeSet extends SortedIterableFactory[TreeSet] {
 
   def empty[A: Ordering]: TreeSet[A] = new TreeSet[A]
 
-  def from[E](it: scala.collection.IterableOnce[E])(implicit ordering: Ordering[E]): TreeSet[E] =
+  def from[E](it: scala.collection.IterableOnce[E])(
+      implicit ordering: Ordering[E]): TreeSet[E] =
     it match {
       case ts: TreeSet[E] if ordering == ts.ordering => ts
       case ss: scala.collection.SortedSet[E] if ordering == ss.ordering =>
         new TreeSet[E](RB.fromOrderedKeys(ss.iterator, ss.size))
-      case r: Range if (ordering eq Ordering.Int) || (Ordering.Int isReverseOf ordering) =>
-        val it = if((ordering eq Ordering.Int) == (r.step > 0)) r.iterator else r.reverseIterator
+      case r: Range
+          if (ordering eq Ordering.Int) || (Ordering.Int isReverseOf ordering) =>
+        val it =
+          if ((ordering eq Ordering.Int) == (r.step > 0)) r.iterator
+          else r.reverseIterator
         val tree = RB.fromOrderedKeys(it.asInstanceOf[Iterator[E]], r.size)
-          // The cast is needed to compile with Dotty:
-          // Dotty doesn't infer that E =:= Int, since instantiation of covariant GADTs is unsound
+        // The cast is needed to compile with Dotty:
+        // Dotty doesn't infer that E =:= Int, since instantiation of covariant GADTs is unsound
         new TreeSet[E](tree)
       case _ =>
         var t: RB.Tree[E, Null] = null
@@ -213,20 +225,26 @@ object TreeSet extends SortedIterableFactory[TreeSet] {
         new TreeSet[E](t)
     }
 
-  def newBuilder[A](implicit ordering: Ordering[A]): ReusableBuilder[A, TreeSet[A]] = new ReusableBuilder[A, TreeSet[A]] {
-    private[this] var tree: RB.Tree[A, Any] = null
-    def addOne(elem: A): this.type = { tree = RB.update(tree, elem, null, overwrite = false); this }
-    override def addAll(xs: IterableOnce[A]): this.type = {
-      xs match {
-        case ts: TreeSet[A] if ordering == ts.ordering =>
-          tree = RB.union(tree, ts.tree)
-        case _ =>
-          val it = xs.iterator
-          while (it.hasNext) tree = RB.update(tree, it.next(), null, overwrite = false)
+  def newBuilder[A](
+      implicit ordering: Ordering[A]): ReusableBuilder[A, TreeSet[A]] =
+    new ReusableBuilder[A, TreeSet[A]] {
+      private[this] var tree: RB.Tree[A, Any] = null
+      def addOne(elem: A): this.type = {
+        tree = RB.update(tree, elem, null, overwrite = false); this
       }
-      this
+      override def addAll(xs: IterableOnce[A]): this.type = {
+        xs match {
+          case ts: TreeSet[A] if ordering == ts.ordering =>
+            tree = RB.union(tree, ts.tree)
+          case _ =>
+            val it = xs.iterator
+            while (it.hasNext) tree =
+              RB.update(tree, it.next(), null, overwrite = false)
+        }
+        this
+      }
+      def result(): TreeSet[A] =
+        if (tree eq null) TreeSet.empty else new TreeSet[A](tree)
+      def clear(): Unit = { tree = null }
     }
-    def result(): TreeSet[A] = if(tree eq null) TreeSet.empty else new TreeSet[A](tree)
-    def clear(): Unit = { tree = null }
-  }
 }

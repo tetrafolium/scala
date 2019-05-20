@@ -1,4 +1,3 @@
-
 import scala.language.experimental.macros
 
 object Unused {

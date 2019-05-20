@@ -16,10 +16,13 @@ object ChampSetSmokeTest {
   private def setOf(item: CustomHashInt): Set[CustomHashInt] =
     emptySet + item
 
-  private def setOf(item0: CustomHashInt, item1: CustomHashInt): Set[CustomHashInt] =
+  private def setOf(item0: CustomHashInt,
+                    item1: CustomHashInt): Set[CustomHashInt] =
     emptySet + item0 + item1
 
-  private def setOf(item0: CustomHashInt, item1: CustomHashInt, item2: CustomHashInt): Set[CustomHashInt] =
+  private def setOf(item0: CustomHashInt,
+                    item1: CustomHashInt,
+                    item2: CustomHashInt): Set[CustomHashInt] =
     emptySet + item0 + item1 + item2
 
   def mkValue(value: Int) = new CustomHashInt(value, value)
@@ -88,7 +91,8 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     todo.add(hash_n2147483648_obj1)
     todo.add(hash_p1073741824_obj2)
 
-    val xs: Set[CustomHashInt] = setOf(hash_n2147483648_obj1, hash_p1073741824_obj2)
+    val xs: Set[CustomHashInt] =
+      setOf(hash_n2147483648_obj1, hash_p1073741824_obj2)
     xs.forall(todo.remove)
 
     assertEquals(ju.Collections.EMPTY_SET, todo)
@@ -106,8 +110,10 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash98304_obj3 = mkValue(3, 98304)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2, hash98304_obj3)
-    val ys: Set[CustomHashInt] = setOf(hash98304_obj3, hash98304_obj2, hash98304_obj1)
+    val xs: Set[CustomHashInt] =
+      setOf(hash98304_obj1, hash98304_obj2, hash98304_obj3)
+    val ys: Set[CustomHashInt] =
+      setOf(hash98304_obj3, hash98304_obj2, hash98304_obj1)
     assertEquals(xs, ys)
   }
 
@@ -137,7 +143,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2, hash268435456_obj3) - hash268435456_obj3
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash98304_obj2,
+                                       hash268435456_obj3) - hash268435456_obj3
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2)
     assertEquals(xs, ys)
   }
@@ -146,7 +154,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash8_obj1 = mkValue(1, 8)
     val hash8_obj2 = mkValue(2, 8)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash8_obj1, hash8_obj2, hash268435456_obj3) - hash268435456_obj3
+    val xs: Set[CustomHashInt] = setOf(hash8_obj1,
+                                       hash8_obj2,
+                                       hash268435456_obj3) - hash268435456_obj3
     val ys: Set[CustomHashInt] = setOf(hash8_obj1, hash8_obj2)
     assertEquals(xs, ys)
   }
@@ -155,7 +165,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash268435456_obj3, hash98304_obj2) - hash268435456_obj3
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash268435456_obj3,
+                                       hash98304_obj2) - hash268435456_obj3
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2)
     assertEquals(xs, ys)
   }
@@ -164,7 +176,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash8_obj1 = mkValue(1, 8)
     val hash8_obj2 = mkValue(2, 8)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash8_obj1, hash268435456_obj3, hash8_obj2) - hash268435456_obj3
+    val xs: Set[CustomHashInt] = setOf(hash8_obj1,
+                                       hash268435456_obj3,
+                                       hash8_obj2) - hash268435456_obj3
     val ys: Set[CustomHashInt] = setOf(hash8_obj1, hash8_obj2)
     assertEquals(xs, ys)
   }
@@ -173,7 +187,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2, hash268435456_obj3) - hash98304_obj2
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash98304_obj2,
+                                       hash268435456_obj3) - hash98304_obj2
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash268435456_obj3)
     assertEquals(xs, ys)
   }
@@ -182,7 +198,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash268435456_obj3 = mkValue(3, 268435456)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash268435456_obj3, hash98304_obj2) - hash98304_obj2
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash268435456_obj3,
+                                       hash98304_obj2) - hash98304_obj2
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash268435456_obj3)
     assertEquals(xs, ys)
   }
@@ -191,7 +209,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash8_obj3 = mkValue(3, 8)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2, hash8_obj3) - hash8_obj3
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash98304_obj2,
+                                       hash8_obj3) - hash8_obj3
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2)
     assertEquals(xs, ys)
   }
@@ -200,7 +220,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash8_obj3 = mkValue(3, 8)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash8_obj3, hash98304_obj2) - hash8_obj3
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash8_obj3,
+                                       hash98304_obj2) - hash8_obj3
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2)
     assertEquals(xs, ys)
   }
@@ -209,7 +231,9 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash8_obj3 = mkValue(3, 8)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash98304_obj2, hash8_obj3) - hash98304_obj2
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash98304_obj2,
+                                       hash8_obj3) - hash98304_obj2
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash8_obj3)
     assertEquals(xs, ys)
   }
@@ -218,13 +242,17 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     val hash98304_obj1 = mkValue(1, 98304)
     val hash98304_obj2 = mkValue(2, 98304)
     val hash8_obj3 = mkValue(3, 8)
-    val xs: Set[CustomHashInt] = setOf(hash98304_obj1, hash8_obj3, hash98304_obj2) - hash98304_obj2
+    val xs: Set[CustomHashInt] = setOf(hash98304_obj1,
+                                       hash8_obj3,
+                                       hash98304_obj2) - hash98304_obj2
     val ys: Set[CustomHashInt] = setOf(hash98304_obj1, hash8_obj3)
     assertEquals(xs, ys)
   }
 
-  object O1 { override def hashCode = 1 ; override def toString = "O1"}
-  class C(val i: Int) { override def hashCode = i % 4 ; override def toString = s"C($i)" }
+  object O1 { override def hashCode = 1; override def toString = "O1" }
+  class C(val i: Int) {
+    override def hashCode = i % 4; override def toString = s"C($i)"
+  }
   val cs = Array.tabulate(4096)(new C(_))
 
   private def assertSameEqHash(expected: HashSet[Any], actual: HashSet[Any]) = {
@@ -249,7 +277,8 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     var set1 = set
     for (c <- cs) {
       set1 = set1 + c
-      assertEquals(set.rootNode.cachedJavaKeySetHashCode, set1.rootNode.cachedJavaKeySetHashCode)
+      assertEquals(set.rootNode.cachedJavaKeySetHashCode,
+                   set1.rootNode.cachedJavaKeySetHashCode)
       if (c.i % 41 == 0)
         assertEquals(set, set1)
     }
@@ -257,7 +286,7 @@ class ChampSetSmokeTest extends DecorateAsJava with DecorateAsScala {
     assertSameEqHash(set1, set)
 
     var set2 = set + mkTuple(O1, "O1_V2")
-    set2 = set2 +  mkTuple(O1, "O1_V2")
+    set2 = set2 + mkTuple(O1, "O1_V2")
     assertSameEqHash(set1 + mkTuple(O1, "O1_V2"), set2)
   }
 

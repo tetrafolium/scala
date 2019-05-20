@@ -4,7 +4,8 @@ import scala.tools.partest.ScaladocModelTest
 
 object Test extends ScaladocModelTest {
 
-  override def code = """
+  override def code =
+    """
   /** This comment contains ^superscript^ */
   class Foo {
     /** This comment contains ,,subscript,, */
@@ -41,7 +42,8 @@ object Test extends ScaladocModelTest {
     assert(barStr == "This comment contains subscript", barStr)
 
     val bazStr = Page.inlineToStr(foo._method("baz").comment.get.short)
-    assert(bazStr == "This comment contains a link https://scala.epfl.ch/", bazStr)
+    assert(bazStr == "This comment contains a link https://scala.epfl.ch/",
+           bazStr)
 
     val quxStr = Page.inlineToStr(foo._method("qux").comment.get.short)
     assert(quxStr == "This comment contains an html tag", quxStr)
@@ -53,6 +55,7 @@ object Test extends ScaladocModelTest {
     assert(quuzStr == "This comment contains nested html tags", quuzStr)
 
     val corgeStr = Page.inlineToStr(foo._method("corge").comment.get.short)
-    assert(corgeStr == "This comment contains a link with a subscript title", corgeStr)
+    assert(corgeStr == "This comment contains a link with a subscript title",
+           corgeStr)
   }
 }

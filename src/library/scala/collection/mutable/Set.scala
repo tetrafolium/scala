@@ -17,7 +17,7 @@ import scala.language.higherKinds
 
 /** Base trait for mutable sets */
 trait Set[A]
-  extends Iterable[A]
+    extends Iterable[A]
     with collection.Set[A]
     with SetOps[A, Set, Set[A]] {
 
@@ -29,7 +29,7 @@ trait Set[A]
   * @define Coll `mutable.Set`
   */
 trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
-  extends collection.SetOps[A, CC, C]
+    extends collection.SetOps[A, CC, C]
     with IterableOps[A, CC, C] // only needed so we can use super[IterableOps] below
     with Cloneable[C]
     with Builder[A, C]
@@ -62,10 +62,10 @@ trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
   }
 
   /** Removes an element from this set.
-   *
-   *  @param elem     the element to be removed
-   *  @return true if this set contained the element before it was removed
-   */
+    *
+    *  @param elem     the element to be removed
+    *  @return true if this set contained the element before it was removed
+    */
   def remove(elem: A): Boolean = {
     val res = contains(elem)
     coll -= elem
@@ -73,7 +73,8 @@ trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
   }
 
   def diff(that: collection.Set[A]): C =
-    toIterable.foldLeft(empty)((result, elem) => if (that contains elem) result else result += elem)
+    toIterable.foldLeft(empty)((result, elem) =>
+      if (that contains elem) result else result += elem)
 
   @deprecated("Use filterInPlace instead", "2.13.0")
   @inline final def retain(p: A => Boolean): Unit = filterInPlace(p)
@@ -112,7 +113,8 @@ trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
 @SerialVersionUID(3L)
 object Set extends IterableFactory.Delegate[Set](HashSet)
 
-
 /** Explicit instantiation of the `Set` trait to reduce class file size in subclasses. */
 @SerialVersionUID(3L)
-abstract class AbstractSet[A] extends scala.collection.AbstractSet[A] with Set[A]
+abstract class AbstractSet[A]
+    extends scala.collection.AbstractSet[A]
+    with Set[A]

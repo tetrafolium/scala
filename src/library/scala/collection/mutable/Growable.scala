@@ -28,34 +28,35 @@ import scala.collection.IterableOnce
 trait Growable[-A] extends Clearable {
 
   /** ${Add}s a single element to this $coll.
-   *
-   *  @param elem  the element to $add.
-   *  @return the $coll itself
-   */
+    *
+    *  @param elem  the element to $add.
+    *  @return the $coll itself
+    */
   def addOne(elem: A): this.type
 
   /** Alias for `addOne` */
-  @`inline` final def += (elem: A): this.type = addOne(elem)
+  @`inline` final def +=(elem: A): this.type = addOne(elem)
 
   //TODO This causes a conflict in StringBuilder; looks like a compiler bug
   //@deprecated("Use addOne or += instead of append", "2.13.0")
   //@`inline` final def append(elem: A): Unit = addOne(elem)
 
   /** ${Add}s two or more elements to this $coll.
-   *
-   *  @param elem1 the first element to $add.
-   *  @param elem2 the second element to $add.
-   *  @param elems the remaining elements to $add.
-   *  @return the $coll itself
-   */
+    *
+    *  @param elem1 the first element to $add.
+    *  @param elem2 the second element to $add.
+    *  @param elems the remaining elements to $add.
+    *  @return the $coll itself
+    */
   @deprecated("Use `++=` (addAll) instead of varargs `+=`", "2.13.0")
-  @`inline` final def += (elem1: A, elem2: A, elems: A*): this.type = this += elem1 += elem2 ++= (elems: IterableOnce[A])
+  @`inline` final def +=(elem1: A, elem2: A, elems: A*): this.type =
+    this += elem1 += elem2 ++= (elems: IterableOnce[A])
 
   /** ${Add}s all elements produced by an IterableOnce to this $coll.
-   *
-   *  @param xs   the IterableOnce producing the elements to $add.
-   *  @return  the $coll itself.
-   */
+    *
+    *  @param xs   the IterableOnce producing the elements to $add.
+    *  @return  the $coll itself.
+    */
   def addAll(xs: IterableOnce[A]): this.type = {
     val it = xs.iterator
     while (it.hasNext) {
@@ -65,7 +66,7 @@ trait Growable[-A] extends Clearable {
   }
 
   /** Alias for `addAll` */
-  @`inline` final def ++= (xs: IterableOnce[A]): this.type = addAll(xs)
+  @`inline` final def ++=(xs: IterableOnce[A]): this.type = addAll(xs)
 
   /** @return The number of elements in the collection under construction, if it can be cheaply computed,
     *  -1 otherwise. The default implementation always returns -1.
@@ -82,7 +83,8 @@ object Growable {
     * @tparam A Element type
     * @return The filled instance
     */
-  def from[A](empty: Growable[A], it: collection.IterableOnce[A]): empty.type = empty ++= it
+  def from[A](empty: Growable[A], it: collection.IterableOnce[A]): empty.type =
+    empty ++= it
 
 }
 
@@ -92,6 +94,7 @@ object Growable {
   *  @define coll collection
   */
 trait Clearable {
+
   /** Clears the $coll's contents. After this operation, the
     *  $coll is empty.
     */

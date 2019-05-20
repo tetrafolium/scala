@@ -2,7 +2,13 @@ package scala
 package tools.nsc
 package reporters
 
-import java.io.{ByteArrayOutputStream, StringReader, BufferedReader, PrintStream, PrintWriter}
+import java.io.{
+  ByteArrayOutputStream,
+  StringReader,
+  BufferedReader,
+  PrintStream,
+  PrintWriter
+}
 import org.junit.Assert._
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,22 +25,34 @@ class ConsoleReporterTest {
   val writerOut = new ByteArrayOutputStream()
   val echoWriterOut = new ByteArrayOutputStream()
 
-  def createConsoleReporter(inputForReader: String, errOut: ByteArrayOutputStream, echoOut: ByteArrayOutputStream = null): ConsoleReporter = {
+  def createConsoleReporter(
+      inputForReader: String,
+      errOut: ByteArrayOutputStream,
+      echoOut: ByteArrayOutputStream = null): ConsoleReporter = {
     val reader = new BufferedReader(new StringReader(inputForReader))
-      
+
     // Create reporter with the same writer and echoWriter if echoOut is null
     echoOut match {
-      case null => new ConsoleReporter(new Settings, reader, new PrintWriter(errOut))
-      case _ => new ConsoleReporter(new Settings, reader, new PrintWriter(errOut), new PrintWriter(echoWriterOut))
+      case null =>
+        new ConsoleReporter(new Settings, reader, new PrintWriter(errOut))
+      case _ =>
+        new ConsoleReporter(new Settings,
+                            reader,
+                            new PrintWriter(errOut),
+                            new PrintWriter(echoWriterOut))
     }
   }
 
-  def testHelper(pos: Position = NoPosition, msg: String, severity: String = "")(test: Position => Unit) =
+  def testHelper(pos: Position = NoPosition,
+                 msg: String,
+                 severity: String = "")(test: Position => Unit) =
     try {
       test(pos)
       val buf = writerOut.toString
-      if (msg.isEmpty && severity.isEmpty) assertTrue(s"Expected no message output but saw: [$buf]", buf.isEmpty)
-      else if (!pos.isDefined) assertEquals(severity + msg, buf.linesIterator.next)
+      if (msg.isEmpty && severity.isEmpty)
+        assertTrue(s"Expected no message output but saw: [$buf]", buf.isEmpty)
+      else if (!pos.isDefined)
+        assertEquals(severity + msg, buf.linesIterator.next)
       else {
         val it = buf.linesIterator
         assertEquals(source + ":1: " + severity + msg, it.next)
@@ -46,8 +64,10 @@ class ConsoleReporterTest {
   @Test
   def printMessageTest(): Unit = {
     val reporter = createConsoleReporter("r", writerOut)
-    testHelper(msg = "Hello World!")(_ => reporter.display(NoPosition, "Hello World!", null))
-    testHelper(posWithSource, "Testing with Defined Position")(reporter.display(_, "Testing with Defined Position", null))
+    testHelper(msg = "Hello World!")(_ =>
+      reporter.display(NoPosition, "Hello World!", null))
+    testHelper(posWithSource, "Testing with Defined Position")(
+      reporter.display(_, "Testing with Defined Position", null))
   }
 
   @Test
@@ -65,11 +85,16 @@ class ConsoleReporterTest {
   def printTest(): Unit = {
     val reporter = createConsoleReporter("r", writerOut)
     testHelper(msg = "test")(reporter.display(_, "test", reporter.INFO))
-    testHelper(msg = "test", severity = "warning: ")(reporter.display(_, "test", reporter.WARNING))
-    testHelper(msg = "test", severity = "error: ")(reporter.display(_, "test", reporter.ERROR))
-    testHelper(posWithSource, msg = "test")(reporter.display(_, "test", reporter.INFO))
-    testHelper(posWithSource, msg = "test", severity = "warning: ")(reporter.display(_, "test", reporter.WARNING))
-    testHelper(posWithSource, msg = "test", severity = "error: ")(reporter.display(_, "test", reporter.ERROR))
+    testHelper(msg = "test", severity = "warning: ")(
+      reporter.display(_, "test", reporter.WARNING))
+    testHelper(msg = "test", severity = "error: ")(
+      reporter.display(_, "test", reporter.ERROR))
+    testHelper(posWithSource, msg = "test")(
+      reporter.display(_, "test", reporter.INFO))
+    testHelper(posWithSource, msg = "test", severity = "warning: ")(
+      reporter.display(_, "test", reporter.WARNING))
+    testHelper(posWithSource, msg = "test", severity = "error: ")(
+      reporter.display(_, "test", reporter.ERROR))
   }
 
   @Test
@@ -80,25 +105,43 @@ class ConsoleReporterTest {
     reporter.settings.maxerrs.value = 1
     reporter.settings.maxwarns.value = 1
 
-    testHelper(msg = "Testing display")(reporter.display(_, "Testing display", reporter.INFO))
-    testHelper(msg = "Testing display", severity = "warning: ")(reporter.display(_, "Testing display", reporter.WARNING))
-    testHelper(msg = "Testing display", severity = "error: ")(reporter.display(_, "Testing display", reporter.ERROR))
-    testHelper(posWithSource, msg = "Testing display")(reporter.display(_, "Testing display", reporter.INFO))
-    testHelper(posWithSource, msg = "Testing display", severity = "warning: ")(reporter.display(_, "Testing display", reporter.WARNING))
-    testHelper(posWithSource, msg = "Testing display", severity = "error: ")(reporter.display(_, "Testing display", reporter.ERROR))
+    testHelper(msg = "Testing display")(
+      reporter.display(_, "Testing display", reporter.INFO))
+    testHelper(msg = "Testing display", severity = "warning: ")(
+      reporter.display(_, "Testing display", reporter.WARNING))
+    testHelper(msg = "Testing display", severity = "error: ")(
+      reporter.display(_, "Testing display", reporter.ERROR))
+    testHelper(posWithSource, msg = "Testing display")(
+      reporter.display(_, "Testing display", reporter.INFO))
+    testHelper(posWithSource, msg = "Testing display", severity = "warning: ")(
+      reporter.display(_, "Testing display", reporter.WARNING))
+    testHelper(posWithSource, msg = "Testing display", severity = "error: ")(
+      reporter.display(_, "Testing display", reporter.ERROR))
 
     reporter.resetCount(reporter.ERROR)
     reporter.resetCount(reporter.WARNING)
 
     reporter.ERROR.count += 1
-    testHelper(posWithSource, msg = "Testing display for maxerrs to pass", severity = "error: ")(reporter.display(_, "Testing display for maxerrs to pass", reporter.ERROR))
+    testHelper(posWithSource,
+               msg = "Testing display for maxerrs to pass",
+               severity = "error: ")(
+      reporter
+        .display(_, "Testing display for maxerrs to pass", reporter.ERROR))
     reporter.ERROR.count += 1
-    testHelper(msg = "")(reporter.display(_, "Testing display for maxerrs to fail", reporter.ERROR))
+    testHelper(msg = "")(
+      reporter
+        .display(_, "Testing display for maxerrs to fail", reporter.ERROR))
 
     reporter.WARNING.count += 1
-    testHelper(posWithSource, msg = "Testing display for maxwarns to pass", severity = "warning: ")(reporter.display(_, "Testing display for maxwarns to pass", reporter.WARNING))
+    testHelper(posWithSource,
+               msg = "Testing display for maxwarns to pass",
+               severity = "warning: ")(
+      reporter
+        .display(_, "Testing display for maxwarns to pass", reporter.WARNING))
     reporter.WARNING.count += 1
-    testHelper(msg = "")(reporter.display(_, "Testing display for maxwarns to fail", reporter.WARNING))
+    testHelper(msg = "")(
+      reporter
+        .display(_, "Testing display for maxwarns to fail", reporter.WARNING))
   }
 
   @Test
@@ -153,10 +196,10 @@ class ConsoleReporterTest {
   @Test
   def filterTest(): Unit = {
     val reporter = createConsoleReporter("r", writerOut)
-    val filter   = {
+    val filter = {
       // Change maxerrs and maxwarns from default on filter only
       val settings = new Settings
-      settings.maxerrs.value  = 1
+      settings.maxerrs.value = 1
       settings.maxwarns.value = 1
 
       new Reporter.LimitingReporter(settings, reporter) with CountingReporter
@@ -164,13 +207,18 @@ class ConsoleReporterTest {
 
     // pass one message
     testHelper(msg = "Testing display")(filter.echo(_, "Testing display"))
-    testHelper(msg = "Testing display", severity = "warning: ")(filter.warning(_, "Testing display"))
-    testHelper(msg = "Testing display", severity = "error: ")(filter.error(_, "Testing display"))
+    testHelper(msg = "Testing display", severity = "warning: ")(
+      filter.warning(_, "Testing display"))
+    testHelper(msg = "Testing display", severity = "error: ")(
+      filter.error(_, "Testing display"))
     filter.reset()
 
-    testHelper(posWithSource, msg = "Testing display")(filter.echo(_, "Testing display"))
-    testHelper(posWithSource, msg = "Testing display", severity = "warning: ")(filter.warning(_, "Testing display"))
-    testHelper(posWithSource, msg = "Testing display", severity = "error: ")(filter.error(_, "Testing display"))
+    testHelper(posWithSource, msg = "Testing display")(
+      filter.echo(_, "Testing display"))
+    testHelper(posWithSource, msg = "Testing display", severity = "warning: ")(
+      filter.warning(_, "Testing display"))
+    testHelper(posWithSource, msg = "Testing display", severity = "error: ")(
+      filter.error(_, "Testing display"))
     filter.reset()
 
     // either reset after each test or emit warn before error so that both are output by AbstractReporter
@@ -181,16 +229,24 @@ class ConsoleReporterTest {
 
     // try to pass two messages
     // warn first; would be nice to flush too
-    testHelper(posWithSource, msg = "Testing display for maxwarns to pass", severity = "warning: ")(filter.warning(_, "Testing display for maxwarns to pass"))
-    testHelper(msg = "")(filter.warning(_, "Testing display for maxwarns to fail"))
+    testHelper(posWithSource,
+               msg = "Testing display for maxwarns to pass",
+               severity = "warning: ")(
+      filter.warning(_, "Testing display for maxwarns to pass"))
+    testHelper(msg = "")(
+      filter.warning(_, "Testing display for maxwarns to fail"))
 
-    testHelper(posWithSource, msg = "Testing display for maxerrs to pass", severity = "error: ")(filter.error(_, "Testing display for maxerrs to pass"))
+    testHelper(posWithSource,
+               msg = "Testing display for maxerrs to pass",
+               severity = "error: ")(
+      filter.error(_, "Testing display for maxerrs to pass"))
     testHelper(msg = "")(filter.error(_, "Testing display for maxerrs to fail"))
   }
 
   @Test
   def filteredInfoTest(): Unit = {
-    val reporter = new Reporter.LimitingReporter(new Settings, new StoreReporter)
+    val reporter =
+      new Reporter.LimitingReporter(new Settings, new StoreReporter)
     // test obsolete API, make sure it doesn't throw
     reporter.info(NoPosition, "goodbye, cruel world", force = false)
   }
@@ -198,12 +254,14 @@ class ConsoleReporterTest {
   @Test
   def adaptedReporterTest(): Unit = {
     val reporter = createConsoleReporter("r", writerOut)
-    val adapted  = new Reporter.AdaptedReporter(reporter)
+    val adapted = new Reporter.AdaptedReporter(reporter)
 
     // pass one message
     testHelper(msg = "Testing display")(adapted.echo(_, "Testing display"))
-    testHelper(msg = "Testing display", severity = "warning: ")(adapted.warning(_, "Testing display"))
-    testHelper(msg = "Testing display", severity = "error: ")(adapted.error(_, "Testing display"))
+    testHelper(msg = "Testing display", severity = "warning: ")(
+      adapted.warning(_, "Testing display"))
+    testHelper(msg = "Testing display", severity = "error: ")(
+      adapted.error(_, "Testing display"))
 
     assertTrue(adapted.hasErrors)
     assertEquals(1, adapted.errorCount)

@@ -14,8 +14,8 @@ package scala.tools.nsc
 package transform
 
 /** A base class for transforms.
- *  A transform contains a compiler phase which applies a tree transformer.
- */
+  *  A transform contains a compiler phase which applies a tree transformer.
+  */
 trait TypingTransformers {
 
   val global: Global
@@ -24,16 +24,20 @@ trait TypingTransformers {
   abstract class TypingTransformer(unit: CompilationUnit) extends Transformer {
     var localTyper: analyzer.Typer =
       if (phase.erasedTypes)
-        erasure.newTyper(erasure.rootContextPostTyper(unit, EmptyTree)).asInstanceOf[analyzer.Typer]
+        erasure
+          .newTyper(erasure.rootContextPostTyper(unit, EmptyTree))
+          .asInstanceOf[analyzer.Typer]
       else // TODO: AM: should some phases use a regular rootContext instead of a post-typer one??
         analyzer.newTyper(analyzer.rootContextPostTyper(unit, EmptyTree))
     protected var curTree: Tree = _
 
-    override final def atOwner[A](owner: Symbol)(trans: => A): A = atOwner(curTree, owner)(trans)
+    override final def atOwner[A](owner: Symbol)(trans: => A): A =
+      atOwner(curTree, owner)(trans)
 
     def atOwner[A](tree: Tree, owner: Symbol)(trans: => A): A = {
       val savedContext = localTyper.context
-      localTyper.context = localTyper.context.make(tree, if (owner.isModuleNotMethod) owner.moduleClass else owner)
+      localTyper.context = localTyper.context
+        .make(tree, if (owner.isModuleNotMethod) owner.moduleClass else owner)
       val result = super.atOwner(owner)(trans)
       localTyper.context = savedContext
       result
@@ -53,4 +57,3 @@ trait TypingTransformers {
     }
   }
 }
-

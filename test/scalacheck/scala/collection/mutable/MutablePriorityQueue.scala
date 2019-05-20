@@ -7,7 +7,8 @@ import org.scalacheck._
 object MutablePriorityQueueTest extends Properties("PriorityQueue") {
   type E = Int // the element type used for most/all of the tests
 
-  def checkInvariant[A](pq: PriorityQueue[A])(implicit ord: Ordering[A]): Boolean = {
+  def checkInvariant[A](pq: PriorityQueue[A])(
+      implicit ord: Ordering[A]): Boolean = {
     // The ordering invariant in the heap is that parent >= child.
     // A child at index i has a parent at index i/2 in the priority
     // queue's internal array.  However, that array is padded with
@@ -16,7 +17,9 @@ object MutablePriorityQueueTest extends Properties("PriorityQueue") {
     // every index.
     import ord._
     val vec = pq.toVector // elements in same order as pq's internal array
-    2 until pq.size forall { i => vec(i/2-1) >= vec(i-1) }
+    2 until pq.size forall { i =>
+      vec(i / 2 - 1) >= vec(i - 1)
+    }
   }
 
   property("newBuilder (in companion)") = forAll { list: List[E] =>

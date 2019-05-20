@@ -25,13 +25,13 @@ object Test {
     val f1 = new T[A] {
       def m(x: A) = "f1-a"
       def m(x: B) = "f1-b"
-       // the m(Object)Object bridge method invokes (A)Object
+      // the m(Object)Object bridge method invokes (A)Object
     }
 
     val f2 = new T[B] {
       def m(x: A) = "f2-a"
       def m(x: B) = "f2-b"
-       // the (Object)Object bridge method invokes (B)Object
+      // the (Object)Object bridge method invokes (B)Object
     }
 
     val g1: T[C] = f1

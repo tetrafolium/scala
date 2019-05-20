@@ -10,5 +10,7 @@ object Test {
     def f = implicitly[Int]
     f
   }
-  implicit object tcString extends TC[String] { def ix = implicitly[TC[String]].ix + 1 }
+  implicit object tcString extends TC[String] {
+    def ix = implicitly[TC[String]].ix + 1
+  }
 }

@@ -55,10 +55,13 @@ object IsMap {
     *
     * `Tupled[F]#Ap` is equivalent to `({ type Ap[X, +Y] = F[(X, Y)] })#Ap`.
     */
-  type Tupled[F[+_]] = { type Ap[X, Y] = F[(X, Y)] }
+  type Tupled[F[+ _]] = { type Ap[X, Y] = F[(X, Y)] }
 
   // Map collections
-  implicit def mapOpsIsMap[CC0[X, Y] <: MapOps[X, Y, Tupled[Iterable]#Ap, CC0[X, Y]], K0, V0]: IsMap[CC0[K0, V0]] { type K = K0; type V = V0; type C = CC0[K, V] } =
+  implicit def mapOpsIsMap[
+      CC0[X, Y] <: MapOps[X, Y, Tupled[Iterable]#Ap, CC0[X, Y]],
+      K0,
+      V0]: IsMap[CC0[K0, V0]] { type K = K0; type V = V0; type C = CC0[K, V] } =
     new IsMap[CC0[K0, V0]] {
       type K = K0
       type V = V0
@@ -67,49 +70,63 @@ object IsMap {
     }
 
   // MapView
-  implicit def mapViewIsMap[CC0[X, Y] <: MapView[X, Y], K0, V0]: IsMap[CC0[K0, V0]] { type K = K0; type V = V0; type C = View[(K0, V0)] } =
+  implicit def mapViewIsMap[CC0[X, Y] <: MapView[X, Y], K0, V0]
+    : IsMap[CC0[K0, V0]] { type K = K0; type V = V0; type C = View[(K0, V0)] } =
     new IsMap[CC0[K0, V0]] {
       type K = K0
       type V = V0
       type C = View[(K, V)]
-      def apply(c: CC0[K0, V0]): MapOps[K0, V0, Tupled[Iterable]#Ap, View[(K0, V0)]] = c
+      def apply(
+          c: CC0[K0, V0]): MapOps[K0, V0, Tupled[Iterable]#Ap, View[(K0, V0)]] =
+        c
     }
 
   // AnyRefMap has stricter bounds than the ones used by the mapOpsIsMap definition
-  implicit def anyRefMapIsMap[K0 <: AnyRef, V0]: IsMap[mutable.AnyRefMap[K0, V0]] { type K = K0; type V = V0; type C = mutable.AnyRefMap[K0, V0] } =
+  implicit def anyRefMapIsMap[K0 <: AnyRef, V0]
+    : IsMap[mutable.AnyRefMap[K0, V0]] {
+      type K = K0; type V = V0; type C = mutable.AnyRefMap[K0, V0]
+    } =
     new IsMap[mutable.AnyRefMap[K0, V0]] {
       type K = K0
       type V = V0
       type C = mutable.AnyRefMap[K0, V0]
-      def apply(c: mutable.AnyRefMap[K0, V0]): MapOps[K0, V0, Tupled[Iterable]#Ap, mutable.AnyRefMap[K0, V0]] = c
+      def apply(c: mutable.AnyRefMap[K0, V0])
+        : MapOps[K0, V0, Tupled[Iterable]#Ap, mutable.AnyRefMap[K0, V0]] = c
     }
 
   // IntMap takes one type parameter only whereas mapOpsIsMap uses a parameter CC0 with two type parameters
-  implicit def intMapIsMap[V0]: IsMap[IntMap[V0]] { type K = Int; type V = V0; type C = IntMap[V0] } =
+  implicit def intMapIsMap[V0]
+    : IsMap[IntMap[V0]] { type K = Int; type V = V0; type C = IntMap[V0] } =
     new IsMap[IntMap[V0]] {
       type K = Int
       type V = V0
       type C = IntMap[V0]
-      def apply(c: IntMap[V0]): MapOps[Int, V0, Tupled[Iterable]#Ap, IntMap[V0]] = c
+      def apply(
+          c: IntMap[V0]): MapOps[Int, V0, Tupled[Iterable]#Ap, IntMap[V0]] = c
     }
 
   // LongMap is in a similar situation as IntMap
-  implicit def longMapIsMap[V0]: IsMap[LongMap[V0]] { type K = Long; type V = V0; type C = LongMap[V0] } =
+  implicit def longMapIsMap[V0]
+    : IsMap[LongMap[V0]] { type K = Long; type V = V0; type C = LongMap[V0] } =
     new IsMap[LongMap[V0]] {
       type K = Long
       type V = V0
       type C = LongMap[V0]
-      def apply(c: LongMap[V0]): MapOps[Long, V0, Tupled[Iterable]#Ap, LongMap[V0]] = c
+      def apply(
+          c: LongMap[V0]): MapOps[Long, V0, Tupled[Iterable]#Ap, LongMap[V0]] =
+        c
     }
 
   // mutable.LongMap is in a similar situation as LongMap and IntMap
-  implicit def mutableLongMapIsMap[V0]: IsMap[mutable.LongMap[V0]] { type K = Long; type V = V0; type C = mutable.LongMap[V0] } =
+  implicit def mutableLongMapIsMap[V0]: IsMap[mutable.LongMap[V0]] {
+    type K = Long; type V = V0; type C = mutable.LongMap[V0]
+  } =
     new IsMap[mutable.LongMap[V0]] {
       type K = Long
       type V = V0
       type C = mutable.LongMap[V0]
-      def apply(c: mutable.LongMap[V0]): MapOps[Long, V0, Tupled[Iterable]#Ap, mutable.LongMap[V0]] = c
+      def apply(c: mutable.LongMap[V0])
+        : MapOps[Long, V0, Tupled[Iterable]#Ap, mutable.LongMap[V0]] = c
     }
-
 
 }

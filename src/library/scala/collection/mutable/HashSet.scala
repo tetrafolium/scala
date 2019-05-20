@@ -30,7 +30,7 @@ import scala.collection.generic.DefaultSerializationProxy
   * @define willNotTerminateInf
   */
 final class HashSet[A](initialCapacity: Int, loadFactor: Double)
-  extends AbstractSet[A]
+    extends AbstractSet[A]
     with SetOps[A, HashSet, HashSet[A]]
     with StrictOptimizedIterableOps[A, HashSet, HashSet[A]]
     with Serializable {
@@ -65,17 +65,17 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
     val hash = computeHash(elem)
     table(index(hash)) match {
       case null => null
-      case nd => nd.findNode(elem, hash)
+      case nd   => nd.findNode(elem, hash)
     }
   }
 
   override def sizeHint(size: Int): Unit = {
     val target = tableSizeFor(((size + 1).toDouble / loadFactor).toInt)
-    if(target > table.length) growTable(target)
+    if (target > table.length) growTable(target)
   }
 
-  override def add(elem: A) : Boolean = {
-    if(contentSize + 1 >= threshold) growTable(table.length * 2)
+  override def add(elem: A): Boolean = {
+    if (contentSize + 1 >= threshold) growTable(table.length * 2)
     addElem(elem, computeHash(elem))
   }
 
@@ -84,7 +84,7 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
     super.addAll(xs)
   }
 
-  private[this] def addElem(elem: A, hash: Int) : Boolean = {
+  private[this] def addElem(elem: A, hash: Int): Boolean = {
     val idx = index(hash)
     table(idx) match {
       case null =>
@@ -92,12 +92,12 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
       case old =>
         var prev: Node[A] = null
         var n = old
-        while((n ne null) && n.hash <= hash) {
-          if(n.hash == hash && elem == n.key) return false
+        while ((n ne null) && n.hash <= hash) {
+          if (n.hash == hash && elem == n.key) return false
           prev = n
           n = n.next
         }
-        if(prev eq null)
+        if (prev eq null)
           table(idx) = new Node(elem, hash, old)
         else
           prev.next = new Node(elem, hash, prev.next)
@@ -106,11 +106,11 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
     true
   }
 
-  override def remove(elem: A) : Boolean = {
+  override def remove(elem: A): Boolean = {
     val hash = computeHash(elem)
     var idx = index(hash)
     table(idx) match {
-      case null => false
+      case null                                    => false
       case nd if nd.hash == hash && nd.key == elem =>
         // first element matches
         table(idx) = nd.next
@@ -120,8 +120,8 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
         // find an element that matches
         var prev = nd
         var next = nd.next
-        while((next ne null) && next.hash <= hash) {
-          if(next.hash == hash && next.key == elem) {
+        while ((next ne null) && next.hash <= hash) {
+          if (next.hash == hash && next.key == elem) {
             prev.next = next.next
             contentSize -= 1
             return true
@@ -139,19 +139,19 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
     private[this] val len = table.length
 
     def hasNext: Boolean = {
-      if(node ne null) true
+      if (node ne null) true
       else {
-        while(i < len) {
+        while (i < len) {
           val n = table(i)
           i += 1
-          if(n ne null) { node = n; return true }
+          if (n ne null) { node = n; return true }
         }
         false
       }
     }
 
     def next(): A =
-      if(!hasNext) Iterator.empty.next()
+      if (!hasNext) Iterator.empty.next()
       else {
         val r = node.key
         node = node.next
@@ -162,26 +162,26 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
   private[this] def growTable(newlen: Int) = {
     var oldlen = table.length
     threshold = newThreshold(newlen)
-    if(size == 0) table = new Array(newlen)
+    if (size == 0) table = new Array(newlen)
     else {
       table = java.util.Arrays.copyOf(table, newlen)
       val preLow: Node[A] = new Node(null.asInstanceOf[A], 0, null)
       val preHigh: Node[A] = new Node(null.asInstanceOf[A], 0, null)
       // Split buckets until the new length has been reached. This could be done more
       // efficiently when growing an already filled table to more than double the size.
-      while(oldlen < newlen) {
+      while (oldlen < newlen) {
         var i = 0
         while (i < oldlen) {
           val old = table(i)
-          if(old ne null) {
+          if (old ne null) {
             preLow.next = null
             preHigh.next = null
             var lastLow: Node[A] = preLow
             var lastHigh: Node[A] = preHigh
             var n = old
-            while(n ne null) {
+            while (n ne null) {
               val next = n.next
-              if((n.hash & oldlen) == 0) { // keep low
+              if ((n.hash & oldlen) == 0) { // keep low
                 lastLow.next = n
                 lastLow = n
               } else { // move to high
@@ -191,8 +191,8 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
               n = next
             }
             lastLow.next = null
-            if(old ne preLow.next) table(i) = preLow.next
-            if(preHigh.next ne null) {
+            if (old ne preLow.next) table(i) = preLow.next
+            if (preHigh.next ne null) {
               table(i + oldlen) = preHigh.next
               lastHigh.next = null
             }
@@ -257,10 +257,10 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
     }
     assert(contentSize == count)
   }
-  */
+   */
 
   private[this] def tableSizeFor(capacity: Int) =
-    (Integer.highestOneBit((capacity-1).max(4))*2).min(1 << 30)
+    (Integer.highestOneBit((capacity - 1).max(4)) * 2).min(1 << 30)
 
   private[this] def newThreshold(size: Int) = (size.toDouble * loadFactor).toInt
 
@@ -282,16 +282,19 @@ final class HashSet[A](initialCapacity: Int, loadFactor: Double)
   override def foreach[U](f: A => U): Unit = {
     val len = table.length
     var i = 0
-    while(i < len) {
+    while (i < len) {
       val n = table(i)
-      if(n ne null) n.foreach(f)
+      if (n ne null) n.foreach(f)
       i += 1
     }
   }
 
-  protected[this] def writeReplace(): AnyRef = new DefaultSerializationProxy(new HashSet.DeserializationFactory[A](table.length, loadFactor), this)
+  protected[this] def writeReplace(): AnyRef =
+    new DefaultSerializationProxy(
+      new HashSet.DeserializationFactory[A](table.length, loadFactor),
+      this)
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "HashSet"
 }
 
@@ -305,16 +308,21 @@ object HashSet extends IterableFactory[HashSet] {
 
   def from[B](it: scala.collection.IterableOnce[B]): HashSet[B] = {
     val k = it.knownSize
-    val cap = if(k > 0) ((k + 1).toDouble / defaultLoadFactor).toInt else defaultInitialCapacity
+    val cap =
+      if (k > 0) ((k + 1).toDouble / defaultLoadFactor).toInt
+      else defaultInitialCapacity
     new HashSet[B](cap, defaultLoadFactor) ++= it
   }
 
   def empty[A]: HashSet[A] = new HashSet[A]
 
-  def newBuilder[A]: Builder[A, HashSet[A]] = newBuilder(defaultInitialCapacity, defaultLoadFactor)
+  def newBuilder[A]: Builder[A, HashSet[A]] =
+    newBuilder(defaultInitialCapacity, defaultLoadFactor)
 
-  def newBuilder[A](initialCapacity: Int, loadFactor: Double): Builder[A, HashSet[A]] =
-    new GrowableBuilder[A, HashSet[A]](new HashSet[A](initialCapacity, loadFactor)) {
+  def newBuilder[A](initialCapacity: Int,
+                    loadFactor: Double): Builder[A, HashSet[A]] =
+    new GrowableBuilder[A, HashSet[A]](
+      new HashSet[A](initialCapacity, loadFactor)) {
       override def sizeHint(size: Int) = elems.sizeHint(size)
     }
 
@@ -325,27 +333,34 @@ object HashSet extends IterableFactory[HashSet] {
   final def defaultInitialCapacity: Int = 16
 
   @SerialVersionUID(3L)
-  private final class DeserializationFactory[A](val tableLength: Int, val loadFactor: Double) extends Factory[A, HashSet[A]] with Serializable {
-    def fromSpecific(it: IterableOnce[A]): HashSet[A] = new HashSet[A](tableLength, loadFactor) ++= it
-    def newBuilder: Builder[A, HashSet[A]] = HashSet.newBuilder(tableLength, loadFactor)
+  private final class DeserializationFactory[A](val tableLength: Int,
+                                                val loadFactor: Double)
+      extends Factory[A, HashSet[A]]
+      with Serializable {
+    def fromSpecific(it: IterableOnce[A]): HashSet[A] =
+      new HashSet[A](tableLength, loadFactor) ++= it
+    def newBuilder: Builder[A, HashSet[A]] =
+      HashSet.newBuilder(tableLength, loadFactor)
   }
 
-  private final class Node[K](_key: K, _hash: Int, private[this] var _next: Node[K]) {
+  private final class Node[K](_key: K,
+                              _hash: Int,
+                              private[this] var _next: Node[K]) {
     def key: K = _key
     def hash: Int = _hash
     def next: Node[K] = _next
-    def next_= (n: Node[K]): Unit = _next = n
+    def next_=(n: Node[K]): Unit = _next = n
 
     @tailrec
     def findNode(k: K, h: Int): Node[K] =
-      if(h == _hash && k == _key) this
-      else if((_next eq null) || (_hash > h)) null
+      if (h == _hash && k == _key) this
+      else if ((_next eq null) || (_hash > h)) null
       else _next.findNode(k, h)
 
     @tailrec
     def foreach[U](f: K => U): Unit = {
       f(_key)
-      if(_next ne null) _next.foreach(f)
+      if (_next ne null) _next.foreach(f)
     }
 
     override def toString = s"Node($key, $hash) -> $next"

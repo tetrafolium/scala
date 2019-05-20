@@ -32,8 +32,9 @@ import scala.collection.IterableFactory
   * @define coll immutable collection
   * @define Coll `immutable.Iterable`
   */
-trait Iterable[+A] extends collection.Iterable[A]
-                      with collection.IterableOps[A, Iterable, Iterable[A]] {
+trait Iterable[+A]
+    extends collection.Iterable[A]
+    with collection.IterableOps[A, Iterable, Iterable[A]] {
 
   override def iterableFactory: IterableFactory[IterableCC] = Iterable
 }
@@ -42,6 +43,6 @@ trait Iterable[+A] extends collection.Iterable[A]
 object Iterable extends IterableFactory.Delegate[Iterable](List) {
   override def from[E](it: IterableOnce[E]): Iterable[E] = it match {
     case iterable: Iterable[E] => iterable
-    case _ => super.from(it)
+    case _                     => super.from(it)
   }
 }

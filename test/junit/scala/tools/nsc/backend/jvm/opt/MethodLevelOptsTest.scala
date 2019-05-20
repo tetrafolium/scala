@@ -20,15 +20,21 @@ class MethodLevelOptsTest extends BytecodeTesting {
   override def compilerArgs = "-opt:l:method"
   import compiler._
 
-  def wrapInDefault(code: Instruction*) = List(Label(0), LineNumber(1, Label(0))) ::: code.toList ::: List(Label(1))
+  def wrapInDefault(code: Instruction*) =
+    List(Label(0), LineNumber(1, Label(0))) ::: code.toList ::: List(Label(1))
 
-  def locals(c: ClassNode, m: String) = getAsmMethod(c, m).localVariables.asScala.toList.map(l => (l.name, l.index)).sortBy(_._2)
+  def locals(c: ClassNode, m: String) =
+    getAsmMethod(c, m).localVariables.asScala.toList
+      .map(l => (l.name, l.index))
+      .sortBy(_._2)
 
   @Test
   def eliminateEmptyTry(): Unit = {
     val code = "def f = { try {} catch { case _: Throwable => 0; () }; 1 }"
     val warn = "a pure expression does nothing in statement position"
-    assertSameCode(compileInstructions(code, allowMessage = _.msg contains warn), wrapInDefault(Op(ICONST_1), Op(IRETURN)))
+    assertSameCode(
+      compileInstructions(code, allowMessage = _.msg contains warn),
+      wrapInDefault(Op(ICONST_1), Op(IRETURN)))
   }
 
   @Test
@@ -43,11 +49,20 @@ class MethodLevelOptsTest extends BytecodeTesting {
   @Test
   def inlineThrowInCatchNotTry(): Unit = {
     // the try block does not contain the `ATHROW` instruction, but in the catch block, `ATHROW` is inlined
-    val code = "def f(e: Exception) = throw { try e catch { case _: Throwable => e } }"
+    val code =
+      "def f(e: Exception) = throw { try e catch { case _: Throwable => e } }"
     val m = compileMethod(code)
     assertHandlerLabelPostions(m.handlers.head, m.instructions, 0, 3, 5)
-    assertSameCode(m.instructions,
-      wrapInDefault(VarOp(ALOAD, 1), Label(3), Op(ATHROW), Label(5), FrameEntry(4, List(), List("java/lang/Throwable")), Op(POP), VarOp(ALOAD, 1), Op(ATHROW))
+    assertSameCode(
+      m.instructions,
+      wrapInDefault(VarOp(ALOAD, 1),
+                    Label(3),
+                    Op(ATHROW),
+                    Label(5),
+                    FrameEntry(4, List(), List("java/lang/Throwable")),
+                    Op(POP),
+                    VarOp(ALOAD, 1),
+                    Op(ATHROW))
     )
   }
 
@@ -57,8 +72,17 @@ class MethodLevelOptsTest extends BytecodeTesting {
     // cannot inline the IRETURN into the try block (because RETURN may throw IllegalMonitorState)
     val m = compileMethod(code)
     assertHandlerLabelPostions(m.handlers.head, m.instructions, 0, 3, 5)
-    assertSameCode(m.instructions,
-      wrapInDefault(Op(ICONST_1), Label(3), Op(IRETURN), Label(5), FrameEntry(4, List(), List("java/lang/Throwable")), Op(POP), Op(ICONST_2), Op(IRETURN)))
+    assertSameCode(
+      m.instructions,
+      wrapInDefault(Op(ICONST_1),
+                    Label(3),
+                    Op(IRETURN),
+                    Label(5),
+                    FrameEntry(4, List(), List("java/lang/Throwable")),
+                    Op(POP),
+                    Op(ICONST_2),
+                    Op(IRETURN))
+    )
   }
 
   @Test
@@ -98,8 +122,14 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameCode(getMethod(c, "t"), List(
-      Op(ACONST_NULL), Invoke(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false), Op(ARETURN)))
+    assertSameCode(getMethod(c, "t"),
+                   List(Op(ACONST_NULL),
+                        Invoke(INVOKEVIRTUAL,
+                               "java/lang/Object",
+                               "toString",
+                               "()Ljava/lang/String;",
+                               false),
+                        Op(ARETURN)))
   }
 
   @Test
@@ -115,8 +145,7 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameCode(
-      getMethod(c, "t"), List(Ldc(LDC, "c"), Op(ARETURN)))
+    assertSameCode(getMethod(c, "t"), List(Ldc(LDC, "c"), Op(ARETURN)))
   }
 
   @Test
@@ -137,13 +166,28 @@ class MethodLevelOptsTest extends BytecodeTesting {
       """.stripMargin
     val c = compileClass(code)
 
-    assertSameCode(getMethod(c, "t"), List(
-      Ldc(LDC, "el"), VarOp(ASTORE, 1),
-      Field(GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;"), VarOp(ALOAD, 1), Invoke(INVOKEVIRTUAL, "scala/Predef$", "println", "(Ljava/lang/Object;)V", false),
-      Op(ACONST_NULL), VarOp(ASTORE, 1),
-      Ldc(LDC, "zit"), VarOp(ASTORE, 1),
-      Field(GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;"), Invoke(INVOKEVIRTUAL, "scala/Predef$", "println", "()V", false),
-      VarOp(ALOAD, 1), Op(ARETURN)))
+    assertSameCode(
+      getMethod(c, "t"),
+      List(
+        Ldc(LDC, "el"),
+        VarOp(ASTORE, 1),
+        Field(GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;"),
+        VarOp(ALOAD, 1),
+        Invoke(INVOKEVIRTUAL,
+               "scala/Predef$",
+               "println",
+               "(Ljava/lang/Object;)V",
+               false),
+        Op(ACONST_NULL),
+        VarOp(ASTORE, 1),
+        Ldc(LDC, "zit"),
+        VarOp(ASTORE, 1),
+        Field(GETSTATIC, "scala/Predef$", "MODULE$", "Lscala/Predef$;"),
+        Invoke(INVOKEVIRTUAL, "scala/Predef$", "println", "()V", false),
+        VarOp(ALOAD, 1),
+        Op(ARETURN)
+      )
+    )
   }
 
   @Test
@@ -162,8 +206,14 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code, allowMessage = ignoreDeprecations)
-    assertSameCode(getMethod(c, "t"), List(
-      IntOp(BIPUSH, 23), IntOp(NEWARRAY, 5), Op(POP), VarOp(ILOAD, 1), VarOp(ILOAD, 2), Op(IADD), Op(IRETURN)))
+    assertSameCode(getMethod(c, "t"),
+                   List(IntOp(BIPUSH, 23),
+                        IntOp(NEWARRAY, 5),
+                        Op(POP),
+                        VarOp(ILOAD, 1),
+                        VarOp(ILOAD, 2),
+                        Op(IADD),
+                        Op(IRETURN)))
   }
 
   @Test
@@ -177,9 +227,22 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code, allowMessage = ignoreDeprecations)
-    assertSameCode(getMethod(c, "t"), List(
-      TypeOp(NEW, "java/lang/Integer"), Ldc(LDC, "nono"), Invoke(INVOKESPECIAL, "java/lang/Integer", "<init>", "(Ljava/lang/String;)V", false),
-      VarOp(ILOAD, 1), VarOp(ILOAD, 2), Op(IADD), Op(IRETURN)))
+    assertSameCode(
+      getMethod(c, "t"),
+      List(
+        TypeOp(NEW, "java/lang/Integer"),
+        Ldc(LDC, "nono"),
+        Invoke(INVOKESPECIAL,
+               "java/lang/Integer",
+               "<init>",
+               "(Ljava/lang/String;)V",
+               false),
+        VarOp(ILOAD, 1),
+        VarOp(ILOAD, 2),
+        Op(IADD),
+        Op(IRETURN)
+      )
+    )
   }
 
   @Test
@@ -195,12 +258,18 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameCode(getMethod(c, "t"), List(
-      IntOp(BIPUSH, 30), VarOp(ISTORE, 3),  // no constant propagation, so we keep the store (and load below) of a const
-      VarOp(ILOAD, 1),
-      VarOp(ILOAD, 2),
-      VarOp(ILOAD, 3),
-      Invoke(INVOKESTATIC, "C", "$anonfun$t$1", "(III)I", false), Op(IRETURN)))
+    assertSameCode(
+      getMethod(c, "t"),
+      List(
+        IntOp(BIPUSH, 30),
+        VarOp(ISTORE, 3), // no constant propagation, so we keep the store (and load below) of a const
+        VarOp(ILOAD, 1),
+        VarOp(ILOAD, 2),
+        VarOp(ILOAD, 3),
+        Invoke(INVOKESTATIC, "C", "$anonfun$t$1", "(III)I", false),
+        Op(IRETURN)
+      )
+    )
   }
 
   @Test
@@ -287,9 +356,14 @@ class MethodLevelOptsTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameCode(
-      getMethod(c, "t"), List(
-        VarOp(ALOAD, 1), Jump(IFNULL, Label(6)), Op(ICONST_1), Op(IRETURN), Label(6), Op(ICONST_0), Op(IRETURN)))
+    assertSameCode(getMethod(c, "t"),
+                   List(VarOp(ALOAD, 1),
+                        Jump(IFNULL, Label(6)),
+                        Op(ICONST_1),
+                        Op(IRETURN),
+                        Label(6),
+                        Op(ICONST_0),
+                        Op(IRETURN)))
   }
 
   @Test
@@ -311,7 +385,8 @@ class MethodLevelOptsTest extends BytecodeTesting {
       """.stripMargin
     val c = compileClass(code)
     assertSameSummary(getMethod(c, "t1"), List(ICONST_0, IRETURN))
-    assertSameSummary(getMethod(c, "t2"), List(ALOAD, "trim", POP, ICONST_0, IRETURN))
+    assertSameSummary(getMethod(c, "t2"),
+                      List(ALOAD, "trim", POP, ICONST_0, IRETURN))
   }
 
   @Test
@@ -385,25 +460,31 @@ class MethodLevelOptsTest extends BytecodeTesting {
     val c = compileClass(code)
     def stores(m: String) = getInstructions(c, m).filter(_.opcode == ASTORE)
 
-    assertEquals(locals(c, "t1"), List(("this",0), ("kept1",1), ("result",2)))
-    assert(stores("t1") == List(VarOp(ASTORE, 1), VarOp(ASTORE, 2), VarOp(ASTORE, 1), VarOp(ASTORE, 1)),
-      textify(getAsmMethod(c, "t1")))
+    assertEquals(locals(c, "t1"),
+                 List(("this", 0), ("kept1", 1), ("result", 2)))
+    assert(stores("t1") == List(VarOp(ASTORE, 1),
+                                VarOp(ASTORE, 2),
+                                VarOp(ASTORE, 1),
+                                VarOp(ASTORE, 1)),
+           textify(getAsmMethod(c, "t1")))
 
-    assertEquals(locals(c, "t2"), List(("this",0), ("kept2",1), ("kept3",2)))
-    assert(stores("t2") == List(VarOp(ASTORE, 1), VarOp(ASTORE, 2), VarOp(ASTORE, 1)),
-      textify(getAsmMethod(c, "t2")))
+    assertEquals(locals(c, "t2"), List(("this", 0), ("kept2", 1), ("kept3", 2)))
+    assert(stores("t2") == List(VarOp(ASTORE, 1),
+                                VarOp(ASTORE, 2),
+                                VarOp(ASTORE, 1)),
+           textify(getAsmMethod(c, "t2")))
 
-    assertEquals(locals(c, "t3"), List(("this",0), ("kept4",1)))
+    assertEquals(locals(c, "t3"), List(("this", 0), ("kept4", 1)))
     assert(stores("t3") == List(VarOp(ASTORE, 1), VarOp(ASTORE, 1)),
-      textify(getAsmMethod(c, "t3")))
+           textify(getAsmMethod(c, "t3")))
 
-    assertEquals(locals(c, "t4"), List(("this",0), ("kept5",1)))
+    assertEquals(locals(c, "t4"), List(("this", 0), ("kept5", 1)))
     assert(stores("t4") == List(VarOp(ASTORE, 1), VarOp(ASTORE, 1)),
-      textify(getAsmMethod(c, "t4")))
+           textify(getAsmMethod(c, "t4")))
 
-    assertEquals(locals(c, "t5"), List(("this",0), ("kept6",1)))
+    assertEquals(locals(c, "t5"), List(("this", 0), ("kept6", 1)))
     assert(stores("t5") == List(VarOp(ASTORE, 1), VarOp(ASTORE, 1)),
-      textify(getAsmMethod(c, "t5")))
+           textify(getAsmMethod(c, "t5")))
   }
 
   @Test
@@ -456,8 +537,14 @@ class MethodLevelOptsTest extends BytecodeTesting {
     assertEquals(locals(c, "t2"), List(("this", 0), ("x", 1)))
     // we don't have constant propagation (yet).
     // the local var can't be optimized as a store;laod sequence, there's a GETSTATIC between the two
-    assertSameSummary(getMethod(c, "t2"), List(
-      ICONST_2, ISTORE, GETSTATIC, ILOAD, "boxToInteger", "println", RETURN))
+    assertSameSummary(getMethod(c, "t2"),
+                      List(ICONST_2,
+                           ISTORE,
+                           GETSTATIC,
+                           ILOAD,
+                           "boxToInteger",
+                           "println",
+                           RETURN))
 
     assertEquals(locals(c, "t3"), List(("this", 0)))
     assertEquals(locals(c, "t4"), List(("this", 0), ("x", 1)))
@@ -512,12 +599,22 @@ class MethodLevelOptsTest extends BytecodeTesting {
       """.stripMargin
     val c = compileClass(code)
 
-    assertSameSummary(getMethod(c, "t"), List(
-      BIPUSH, ILOAD, IF_ICMPNE,
-      BIPUSH, ILOAD, IF_ICMPNE,
-      LDC, ASTORE, GOTO,
-      -1, LDC, ASTORE,
-      -1, ALOAD, ARETURN))
+    assertSameSummary(getMethod(c, "t"),
+                      List(BIPUSH,
+                           ILOAD,
+                           IF_ICMPNE,
+                           BIPUSH,
+                           ILOAD,
+                           IF_ICMPNE,
+                           LDC,
+                           ASTORE,
+                           GOTO,
+                           -1,
+                           LDC,
+                           ASTORE,
+                           -1,
+                           ALOAD,
+                           ARETURN))
   }
 
   @Test
@@ -541,7 +638,9 @@ class MethodLevelOptsTest extends BytecodeTesting {
     // to `$anonfun$t1$1$adapted` is therefore not inlined. In reality, this doesn't matter. People
     // would not allocate a closure just to invoke it within the same method. This optimization is
     // useful in combination with inlining.
-    assertSameSummary(getMethod(c, "t1"), List(ILOAD, "$anonfun$t1$1$adapted", "unboxToInt", IRETURN))
+    assertSameSummary(
+      getMethod(c, "t1"),
+      List(ILOAD, "$anonfun$t1$1$adapted", "unboxToInt", IRETURN))
     assertSameSummary(getMethod(c, "t2"), List(ILOAD, "$anonfun$t2$1", IRETURN))
   }
 }

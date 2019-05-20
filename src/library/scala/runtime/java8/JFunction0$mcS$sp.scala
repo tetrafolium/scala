@@ -12,7 +12,10 @@
 
 package scala.runtime.java8
 
-@FunctionalInterface trait JFunction0$mcS$sp extends Function0[Any] with Serializable {
+@FunctionalInterface trait JFunction0$mcS$sp
+    extends Function0[Any]
+    with Serializable {
   def apply$mcS$sp: Short
-  override def apply(): Any = scala.runtime.BoxesRunTime.boxToShort(apply$mcS$sp)
+  override def apply(): Any =
+    scala.runtime.BoxesRunTime.boxToShort(apply$mcS$sp)
 }

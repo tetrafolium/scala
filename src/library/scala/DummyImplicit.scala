@@ -16,6 +16,7 @@ package scala
 final class DummyImplicit private ()
 
 object DummyImplicit {
+
   /** An implicit value yielding a `DummyImplicit`. */
   implicit val dummyImplicit: DummyImplicit = new DummyImplicit
 }

@@ -6,7 +6,8 @@ object shoveMacro {
   def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
     import Flag._
-    val Apply(Select(New(AppliedTypeTree(_, List(victim))), _), _) = c.prefix.tree
+    val Apply(Select(New(AppliedTypeTree(_, List(victim))), _), _) =
+      c.prefix.tree
     val result = {
       annottees.map(_.tree).toList match {
         case ValDef(mods, name, tpt, rhs) :: Nil =>
@@ -18,14 +19,27 @@ object shoveMacro {
               List(Select(Ident(TermName("scala")), TypeName("AnyRef"))),
               noSelfType,
               List(
-                ValDef(Modifiers(PRIVATE | LOCAL), TermName("x"), victim, EmptyTree),
+                ValDef(Modifiers(PRIVATE | LOCAL),
+                       TermName("x"),
+                       victim,
+                       EmptyTree),
                 DefDef(
                   Modifiers(),
                   termNames.CONSTRUCTOR,
                   List(),
-                  List(List(ValDef(Modifiers(PARAM), TermName("x"), victim, EmptyTree))),
+                  List(
+                    List(
+                      ValDef(Modifiers(PARAM),
+                             TermName("x"),
+                             victim,
+                             EmptyTree))),
                   TypeTree(),
-                  Block(List(Apply(Select(Super(This(typeNames.EMPTY), typeNames.EMPTY), termNames.CONSTRUCTOR), List())), Literal(Constant(())))
+                  Block(List(
+                          Apply(Select(Super(This(typeNames.EMPTY),
+                                             typeNames.EMPTY),
+                                       termNames.CONSTRUCTOR),
+                                List())),
+                        Literal(Constant(())))
                 ),
                 ValDef(mods, name, tpt, rhs)
               )

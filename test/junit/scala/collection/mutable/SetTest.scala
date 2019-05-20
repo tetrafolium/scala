@@ -9,9 +9,14 @@ import scala.collection.IterableFactory
 @RunWith(classOf[JUnit4])
 class SetTest {
 
-  class MySet(self: Set[String]) extends Set[String] with SetOps[String, Set, MySet] {
-    override protected[this] def fromSpecific(coll: IterableOnce[String]): MySet = new MySet(iterableFactory.from(coll))
-    override protected[this] def newSpecificBuilder: Builder[String, MySet] = iterableFactory.newBuilder[String].mapResult(new MySet(_))
+  class MySet(self: Set[String])
+      extends Set[String]
+      with SetOps[String, Set, MySet] {
+    override protected[this] def fromSpecific(
+        coll: IterableOnce[String]): MySet =
+      new MySet(iterableFactory.from(coll))
+    override protected[this] def newSpecificBuilder: Builder[String, MySet] =
+      iterableFactory.newBuilder[String].mapResult(new MySet(_))
 
     def subtractOne(elem: String) = { self -= elem; this }
     def addOne(elem: String) = { self += elem; this }

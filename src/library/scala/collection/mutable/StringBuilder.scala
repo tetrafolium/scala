@@ -41,12 +41,13 @@ import scala.Predef.{ // unimport char-related implicit conversions to avoid tri
   * section on `StringBuilders` for more information.
   */
 @SerialVersionUID(3L)
-final class StringBuilder(val underlying: java.lang.StringBuilder) extends AbstractSeq[Char]
-  with ReusableBuilder[Char, String]
-  with IndexedSeq[Char]
-  with IndexedSeqOps[Char, IndexedSeq, StringBuilder]
-  with java.lang.CharSequence
-  with Serializable {
+final class StringBuilder(val underlying: java.lang.StringBuilder)
+    extends AbstractSeq[Char]
+    with ReusableBuilder[Char, String]
+    with IndexedSeq[Char]
+    with IndexedSeqOps[Char, IndexedSeq, StringBuilder]
+    with java.lang.CharSequence
+    with Serializable {
 
   def this() = this(new java.lang.StringBuilder)
 
@@ -67,12 +68,14 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     *  and with additional character capacity `initCapacity`.
     */
   def this(initCapacity: Int, initValue: String) =
-    this(new java.lang.StringBuilder(initValue.length + initCapacity) append initValue)
+    this(
+      new java.lang.StringBuilder(initValue.length + initCapacity) append initValue)
 
   // Methods required to make this an IndexedSeq:
   def apply(i: Int): Char = underlying.charAt(i)
 
-  override protected def fromSpecific(coll: scala.collection.IterableOnce[Char]): StringBuilder =
+  override protected def fromSpecific(
+      coll: scala.collection.IterableOnce[Char]): StringBuilder =
     new StringBuilder() appendAll coll
 
   override protected def newSpecificBuilder: Builder[Char, StringBuilder] =
@@ -92,7 +95,7 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
   def addAll(s: String): this.type = { underlying.append(s); this }
 
   /** Alias for `addAll` */
-  def ++= (s: String): this.type = addAll(s)
+  def ++=(s: String): this.type = addAll(s)
 
   def result() = underlying.toString
 
@@ -101,13 +104,13 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
   override def toArray[B >: Char](implicit ct: scala.reflect.ClassTag[B]) =
     ct.runtimeClass match {
       case java.lang.Character.TYPE => toCharArray.asInstanceOf[Array[B]]
-      case _ => super.toArray
+      case _                        => super.toArray
     }
 
   /** Returns the contents of this StringBuilder as an `Array[Char]`.
-   *
-   *  @return  An array with the characters from this builder.
-   */
+    *
+    *  @return  An array with the characters from this builder.
+    */
   def toCharArray: Array[Char] = {
     val len = underlying.length
     val arr = new Array[Char](len)
@@ -175,9 +178,9 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     */
   def appendAll(xs: IterableOnce[Char]): StringBuilder = {
     xs match {
-      case x: WrappedString => underlying append x.unwrap
+      case x: WrappedString   => underlying append x.unwrap
       case x: ArraySeq.ofChar => underlying append x.array
-      case x: StringBuilder => underlying append x.underlying
+      case x: StringBuilder   => underlying append x.underlying
       case _ =>
         val ks = xs.knownSize
         if (ks != 0) {
@@ -219,14 +222,14 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     *  @param   x  a primitive value
     *  @return     This StringBuilder.
     */
-  def append(x: Boolean): StringBuilder = { underlying append x ; this }
+  def append(x: Boolean): StringBuilder = { underlying append x; this }
   def append(x: Byte): StringBuilder = append(x.toInt)
   def append(x: Short): StringBuilder = append(x.toInt)
-  def append(x: Int): StringBuilder = { underlying append x ; this }
-  def append(x: Long): StringBuilder = { underlying append x ; this }
-  def append(x: Float): StringBuilder = { underlying append x ; this }
-  def append(x: Double): StringBuilder = { underlying append x ; this }
-  def append(x: Char): StringBuilder = { underlying append x ; this }
+  def append(x: Int): StringBuilder = { underlying append x; this }
+  def append(x: Long): StringBuilder = { underlying append x; this }
+  def append(x: Float): StringBuilder = { underlying append x; this }
+  def append(x: Double): StringBuilder = { underlying append x; this }
+  def append(x: Char): StringBuilder = { underlying append x; this }
 
   /** Remove a subsequence of Chars from this sequence, starting at the
     *  given start index (inclusive) and extending to the end index (exclusive)
@@ -268,7 +271,10 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     * @throws StringIndexOutOfBoundsException  if index < 0, index > length,
     *         offset < 0, len < 0, or (offset + len) > str.length.
     */
-  def insertAll(index: Int, str: Array[Char], offset: Int, len: Int): StringBuilder = {
+  def insertAll(index: Int,
+                str: Array[Char],
+                offset: Int,
+                len: Int): StringBuilder = {
     underlying.insert(index, str, offset, len)
     this
   }
@@ -281,7 +287,8 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     *  @return         this StringBuilder.
     *  @throws StringIndexOutOfBoundsException  if the index is out of bounds.
     */
-  def insert(index: Int, x: Any): StringBuilder = insert(index, String.valueOf(x))
+  def insert(index: Int, x: Any): StringBuilder =
+    insert(index, String.valueOf(x))
 
   /** Inserts the String into this character sequence.
     *
@@ -324,14 +331,20 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
     *  @param  x     a primitive value.
     *  @return       this StringBuilder.
     */
-  def insert(index: Int, x: Boolean): StringBuilder = insert(index, String.valueOf(x))
-  def insert(index: Int, x: Byte): StringBuilder    = insert(index, x.toInt)
-  def insert(index: Int, x: Short): StringBuilder   = insert(index, x.toInt)
-  def insert(index: Int, x: Int): StringBuilder     = insert(index, String.valueOf(x))
-  def insert(index: Int, x: Long): StringBuilder    = insert(index, String.valueOf(x))
-  def insert(index: Int, x: Float): StringBuilder   = insert(index, String.valueOf(x))
-  def insert(index: Int, x: Double): StringBuilder  = insert(index, String.valueOf(x))
-  def insert(index: Int, x: Char): StringBuilder    = insert(index, String.valueOf(x))
+  def insert(index: Int, x: Boolean): StringBuilder =
+    insert(index, String.valueOf(x))
+  def insert(index: Int, x: Byte): StringBuilder = insert(index, x.toInt)
+  def insert(index: Int, x: Short): StringBuilder = insert(index, x.toInt)
+  def insert(index: Int, x: Int): StringBuilder =
+    insert(index, String.valueOf(x))
+  def insert(index: Int, x: Long): StringBuilder =
+    insert(index, String.valueOf(x))
+  def insert(index: Int, x: Float): StringBuilder =
+    insert(index, String.valueOf(x))
+  def insert(index: Int, x: Double): StringBuilder =
+    insert(index, String.valueOf(x))
+  def insert(index: Int, x: Char): StringBuilder =
+    insert(index, String.valueOf(x))
 
   /** Sets the length of the character sequence.  If the current sequence
     *  is shorter than the given length, it is padded with nulls; if it is
@@ -344,133 +357,136 @@ final class StringBuilder(val underlying: java.lang.StringBuilder) extends Abstr
 
   def update(idx: Int, elem: Char): Unit = underlying.setCharAt(idx, elem)
 
-
   /** Like reverse, but destructively updates the target StringBuilder.
-   *
-   *  @return   the reversed StringBuilder (same as the target StringBuilder)
-   */
+    *
+    *  @return   the reversed StringBuilder (same as the target StringBuilder)
+    */
   @deprecated("Use reverseInPlace instead", "2.13.0")
   final def reverseContents(): this.type = reverseInPlace()
 
   /** Like reverse, but destructively updates the target StringBuilder.
-   *
-   *  @return   the reversed StringBuilder (same as the target StringBuilder)
-   */
+    *
+    *  @return   the reversed StringBuilder (same as the target StringBuilder)
+    */
   def reverseInPlace(): this.type = {
     underlying.reverse()
     this
   }
 
-
   /** Returns the current capacity, which is the size of the underlying array.
-   *  A new array will be allocated if the current capacity is exceeded.
-   *
-   *  @return  the capacity
-   */
+    *  A new array will be allocated if the current capacity is exceeded.
+    *
+    *  @return  the capacity
+    */
   def capacity: Int = underlying.capacity
 
   /** Ensure that the capacity is at least the given argument.
-   *  If the argument is greater than the current capacity, new
-   *  storage will be allocated with size equal to the given
-   *  argument or to `(2 * capacity + 2)`, whichever is larger.
-   *
-   *  @param newCapacity    the minimum desired capacity.
-   */
-  def ensureCapacity(newCapacity: Int): Unit = { underlying.ensureCapacity(newCapacity) }
+    *  If the argument is greater than the current capacity, new
+    *  storage will be allocated with size equal to the given
+    *  argument or to `(2 * capacity + 2)`, whichever is larger.
+    *
+    *  @param newCapacity    the minimum desired capacity.
+    */
+  def ensureCapacity(newCapacity: Int): Unit = {
+    underlying.ensureCapacity(newCapacity)
+  }
 
   /** Returns the Char at the specified index, counting from 0 as in Arrays.
-   *
-   *  @param  index   the index to look up
-   *  @return         the Char at the given index.
-   *  @throws IndexOutOfBoundsException  if the index is out of bounds.
-   */
+    *
+    *  @param  index   the index to look up
+    *  @return         the Char at the given index.
+    *  @throws IndexOutOfBoundsException  if the index is out of bounds.
+    */
   def charAt(index: Int): Char = underlying.charAt(index)
 
   /** Removes the Char at the specified index.  The sequence is
-   *  shortened by one.
-   *
-   *  @param  index  The index to remove.
-   *  @return        This StringBuilder.
-   *  @throws IndexOutOfBoundsException  if the index is out of bounds.
-   */
+    *  shortened by one.
+    *
+    *  @param  index  The index to remove.
+    *  @return        This StringBuilder.
+    *  @throws IndexOutOfBoundsException  if the index is out of bounds.
+    */
   def deleteCharAt(index: Int): this.type = {
     underlying.deleteCharAt(index)
     this
   }
 
   /** Update the sequence at the given index to hold the specified Char.
-   *
-   *  @param  index   the index to modify.
-   *  @param  ch      the new Char.
-   *  @throws IndexOutOfBoundsException  if the index is out of bounds.
-   */
+    *
+    *  @param  index   the index to modify.
+    *  @param  ch      the new Char.
+    *  @throws IndexOutOfBoundsException  if the index is out of bounds.
+    */
   def setCharAt(index: Int, ch: Char): this.type = {
     underlying.setCharAt(index, ch)
     this
   }
 
   /** Returns a new String made up of a subsequence of this sequence,
-   *  beginning at the given index and extending to the end of the sequence.
-   *
-   *  target.substring(start)  is equivalent to  target.drop(start)
-   *
-   *  @param  start  The starting index, inclusive.
-   *  @return        The new String.
-   *  @throws IndexOutOfBoundsException  if the index is out of bounds.
-   */
+    *  beginning at the given index and extending to the end of the sequence.
+    *
+    *  target.substring(start)  is equivalent to  target.drop(start)
+    *
+    *  @param  start  The starting index, inclusive.
+    *  @return        The new String.
+    *  @throws IndexOutOfBoundsException  if the index is out of bounds.
+    */
   def substring(start: Int): String = underlying.substring(start, length)
 
   /** Returns a new String made up of a subsequence of this sequence,
-   *  beginning at the start index (inclusive) and extending to the
-   *  end index (exclusive).
-   *
-   *  target.substring(start, end)  is equivalent to  target.slice(start, end).mkString
-   *
-   *  @param  start  The beginning index, inclusive.
-   *  @param  end    The ending index, exclusive.
-   *  @return The new String.
-   *  @throws StringIndexOutOfBoundsException If either index is out of bounds,
-   *          or if start > end.
-   */
+    *  beginning at the start index (inclusive) and extending to the
+    *  end index (exclusive).
+    *
+    *  target.substring(start, end)  is equivalent to  target.slice(start, end).mkString
+    *
+    *  @param  start  The beginning index, inclusive.
+    *  @param  end    The ending index, exclusive.
+    *  @return The new String.
+    *  @throws StringIndexOutOfBoundsException If either index is out of bounds,
+    *          or if start > end.
+    */
   def substring(start: Int, end: Int): String = underlying.substring(start, end)
 
   /** For implementing CharSequence.
-   */
+    */
   def subSequence(start: Int, end: Int): java.lang.CharSequence =
     underlying.substring(start, end)
 
   /** Finds the index of the first occurrence of the specified substring.
-   *
-   *  @param    str       the target string to search for
-   *  @return             the first applicable index where target occurs, or -1 if not found.
-   */
+    *
+    *  @param    str       the target string to search for
+    *  @return             the first applicable index where target occurs, or -1 if not found.
+    */
   def indexOf(str: String): Int = underlying.indexOf(str)
 
   /** Finds the index of the first occurrence of the specified substring.
-   *
-   *  @param    str       the target string to search for
-   *  @param    fromIndex the smallest index in the source string to consider
-   *  @return             the first applicable index where target occurs, or -1 if not found.
-   */
-  def indexOf(str: String, fromIndex: Int): Int = underlying.indexOf(str, fromIndex)
+    *
+    *  @param    str       the target string to search for
+    *  @param    fromIndex the smallest index in the source string to consider
+    *  @return             the first applicable index where target occurs, or -1 if not found.
+    */
+  def indexOf(str: String, fromIndex: Int): Int =
+    underlying.indexOf(str, fromIndex)
 
   /** Finds the index of the last occurrence of the specified substring.
-   *
-   *  @param    str       the target string to search for
-   *  @return             the last applicable index where target occurs, or -1 if not found.
-   */
+    *
+    *  @param    str       the target string to search for
+    *  @return             the last applicable index where target occurs, or -1 if not found.
+    */
   def lastIndexOf(str: String): Int = underlying.lastIndexOf(str)
 
   /** Finds the index of the last occurrence of the specified substring.
-   *
-   *  @param    str       the target string to search for
-   *  @param    fromIndex the smallest index in the source string to consider
-   *  @return             the last applicable index where target occurs, or -1 if not found.
-   */
-  def lastIndexOf(str: String, fromIndex: Int): Int = underlying.lastIndexOf(str, fromIndex)
+    *
+    *  @param    str       the target string to search for
+    *  @param    fromIndex the smallest index in the source string to consider
+    *  @return             the last applicable index where target occurs, or -1 if not found.
+    */
+  def lastIndexOf(str: String, fromIndex: Int): Int =
+    underlying.lastIndexOf(str, fromIndex)
 }
 
 object StringBuilder {
-  @deprecated("Use `new StringBuilder()` instead of `StringBuilder.newBuilder`", "2.13.0")
+  @deprecated("Use `new StringBuilder()` instead of `StringBuilder.newBuilder`",
+              "2.13.0")
   def newBuilder = new StringBuilder
 }

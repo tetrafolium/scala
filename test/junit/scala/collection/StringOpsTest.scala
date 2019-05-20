@@ -5,8 +5,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.junit.Assert.assertEquals
 import scala.tools.testing.AssertUtil.assertThrows
-
-
 @RunWith(classOf[JUnit4])
 class StringOpsTest {
   // Test for scala/bug#10951
@@ -21,7 +19,8 @@ class StringOpsTest {
   @Test def addString(): Unit = {
     assert("".addString(new StringBuilder).toString == "")
     assert("a".addString(new StringBuilder, ",").toString == "a")
-    assert("".addString(new StringBuilder, "foo", ",", "bar").toString == "foobar")
+    assert(
+      "".addString(new StringBuilder, "foo", ",", "bar").toString == "foobar")
   }
 
   @Test def toArray(): Unit = {
@@ -34,23 +33,36 @@ class StringOpsTest {
   // Test for scala/bug#8469
   @Test def copyToArray(): Unit = {
 
-      def check(string: String, array: Array[Char], copied: Int, after: Array[Char]): Unit = {
-        assertEquals(copied, string.copyToArray(array))
-        assert(array.sameElements(after))
-      }
+    def check(string: String,
+              array: Array[Char],
+              copied: Int,
+              after: Array[Char]): Unit = {
+      assertEquals(copied, string.copyToArray(array))
+      assert(array.sameElements(after))
+    }
 
-      check(string = "", array = Array(), copied = 0, after = Array())
-      check(string = "", array = Array('a', 'b'), copied = 0, after = Array('a', 'b'))
+    check(string = "", array = Array(), copied = 0, after = Array())
+    check(string = "",
+          array = Array('a', 'b'),
+          copied = 0,
+          after = Array('a', 'b'))
 
-      check(string = "abc", array = Array('x', 'y', 'z'), copied = 3, after = Array('a', 'b', 'c'))
-      check(string = "abc", array = Array('x'), copied = 1, after = Array('a'))
-      check(string = "abc", array = Array(), copied = 0, after = Array())
+    check(string = "abc",
+          array = Array('x', 'y', 'z'),
+          copied = 3,
+          after = Array('a', 'b', 'c'))
+    check(string = "abc", array = Array('x'), copied = 1, after = Array('a'))
+    check(string = "abc", array = Array(), copied = 0, after = Array())
   }
 
   // Test for scala/bug#8469
   @Test def copyToArrayStart(): Unit = {
-    def check(string: String, start: Int, array: Array[Char], copied: Int, after: Array[Char]): Unit = {
-      assertEquals(copied, string.copyToArray(array,start))
+    def check(string: String,
+              start: Int,
+              array: Array[Char],
+              copied: Int,
+              after: Array[Char]): Unit = {
+      assertEquals(copied, string.copyToArray(array, start))
       assert(array.sameElements(after))
     }
 
@@ -58,34 +70,118 @@ class StringOpsTest {
     check(string = "", start = 1, array = Array(), copied = 0, after = Array())
     check(string = "", start = -1, array = Array(), copied = 0, after = Array())
 
-    assertThrows[IndexOutOfBoundsException](check(string = "abcd", start = -13, array = Array('x', 'y'), copied = 0, after = Array('x', 'y')))
-    check(string = "abcd", start = 0, array = Array('x', 'y'), copied = 2, after = Array('a', 'b'))
-    check(string = "abcd", start = 1, array = Array('x', 'y'), copied = 1, after = Array('x', 'a'))
-    check(string = "abcd", start = 2, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
-    check(string = "abcd", start = 3, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
-    check(string = "abcd", start = 4, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
-    check(string = "abcd", start = 5, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
+    assertThrows[IndexOutOfBoundsException](
+      check(string = "abcd",
+            start = -13,
+            array = Array('x', 'y'),
+            copied = 0,
+            after = Array('x', 'y')))
+    check(string = "abcd",
+          start = 0,
+          array = Array('x', 'y'),
+          copied = 2,
+          after = Array('a', 'b'))
+    check(string = "abcd",
+          start = 1,
+          array = Array('x', 'y'),
+          copied = 1,
+          after = Array('x', 'a'))
+    check(string = "abcd",
+          start = 2,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
+    check(string = "abcd",
+          start = 3,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
+    check(string = "abcd",
+          start = 4,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
+    check(string = "abcd",
+          start = 5,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
   }
 
   // Test for scala/bug#8469
   @Test def copyToArrayStartLen(): Unit = {
 
-    def check(string: String, start: Int, len: Int, array: Array[Char], copied: Int, after: Array[Char]): Unit = {
+    def check(string: String,
+              start: Int,
+              len: Int,
+              array: Array[Char],
+              copied: Int,
+              after: Array[Char]): Unit = {
       assertEquals(copied, string.copyToArray(array, start, len))
       assert(array.sameElements(after))
     }
 
-    check(string = "", start = 0, len = 0, array = Array(), copied = 0, after = Array())
-    check(string = "", start = 1, len = 0, array = Array(), copied = 0, after = Array())
-    check(string = "", start = 1, len = 1, array = Array(), copied = 0, after = Array())
+    check(string = "",
+          start = 0,
+          len = 0,
+          array = Array(),
+          copied = 0,
+          after = Array())
+    check(string = "",
+          start = 1,
+          len = 0,
+          array = Array(),
+          copied = 0,
+          after = Array())
+    check(string = "",
+          start = 1,
+          len = 1,
+          array = Array(),
+          copied = 0,
+          after = Array())
 
-    check(string = "abcd", start = -1, len = 0, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
-    check(string = "abcd", start = 0, len = 0, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
-    check(string = "abcd", start = 0, len = 1, array = Array('x', 'y'), copied = 1, after = Array('a', 'y'))
-    check(string = "abcd", start = 1, len = 1, array = Array('x', 'y'), copied = 1, after = Array('x', 'a'))
-    check(string = "abcd", start = 0, len = 2, array = Array('x', 'y'), copied = 2, after = Array('a', 'b'))
-    check(string = "abcd", start = 0, len = 20, array = Array('x', 'y'), copied = 2, after = Array('a', 'b'))
-    check(string = "abcd", start = 7, len = 20, array = Array('x', 'y'), copied = 0, after = Array('x', 'y'))
+    check(string = "abcd",
+          start = -1,
+          len = 0,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
+    check(string = "abcd",
+          start = 0,
+          len = 0,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
+    check(string = "abcd",
+          start = 0,
+          len = 1,
+          array = Array('x', 'y'),
+          copied = 1,
+          after = Array('a', 'y'))
+    check(string = "abcd",
+          start = 1,
+          len = 1,
+          array = Array('x', 'y'),
+          copied = 1,
+          after = Array('x', 'a'))
+    check(string = "abcd",
+          start = 0,
+          len = 2,
+          array = Array('x', 'y'),
+          copied = 2,
+          after = Array('a', 'b'))
+    check(string = "abcd",
+          start = 0,
+          len = 20,
+          array = Array('x', 'y'),
+          copied = 2,
+          after = Array('a', 'b'))
+    check(string = "abcd",
+          start = 7,
+          len = 20,
+          array = Array('x', 'y'),
+          copied = 0,
+          after = Array('x', 'y'))
   }
 
   @Test def *(): Unit = {

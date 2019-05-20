@@ -1,9 +1,6 @@
 package scala.collection.mutable
 
-class BuilderProperties {
-
-}
-
+class BuilderProperties {}
 
 import scala.language.higherKinds
 import org.scalacheck.Arbitrary.arbInt
@@ -37,17 +34,18 @@ import scala.util.{Success, Try}
   * @tparam ControlMap the type of map the controlFactory produces
   * @tparam M the type of map under test
   */
-class SeqBuilderStateProperties[A: Arbitrary, To <: Seq[A]](newBuilder: => mutable.Builder[A, To])(arbA: Arbitrary[A]) extends Commands {
+class SeqBuilderStateProperties[A: Arbitrary, To <: Seq[A]](
+    newBuilder: => mutable.Builder[A, To])(arbA: Arbitrary[A])
+    extends Commands {
 
   override type State = List[A]
   override type Sut = mutable.Builder[A, To]
 
   override def genInitialState: Gen[State] = Nil
 
-  override def canCreateNewSut(
-    newState: State,
-    initSuts: scala.Iterable[State],
-    runningSuts: scala.Iterable[Sut]) = true
+  override def canCreateNewSut(newState: State,
+                               initSuts: scala.Iterable[State],
+                               runningSuts: scala.Iterable[Sut]) = true
 
   override def newSut(state: State) = newBuilder.addAll(state)
 
@@ -74,7 +72,8 @@ class SeqBuilderStateProperties[A: Arbitrary, To <: Seq[A]](newBuilder: => mutab
   }
   case object Result extends Command {
     override type Result = To
-    override def postCondition(state: State, result: Try[Result]) = result == Success(state.reverse)
+    override def postCondition(state: State, result: Try[Result]) =
+      result == Success(state.reverse)
     override def run(sut: Sut) = sut.result()
     override def nextState(state: State) = state
     override def preCondition(state: State) = true
@@ -91,7 +90,8 @@ class SeqBuilderStateProperties[A: Arbitrary, To <: Seq[A]](newBuilder: => mutab
     override def nextState(state: State) = elem :: state
     override def preCondition(state: State) = true
   }
-  case class AddAll(elems: scala.collection.immutable.Seq[A]) extends UnitCommand {
+  case class AddAll(elems: scala.collection.immutable.Seq[A])
+      extends UnitCommand {
     override def postCondition(state: State, success: Boolean) = success
     override def run(sut: Sut) = sut.addAll(elems)
     override def nextState(state: State) = state.prependedAll(elems)

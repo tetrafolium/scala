@@ -49,8 +49,8 @@ trait T {
 class TMix extends T
 
 object Test extends App {
-  (List(classOf[C], classOf[T], classOf[TMix]).
-    flatMap(cls => cls.getDeclaredFields ++ cls.getDeclaredMethods)).
-    sortBy(x => (x.getDeclaringClass.getName, x.getName, x.toString)).
-    foreach(x => println(x.getAnnotations.toList.mkString(" ") + " " + x))
+  (List(classOf[C], classOf[T], classOf[TMix])
+    .flatMap(cls => cls.getDeclaredFields ++ cls.getDeclaredMethods))
+    .sortBy(x => (x.getDeclaringClass.getName, x.getName, x.toString))
+    .foreach(x => println(x.getAnnotations.toList.mkString(" ") + " " + x))
 }

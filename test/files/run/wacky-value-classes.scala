@@ -2,9 +2,9 @@
 //
 // scala/bug#10361
 final class AnyValNothing(val self: Nothing) extends AnyVal
-final class AnyValNull   (val self: Null   ) extends AnyVal
+final class AnyValNull(val self: Null) extends AnyVal
 // scala/bug#9240
-final class AnyValUnit   (val self: Unit   ) extends AnyVal
+final class AnyValUnit(val self: Unit) extends AnyVal
 
 object Test extends App {
   def avn = new AnyValNull(null)

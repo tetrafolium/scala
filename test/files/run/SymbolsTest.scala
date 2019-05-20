@@ -1,4 +1,3 @@
-
 import scala.language.reflectiveCalls
 
 class Slazz {
@@ -130,7 +129,8 @@ object Test {
     assert(lst(90) == Symbol("lsym90"))
   }
 
-  def testAnonymous: Unit = { // TODO complaints classdef can't be found for some reason, runs fine in my case
+  def testAnonymous
+    : Unit = { // TODO complaints classdef can't be found for some reason, runs fine in my case
     // val anon = () => {
     //   val simba = Symbol("smba")
     //   simba

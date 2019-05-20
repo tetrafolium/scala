@@ -6,5 +6,5 @@ object t9451 {
     type F[X] = { type Self = I[X] }
   }
 
-  implicitly[{type F[X] = { type Self = Iterable[X] }}]
+  implicitly[{ type F[X] = { type Self = Iterable[X] } }]
 }

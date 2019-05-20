@@ -1,4 +1,3 @@
-
 import scala.tools.nsc.{Driver, Global}
 import scala.reflect.internal.util.NoPosition
 
@@ -10,7 +9,8 @@ class Driven extends Driver {
     true
   }
   protected def newCompiler(): Global = Global(settings, reporter)
-  override protected def doCompile(compiler: Global): Unit = reporter.warning(NoPosition, "I don't do anything.")
+  override protected def doCompile(compiler: Global): Unit =
+    reporter.warning(NoPosition, "I don't do anything.")
   def run(): Unit = process(Array("file.scala"))
 }
 object Test {

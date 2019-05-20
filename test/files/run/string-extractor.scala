@@ -1,31 +1,31 @@
 final class StringExtract(val s: String) extends AnyVal {
-  def isEmpty                     = (s eq null) || (s == "")
-  def get                         = this
-  def length                      = s.length
-  def lengthCompare(n: Int)       = s.length compare n
-  def apply(idx: Int): Char       = s charAt idx
-  def head: Char                  = s charAt 0
-  def tail: String                = s drop 1
-  def drop(n: Int): Seq[Char]     = toSeq.drop(n)
-  def toSeq: Seq[Char]            = s.toSeq
+  def isEmpty = (s eq null) || (s == "")
+  def get = this
+  def length = s.length
+  def lengthCompare(n: Int) = s.length compare n
+  def apply(idx: Int): Char = s charAt idx
+  def head: Char = s charAt 0
+  def tail: String = s drop 1
+  def drop(n: Int): Seq[Char] = toSeq.drop(n)
+  def toSeq: Seq[Char] = s.toSeq
 
   override def toString = s
 }
 
 final class ThreeStringExtract(val s: String) extends AnyVal {
-  def isEmpty                             = (s eq null) || (s == "")
-  def get: (List[Int], Double, Seq[Char]) = ((s.length :: Nil, s.length.toDouble, toSeq))
-  def length                              = s.length
-  def lengthCompare(n: Int)               = s.length compare n
-  def apply(idx: Int): Char               = s charAt idx
-  def head: Char                          = s charAt 0
-  def tail: String                        = s drop 1
-  def drop(n: Int): Seq[Char]             = toSeq.drop(n)
-  def toSeq: Seq[Char]                    = s.toSeq
+  def isEmpty = (s eq null) || (s == "")
+  def get: (List[Int], Double, Seq[Char]) =
+    ((s.length :: Nil, s.length.toDouble, toSeq))
+  def length = s.length
+  def lengthCompare(n: Int) = s.length compare n
+  def apply(idx: Int): Char = s charAt idx
+  def head: Char = s charAt 0
+  def tail: String = s drop 1
+  def drop(n: Int): Seq[Char] = toSeq.drop(n)
+  def toSeq: Seq[Char] = s.toSeq
 
   override def toString = s
 }
-
 
 object Bippy {
   def unapplySeq(x: Any): StringExtract = new StringExtract("" + x)

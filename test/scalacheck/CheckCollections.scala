@@ -3,8 +3,10 @@ import org.scalacheck.Prop._
 
 import scala.reflect.internal.util.Collections._
 
-object CheckCollectionsTest extends Properties("reflect.internal.util.Collections") {
-  def map2ConserveOld[A <: AnyRef, B](xs: List[A], ys: List[B])(f: (A, B) => A): List[A] =
+object CheckCollectionsTest
+    extends Properties("reflect.internal.util.Collections") {
+  def map2ConserveOld[A <: AnyRef, B](xs: List[A], ys: List[B])(
+      f: (A, B) => A): List[A] =
     if (xs.isEmpty || ys.isEmpty) xs
     else {
       val x1 = f(xs.head, ys.head)
@@ -13,8 +15,9 @@ object CheckCollectionsTest extends Properties("reflect.internal.util.Collection
       else x1 :: xs1
     }
 
-  val testfun: (String, Int) => String = { case(x, y) =>
-    x.toLowerCase + y.toString
+  val testfun: (String, Int) => String = {
+    case (x, y) =>
+      x.toLowerCase + y.toString
   }
   val testid: (String, Int) => String = { case (x, y) => x }
 
@@ -24,23 +27,22 @@ object CheckCollectionsTest extends Properties("reflect.internal.util.Collection
   }
 
   val prop2_map2Conserve = forAll { (xs: List[String], ys: List[Int]) =>
-    map2Conserve(xs, ys)(testid)  == map2ConserveOld(xs, ys)(testid) &&
+    map2Conserve(xs, ys)(testid) == map2ConserveOld(xs, ys)(testid) &&
     map2Conserve(xs, ys)(testfun) == map2ConserveOld(xs, ys)(testfun)
   }
 
   def checkStackOverflow(): Unit = {
     var xs: List[String] = Nil
-    var ys: List[Int]    = Nil
+    var ys: List[Int] = Nil
     for (i <- 0 until 250000) {
-        xs = "X" :: xs
-        ys = 1   :: ys
+      xs = "X" :: xs
+      ys = 1 :: ys
     }
-    map2Conserve(xs, ys){ case(x, y) => x.toLowerCase + y.toString }
+    map2Conserve(xs, ys) { case (x, y) => x.toLowerCase + y.toString }
   }
 
-
   val tests = List(
-    ("map2Conserve(identity)",   prop1_map2Conserve),
+    ("map2Conserve(identity)", prop1_map2Conserve),
     ("map2Conserve == old impl", prop2_map2Conserve)
   )
 

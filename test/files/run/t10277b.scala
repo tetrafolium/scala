@@ -4,7 +4,12 @@ trait A[@specialized(Int) T] {
 
 trait B[@specialized(Int) T] {
   def g(x: T): Unit = {
-    val frames = Thread.currentThread().getStackTrace.toList.drop(1).takeWhile(_.getMethodName != "main")
+    val frames = Thread
+      .currentThread()
+      .getStackTrace
+      .toList
+      .drop(1)
+      .takeWhile(_.getMethodName != "main")
     println(frames.map(_.getMethodName).mkString("\n"))
   }
 }

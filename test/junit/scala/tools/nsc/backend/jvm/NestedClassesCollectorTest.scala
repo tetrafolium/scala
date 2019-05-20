@@ -11,8 +11,10 @@ import scala.tools.nsc.backend.jvm.BTypes.InternalName
 import scala.tools.nsc.backend.jvm.analysis.BackendUtils.NestedClassesCollector
 
 class Collector extends NestedClassesCollector[String] {
-  override def declaredNestedClasses(internalName: InternalName): List[String] = Nil
-  override def getClassIfNested(internalName: InternalName): Option[String] = Some(internalName)
+  override def declaredNestedClasses(internalName: InternalName): List[String] =
+    Nil
+  override def getClassIfNested(internalName: InternalName): Option[String] =
+    Some(internalName)
   def raiseError(msg: String, sig: String, e: Option[Throwable]): Unit =
     throw e.getOrElse(new Exception(msg + " " + sig))
 }
@@ -20,7 +22,9 @@ class Collector extends NestedClassesCollector[String] {
 @RunWith(classOf[JUnit4])
 class NestedClassesCollectorTest {
   val c = new Collector {
-    override def visitInternalName(internalName: String, offset: Int, length: Int): Unit =
+    override def visitInternalName(internalName: String,
+                                   offset: Int,
+                                   length: Int): Unit =
       innerClasses += internalName.substring(offset, length)
   }
   def inners: List[String] = {
@@ -48,9 +52,11 @@ class NestedClassesCollectorTest {
     ref("Lp/Kl.Ne.In;", List("p/Kl", "p/Kl$Ne", "p/Kl$Ne$In"))
     ref("LA<*>;", List("A"))
     ref("LA<**+[I[JTFoo;-TBar;LB;*>;", List("A", "B"))
-    ref("Lp/A<[I[LTBoo<*>;-[JTFoo;-TBar;Lp/B<[J+[Lp/C;>.N<+TT;*Lp/D;>;*>;", List("TBoo", "p/A", "p/B", "p/B$N", "p/C", "p/D"))
+    ref("Lp/A<[I[LTBoo<*>;-[JTFoo;-TBar;Lp/B<[J+[Lp/C;>.N<+TT;*Lp/D;>;*>;",
+        List("TBoo", "p/A", "p/B", "p/B$N", "p/C", "p/D"))
     ref("Lp/A<[I[Lp/B<*>;>;", List("p/A", "p/B"))
-    ref("Lp/A<Lp/B;>.C<Lp/D;>.E;", List("p/A", "p/A$C", "p/A$C$E", "p/B", "p/D"))
+    ref("Lp/A<Lp/B;>.C<Lp/D;>.E;",
+        List("p/A", "p/A$C", "p/A$C$E", "p/B", "p/D"))
 
     ref("[I", Nil)
     ref("[[[LA;", List("A"))
@@ -94,7 +100,8 @@ class NestedClassesCollectorTest {
     met("()V", Nil)
     met("(BJI)Z", Nil)
     met("(IJLp/A;Z)Lp/B;", List("p/A", "p/B"))
-    met("<X:LA;:[I:TU;:[TV;Y:[I:LB<+LC;>;>([I[[[LD<**>;)TT;", List("A", "B", "C", "D"))
+    met("<X:LA;:[I:TU;:[TV;Y:[I:LB<+LC;>;>([I[[[LD<**>;)TT;",
+        List("A", "B", "C", "D"))
     met("(LA;ITT;)I^LB;", List("A", "B"))
     met("()I^TT;^Lp/A<**+[[Lp/B;>;^TBA;", List("p/A", "p/B"))
     met("()V^TT;", Nil)
@@ -105,15 +112,21 @@ class NestedClassesCollectorTest {
   def rtJar(): Unit = {
     import java.nio.file._
     import scala.collection.JavaConverters._
-    val zipfile = Paths.get("/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/rt.jar")
+    val zipfile = Paths.get(
+      "/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/lib/rt.jar")
     val fs = FileSystems.newFileSystem(zipfile, null)
     val root = fs.getRootDirectories.iterator.next()
     val contents = Files.walk(root).iterator.asScala.toList
-    for (f <- contents if Files.isRegularFile(f) && f.getFileName.toString.endsWith(".class")) {
+    for (f <- contents if Files.isRegularFile(f) && f.getFileName.toString
+           .endsWith(".class")) {
       val classNode = AsmUtils.classFromBytes(Files.readAllBytes(f))
       c.visitClassSignature(classNode.signature)
-      classNode.methods.iterator.asScala.map(_.signature).foreach(c.visitMethodSignature)
-      classNode.fields.iterator.asScala.map(_.signature).foreach(c.visitFieldSignature)
+      classNode.methods.iterator.asScala
+        .map(_.signature)
+        .foreach(c.visitMethodSignature)
+      classNode.fields.iterator.asScala
+        .map(_.signature)
+        .foreach(c.visitFieldSignature)
     }
   }
 
@@ -134,12 +147,17 @@ class NestedClassesCollectorTest {
         val fs = FileSystems.newFileSystem(zipfile, null)
         val root = fs.getRootDirectories.iterator.next()
         val contents = Files.walk(root).iterator.asScala.toList
-        for (f <- contents if Files.isRegularFile(f) && f.getFileName.toString.endsWith(".class")) {
+        for (f <- contents if Files.isRegularFile(f) && f.getFileName.toString
+               .endsWith(".class")) {
           currentClass = f
           val classNode = AsmUtils.classFromBytes(Files.readAllBytes(f))
           c.visitClassSignature(classNode.signature)
-          classNode.methods.iterator.asScala.map(_.signature).foreach(c.visitMethodSignature)
-          classNode.fields.iterator.asScala.map(_.signature).foreach(c.visitFieldSignature)
+          classNode.methods.iterator.asScala
+            .map(_.signature)
+            .foreach(c.visitMethodSignature)
+          classNode.fields.iterator.asScala
+            .map(_.signature)
+            .foreach(c.visitFieldSignature)
         }
       } catch {
         case t: Throwable =>

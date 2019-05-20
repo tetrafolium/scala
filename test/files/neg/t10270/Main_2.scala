@@ -1,4 +1,3 @@
-
 object Main extends App {
 
   def f(): Any = Macro {

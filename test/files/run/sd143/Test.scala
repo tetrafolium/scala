@@ -6,7 +6,6 @@ class C1 extends B with T {
   def t3 = super.f
 }
 
-
 trait U1 extends A
 trait U2 extends A
 class C2 extends U1 with U2 { def t = super.f }
@@ -16,7 +15,6 @@ object Test extends App {
   assert(c1.t1 == 1)
   assert(c1.t2 == 2)
   assert(c1.t3 == 2)
-
 
   val c2 = new C2
   assert(c2.f == 1)

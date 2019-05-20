@@ -5,9 +5,9 @@ object Util {
 
 trait FunSam[-T, +R] { def apply(x: T): R }
 
-
 trait TFun { def map[T](f: T => Int): Unit = () }
-object Fun extends TFun { import Util._
+object Fun extends TFun {
+  import Util._
   def map[T: scala.reflect.ClassTag](f: T => Int): Unit = ()
 
   map(mono)
@@ -21,7 +21,8 @@ object Fun extends TFun { import Util._
 }
 
 trait TSam { def map[T](f: T FunSam Int): Unit = () }
-object Sam extends TSam { import Util._
+object Sam extends TSam {
+  import Util._
   def map[T: scala.reflect.ClassTag](f: T `FunSam` Int): Unit = ()
 
   map(mono) // sam
@@ -35,7 +36,8 @@ object Sam extends TSam { import Util._
 }
 
 trait IntFun { def map[T](f: Int => T): Unit = () }
-object int_Fun extends IntFun { import Util._
+object int_Fun extends IntFun {
+  import Util._
   def map[T: scala.reflect.ClassTag](f: Int => T): Unit = ()
 
   map(mono)
@@ -48,7 +50,8 @@ object int_Fun extends IntFun { import Util._
 }
 
 trait IntSam { def map[T](f: Int FunSam T): Unit = () }
-object int_Sam extends IntSam { import Util._
+object int_Sam extends IntSam {
+  import Util._
   def map[T: scala.reflect.ClassTag](f: Int `FunSam` T): Unit = ()
 
   map(mono) // sam
@@ -59,8 +62,6 @@ object int_Sam extends IntSam { import Util._
   map(poly _) // sam
   map(x => poly(x)) // sam
 }
-
-
 /*
 eta_overload_hof.scala:27: error: missing argument list for method mono in object Util
 Unapplied methods are only converted to functions when a function type is expected.
@@ -92,4 +93,4 @@ eta_overload_hof.scala:60: error: missing parameter type
   map(x => poly(x))
       ^
 
-* */
+ * */

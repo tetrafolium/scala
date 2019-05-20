@@ -13,16 +13,16 @@
 package scala.tools.nsc
 package util
 
-import java.lang.Character.{ toLowerCase => lower }
+import java.lang.Character.{toLowerCase => lower}
 
 object EditDistance {
 
   /**
-   * @author Paul Phillips
-   * Translated from the java version at
-   *    http://www.merriampark.com/ld.htm
-   *  which is declared to be public domain.
-   */
+    * @author Paul Phillips
+    * Translated from the java version at
+    *    http://www.merriampark.com/ld.htm
+    *  which is declared to be public domain.
+    */
   def levenshtein(
       s: String,
       t: String,
@@ -44,7 +44,10 @@ object EditDistance {
 
     for (i <- 1 to n; s_i = s(i - 1); j <- 1 to m) {
       val t_j = t(j - 1)
-      val cost = if (s_i == t_j) matchCost else if (lower(s_i) == lower(t_j)) caseCost else subCost
+      val cost =
+        if (s_i == t_j) matchCost
+        else if (lower(s_i) == lower(t_j)) caseCost
+        else subCost
 
       val c1 = d(i - 1)(j) + deleteCost
       val c2 = d(i)(j - 1) + insertCost

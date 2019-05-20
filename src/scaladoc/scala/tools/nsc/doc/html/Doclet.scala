@@ -21,12 +21,15 @@ import doclet._
   * when no user-provided doclet is provided. */
 class Doclet(reporter: Reporter) extends Generator with Universer {
 
-  @deprecated("Doclets should be created with the Reporter constructor. Otherwise logging reporters will not be shared by the creating parent", "2.12.0")
+  @deprecated(
+    "Doclets should be created with the Reporter constructor. Otherwise logging reporters will not be shared by the creating parent",
+    "2.12.0")
   def this() = this(null)
 
   def generateImpl() =
     new html.HtmlFactory(
       universe,
-      if (reporter != null) reporter else new ScalaDocReporter(universe.settings)
+      if (reporter != null) reporter
+      else new ScalaDocReporter(universe.settings)
     ).generate()
 }

@@ -16,14 +16,14 @@ package mutable
 import scala.reflect.ClassTag
 
 /** A builder class for arrays.
- *
- *  @since 2.8
- *
- *  @tparam T    the type of the elements for the builder.
- */
+  *
+  *  @since 2.8
+  *
+  *  @tparam T    the type of the elements for the builder.
+  */
 @SerialVersionUID(3L)
 sealed abstract class ArrayBuilder[T]
-  extends ReusableBuilder[T, Array[T]]
+    extends ReusableBuilder[T, Array[T]]
     with Serializable {
   protected[this] var capacity: Int = 0
   protected[this] def elems: Array[T]
@@ -61,53 +61,66 @@ sealed abstract class ArrayBuilder[T]
 
   override def addAll(xs: IterableOnce[T]): this.type = {
     val k = xs.knownSize
-    if(k > 0) {
+    if (k > 0) {
       ensureSize(this.size + k)
       xs match {
         case xs: Iterable[T] => xs.copyToArray(elems, this.size)
-        case _ => xs.iterator.copyToArray(elems, this.size)
+        case _               => xs.iterator.copyToArray(elems, this.size)
       }
       size += k
-    } else if(k < 0) super.addAll(xs)
+    } else if (k < 0) super.addAll(xs)
     this
   }
 }
 
 /** A companion object for array builders.
- *
- *  @since 2.8
- */
+  *
+  *  @since 2.8
+  */
 object ArrayBuilder {
 
   /** Creates a new arraybuilder of type `T`.
-   *
-   *  @tparam T     type of the elements for the array builder, with a `ClassTag` context bound.
-   *  @return       a new empty array builder.
-   */
+    *
+    *  @tparam T     type of the elements for the array builder, with a `ClassTag` context bound.
+    *  @return       a new empty array builder.
+    */
   @inline def make[T: ClassTag]: ArrayBuilder[T] = {
     val tag = implicitly[ClassTag[T]]
     tag.runtimeClass match {
-      case java.lang.Byte.TYPE      => new ArrayBuilder.ofByte().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Short.TYPE     => new ArrayBuilder.ofShort().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Character.TYPE => new ArrayBuilder.ofChar().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Integer.TYPE   => new ArrayBuilder.ofInt().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Long.TYPE      => new ArrayBuilder.ofLong().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Float.TYPE     => new ArrayBuilder.ofFloat().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Double.TYPE    => new ArrayBuilder.ofDouble().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Boolean.TYPE   => new ArrayBuilder.ofBoolean().asInstanceOf[ArrayBuilder[T]]
-      case java.lang.Void.TYPE      => new ArrayBuilder.ofUnit().asInstanceOf[ArrayBuilder[T]]
-      case _                        => new ArrayBuilder.ofRef[T with AnyRef]()(tag.asInstanceOf[ClassTag[T with AnyRef]]).asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Byte.TYPE =>
+        new ArrayBuilder.ofByte().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Short.TYPE =>
+        new ArrayBuilder.ofShort().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Character.TYPE =>
+        new ArrayBuilder.ofChar().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Integer.TYPE =>
+        new ArrayBuilder.ofInt().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Long.TYPE =>
+        new ArrayBuilder.ofLong().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Float.TYPE =>
+        new ArrayBuilder.ofFloat().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Double.TYPE =>
+        new ArrayBuilder.ofDouble().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Boolean.TYPE =>
+        new ArrayBuilder.ofBoolean().asInstanceOf[ArrayBuilder[T]]
+      case java.lang.Void.TYPE =>
+        new ArrayBuilder.ofUnit().asInstanceOf[ArrayBuilder[T]]
+      case _ =>
+        new ArrayBuilder.ofRef[T with AnyRef]()(
+          tag.asInstanceOf[ClassTag[T with AnyRef]])
+          .asInstanceOf[ArrayBuilder[T]]
     }
   }
 
   /** A class for array builders for arrays of reference types.
-   *
-   *  This builder can be reused.
-   *
-   *  @tparam T     type of elements for the array builder, subtype of `AnyRef` with a `ClassTag` context bound.
-   */
+    *
+    *  This builder can be reused.
+    *
+    *  @tparam T     type of elements for the array builder, subtype of `AnyRef` with a `ClassTag` context bound.
+    */
   @SerialVersionUID(3L)
-  final class ofRef[T <: AnyRef](implicit ct: ClassTag[T]) extends ArrayBuilder[T] {
+  final class ofRef[T <: AnyRef](implicit ct: ClassTag[T])
+      extends ArrayBuilder[T] {
 
     protected var elems: Array[T] = _
 
@@ -135,18 +148,18 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def clear(): Unit = {
       super.clear()
-      if(elems ne null) java.util.Arrays.fill(elems.asInstanceOf[Array[AnyRef]], null)
+      if (elems ne null)
+        java.util.Arrays.fill(elems.asInstanceOf[Array[AnyRef]], null)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofRef[_] => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _           => false
     }
 
     override def toString = "ArrayBuilder.ofRef"
@@ -182,13 +195,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofByte => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofByte"
@@ -224,13 +236,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofShort => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _          => false
     }
 
     override def toString = "ArrayBuilder.ofShort"
@@ -266,13 +277,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofChar => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofChar"
@@ -308,13 +318,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofInt => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _        => false
     }
 
     override def toString = "ArrayBuilder.ofInt"
@@ -350,13 +359,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofLong => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _         => false
     }
 
     override def toString = "ArrayBuilder.ofLong"
@@ -392,13 +400,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofFloat => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _          => false
     }
 
     override def toString = "ArrayBuilder.ofFloat"
@@ -434,13 +441,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofDouble => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _           => false
     }
 
     override def toString = "ArrayBuilder.ofDouble"
@@ -476,13 +482,12 @@ object ArrayBuilder {
         val res = elems
         elems = null
         res
-      }
-      else mkArray(size)
+      } else mkArray(size)
     }
 
     override def equals(other: Any): Boolean = other match {
       case x: ofBoolean => (size == x.size) && (elems == x.elems)
-      case _ => false
+      case _            => false
     }
 
     override def toString = "ArrayBuilder.ofBoolean"
@@ -504,7 +509,9 @@ object ArrayBuilder {
       this
     }
 
-    override def addAll(xs: Array[_ <: Unit], offset: Int, length: Int): this.type = {
+    override def addAll(xs: Array[_ <: Unit],
+                        offset: Int,
+                        length: Int): this.type = {
       size += length
       this
     }
@@ -518,7 +525,7 @@ object ArrayBuilder {
 
     override def equals(other: Any): Boolean = other match {
       case x: ofUnit => (size == x.size)
-      case _ => false
+      case _         => false
     }
 
     protected[this] def resize(size: Int): Unit = ()

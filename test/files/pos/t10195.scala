@@ -1,4 +1,3 @@
-
 // scalac: -Xsource:2.13
 //
 sealed trait Foo[F[_]]

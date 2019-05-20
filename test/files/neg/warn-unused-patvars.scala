@@ -8,30 +8,30 @@ case class D(a: Int)
 
 trait Boundings {
 
-  private val x = 42                      // warn, sanity check
+  private val x = 42 // warn, sanity check
 
   def c = C(42, "hello", Some("world"))
   def d = D(42)
 
   def f() = {
-    val C(x, y, Some(z)) = c              // no warn
+    val C(x, y, Some(z)) = c // no warn
     17
   }
   def g() = {
-    val C(x @ _, y @ _, Some(z @ _)) = c  // no warn
+    val C(x @ _, y @ _, Some(z @ _)) = c // no warn
     17
   }
   def h() = {
-    val C(x @ _, y @ _, z @ Some(_)) = c  // no warn for z?
+    val C(x @ _, y @ _, z @ Some(_)) = c // no warn for z?
     17
   }
 
   def v() = {
-    val D(x) = d                          // no warn
+    val D(x) = d // no warn
     17
   }
   def w() = {
-    val D(x @ _) = d                      // no warn
+    val D(x @ _) = d // no warn
     17
   }
 
@@ -42,14 +42,14 @@ trait Forever {
     val t = Option((17, 42))
     for {
       ns <- t
-      (i, j) = ns                        // no warn
+      (i, j) = ns // no warn
     } yield (i + j)
   }
   def g = {
     val t = Option((17, 42))
     for {
       ns <- t
-      (i, j) = ns                        // no warn
+      (i, j) = ns // no warn
     } yield 42
   }
 }

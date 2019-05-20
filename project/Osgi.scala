@@ -15,9 +15,14 @@ import VersionUtil.versionProperties
   *  `fullClasspath in Compile` whereas we want `products in Compile in packageBin`. */
 object Osgi {
   val bundle = TaskKey[File]("osgiBundle", "Create an OSGi bundle.")
-  val bundleName = SettingKey[String]("osgiBundleName", "The Bundle-Name for the manifest.")
-  val bundleSymbolicName = SettingKey[String]("osgiBundleSymbolicName", "The Bundle-SymbolicName for the manifest.")
-  val headers = SettingKey[Seq[(String, String)]]("osgiHeaders", "Headers and processing instructions for BND.")
+  val bundleName =
+    SettingKey[String]("osgiBundleName", "The Bundle-Name for the manifest.")
+  val bundleSymbolicName = SettingKey[String](
+    "osgiBundleSymbolicName",
+    "The Bundle-SymbolicName for the manifest.")
+  val headers = SettingKey[Seq[(String, String)]](
+    "osgiHeaders",
+    "Headers and processing instructions for BND.")
   val jarlist = SettingKey[Boolean]("osgiJarlist", "List classes in manifest.")
 
   def settings: Seq[Setting[_]] = Seq(
@@ -39,10 +44,15 @@ object Osgi {
     jarlist := false,
     bundle := Def.task {
       val cp = (products in Compile in packageBin).value
-      bundleTask(headers.value.toMap, jarlist.value, cp,
-        (artifactPath in (Compile, packageBin)).value, cp, streams.value)
+      bundleTask(headers.value.toMap,
+                 jarlist.value,
+                 cp,
+                 (artifactPath in (Compile, packageBin)).value,
+                 cp,
+                 streams.value)
     }.value,
-    packagedArtifact in (Compile, packageBin) := (((artifact in (Compile, packageBin)).value, bundle.value)),
+    packagedArtifact in (Compile, packageBin) := (((artifact in (Compile, packageBin)).value,
+                                                   bundle.value)),
     // Also create OSGi source bundles:
     packageOptions in (Compile, packageSrc) += Package.ManifestAttributes(
       "Bundle-Name" -> (description.value + " Sources"),
@@ -53,8 +63,12 @@ object Osgi {
     Keys.`package` := bundle.value
   )
 
-  def bundleTask(headers: Map[String, String], jarlist: Boolean, fullClasspath: Seq[File], artifactPath: File,
-                 resourceDirectories: Seq[File], streams: TaskStreams): File = {
+  def bundleTask(headers: Map[String, String],
+                 jarlist: Boolean,
+                 fullClasspath: Seq[File],
+                 artifactPath: File,
+                 resourceDirectories: Seq[File],
+                 streams: TaskStreams): File = {
     val log = streams.log
     val builder = new Builder
     builder.setClasspath(fullClasspath.toArray)
@@ -62,11 +76,17 @@ object Osgi {
 
     // https://github.com/scala/scala-dev/issues/254
     // Must be careful not to include scala-asm.jar within scala-compiler.jar!
-    def resourceDirectoryRef(f: File) = (if (f.isDirectory) "" else "@") + f.getAbsolutePath
+    def resourceDirectoryRef(f: File) =
+      (if (f.isDirectory) "" else "@") + f.getAbsolutePath
 
-    val includeRes = resourceDirectories.filter(_.exists).map(resourceDirectoryRef).mkString(",")
-    if(!includeRes.isEmpty) builder.setProperty(INCLUDERESOURCE, includeRes)
-    builder.getProperties.asScala.foreach { case (k, v) => log.debug(s"bnd: $k: $v") }
+    val includeRes = resourceDirectories
+      .filter(_.exists)
+      .map(resourceDirectoryRef)
+      .mkString(",")
+    if (!includeRes.isEmpty) builder.setProperty(INCLUDERESOURCE, includeRes)
+    builder.getProperties.asScala.foreach {
+      case (k, v) => log.debug(s"bnd: $k: $v")
+    }
     // builder.build is not thread-safe because it uses a static SimpleDateFormat.  This ensures
     // that all calls to builder.build are serialized.
     val jar = synchronized { builder.build }
@@ -75,7 +95,8 @@ object Osgi {
     IO.createDirectory(artifactPath.getParentFile)
     if (jarlist) {
       val entries = jar.getManifest.getEntries
-      for ((name, resource) <- jar.getResources.asScala if name.endsWith(".class")) {
+      for ((name, resource) <- jar.getResources.asScala
+           if name.endsWith(".class")) {
         entries.put(name, new Attributes)
       }
     }

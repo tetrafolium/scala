@@ -25,7 +25,7 @@ class HashMapTest {
   def getOrElseUpdate_evalOnce(): Unit = {
     var i = 0
     val hm = new mutable.HashMap[Int, Int]()
-    hm.getOrElseUpdate(0, {i += 1; i})
+    hm.getOrElseUpdate(0, { i += 1; i })
     assertEquals(1, hm(0))
   }
 
@@ -120,7 +120,7 @@ class HashMapTest {
     assertEquals(hashMap2.updateWith(2)(insertIfAbsent), Some("b"))
     assertEquals(hashMap2, mutable.HashMap(1 -> "a", 2 -> "b"))
 
-    val noneAnytime: Option[String] => Option[String] =  _ => None
+    val noneAnytime: Option[String] => Option[String] = _ => None
     val hashMap3 = mutable.HashMap(1 -> "a")
     assertEquals(hashMap3.updateWith(1)(noneAnytime), None)
     assertEquals(hashMap3, mutable.HashMap())

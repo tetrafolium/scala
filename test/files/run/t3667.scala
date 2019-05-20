@@ -29,7 +29,8 @@ object Test {
   }
 
   def ser(o: AnyRef): Unit = {
-    val oos = new java.io.ObjectOutputStream(new java.io.ByteArrayOutputStream())
+    val oos =
+      new java.io.ObjectOutputStream(new java.io.ByteArrayOutputStream())
     oos.writeObject(o)
     oos.close()
   }

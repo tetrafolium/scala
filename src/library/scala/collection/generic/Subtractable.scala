@@ -16,7 +16,6 @@ package generic
 
 import scala.collection.IterableOnce
 
-
 /** This trait represents collection-like objects that can be reduced
   *  using a '+' operator. It defines variants of `-` and `--`
   *  as convenience methods in terms of single-element removal `-`.
@@ -29,7 +28,9 @@ import scala.collection.IterableOnce
   *  @define   coll collection
   *  @define   Coll Subtractable
   */
-@deprecated("Subtractable is deprecated. This is now implemented as part of SetOps, MapOps, etc.", "2.13.0")
+@deprecated(
+  "Subtractable is deprecated. This is now implemented as part of SetOps, MapOps, etc.",
+  "2.13.0")
 trait Subtractable[A, +Repr <: Subtractable[A, Repr]] { self =>
 
   /** The representation object of type `Repr` which contains the collection's elements
@@ -64,5 +65,5 @@ trait Subtractable[A, +Repr <: Subtractable[A, Repr]] { self =>
     *  @return a new $coll that contains all elements of the current $coll
     *  except one less occurrence of each of the elements of `elems`.
     */
-  def --(xs: IterableOnce[A]): Repr = (repr /: xs.iterator) (_ - _)
+  def --(xs: IterableOnce[A]): Repr = (repr /: xs.iterator)(_ - _)
 }

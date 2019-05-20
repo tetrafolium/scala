@@ -1,4 +1,4 @@
-import scala.reflect.internal.util.{ BatchSourceFile, SourceFile }
+import scala.reflect.internal.util.{BatchSourceFile, SourceFile}
 import scala.tools.nsc.doc
 import scala.tools.nsc.doc.base._
 import scala.tools.nsc.doc.base.comment._
@@ -15,7 +15,14 @@ object Test extends InteractiveTest {
     "@see something else"
   )
 
-  val names = Seq("Class", "Def", "Val", "Var", "AbstracType", "TypeAlias", "Trait", "InnerClass")
+  val names = Seq("Class",
+                  "Def",
+                  "Val",
+                  "Var",
+                  "AbstracType",
+                  "TypeAlias",
+                  "Trait",
+                  "InnerClass")
   val bareText =
     """abstract class %s {
     |  def %s = ""
@@ -27,7 +34,8 @@ object Test extends InteractiveTest {
     |}
     |trait %s""".stripMargin.format(names: _*)
 
-  def docComment(nTags: Int) = "/**\n%s*/".format(tags.take(nTags).mkString("\n"))
+  def docComment(nTags: Int) =
+    "/**\n%s*/".format(tags.take(nTags).mkString("\n"))
 
   def text(name: String, nTags: Int) = {
     val nameIndex = bareText.indexOf(name)
@@ -37,9 +45,14 @@ object Test extends InteractiveTest {
     prepre + docComment(nTags) + prepost + post
   }
 
-  override lazy val compiler: Global { def getComment(sym: Symbol, source: SourceFile, fragments: List[(Symbol,SourceFile)]): Option[Comment] } = {
+  override lazy val compiler: Global {
+    def getComment(sym: Symbol,
+                   source: SourceFile,
+                   fragments: List[(Symbol, SourceFile)]): Option[Comment]
+  } = {
     prepareSettings(settings)
-    new Global(settings, compilerReporter) with MemberLookupBase with CommentFactoryBase with doc.ScaladocGlobalTrait {
+    new Global(settings, compilerReporter) with MemberLookupBase
+    with CommentFactoryBase with doc.ScaladocGlobalTrait {
       outer =>
 
       val global: this.type = this
@@ -47,7 +60,8 @@ object Test extends InteractiveTest {
       override lazy val analyzer = new {
         val global: outer.type = outer
       } with doc.ScaladocAnalyzer with InteractiveAnalyzer {
-        override def newTyper(context: Context): InteractiveTyper with ScaladocTyper =
+        override def newTyper(
+            context: Context): InteractiveTyper with ScaladocTyper =
           new Typer(context) with InteractiveTyper with ScaladocTyper
       }
 
@@ -57,7 +71,9 @@ object Test extends InteractiveTest {
       def warnNoLink = false
       def findExternalLink(sym: Symbol, name: String) = None
 
-      def getComment(sym: Symbol, source: SourceFile, fragments: List[(Symbol,SourceFile)]): Option[Comment] = {
+      def getComment(sym: Symbol,
+                     source: SourceFile,
+                     fragments: List[(Symbol, SourceFile)]): Option[Comment] = {
         val docResponse = new Response[(String, String, Position)]
         askDocComment(sym, source, sym.owner, fragments, docResponse)
         docResponse.get.swap.toOption flatMap {
@@ -65,7 +81,9 @@ object Test extends InteractiveTest {
             if (expanded.isEmpty)
               None
             else
-              Some(ask { () => parseAtSymbol(expanded, raw, pos, sym.owner) })
+              Some(ask { () =>
+                parseAtSymbol(expanded, raw, pos, sym.owner)
+              })
         }
       }
     }
@@ -94,23 +112,28 @@ object Test extends InteractiveTest {
               println("Couldn't parse")
             case Some(_) =>
               val sym = compiler.ask { () =>
-                val toplevel = compiler.rootMirror.EmptyPackage.info.decl(TypeName(name))
+                val toplevel =
+                  compiler.rootMirror.EmptyPackage.info.decl(TypeName(name))
                 if (toplevel eq NoSymbol) {
-                  val clazz = compiler.rootMirror.EmptyPackage.info.decl(TypeName(className))
+                  val clazz = compiler.rootMirror.EmptyPackage.info
+                    .decl(TypeName(className))
                   val term = clazz.info.decl(TermName(name))
-                  if (term eq NoSymbol) clazz.info.decl(TypeName(name)) else
-                    if (term.isAccessor) term.accessed else term
+                  if (term eq NoSymbol) clazz.info.decl(TypeName(name))
+                  else if (term.isAccessor) term.accessed
+                  else term
                 } else toplevel
               }
 
-              getComment(sym, batch, (sym,batch)::Nil) match {
+              getComment(sym, batch, (sym, batch) :: Nil) match {
                 case None => println(s"Got no doc comment for $name")
                 case Some(comment) =>
                   import comment._
                   def cnt(bodies: Iterable[Body]) = bodies.size
-                  val actual = cnt(example) + cnt(version) + cnt(since) + cnt(todo) + cnt(note) + cnt(see)
+                  val actual = cnt(example) + cnt(version) + cnt(since) + cnt(
+                    todo) + cnt(note) + cnt(see)
                   if (actual != i)
-                    println(s"Got docComment with $actual tags instead of $i, file text:\n$newText")
+                    println(
+                      s"Got docComment with $actual tags instead of $i, file text:\n$newText")
               }
           }
       }
@@ -126,26 +149,34 @@ object Test extends InteractiveTest {
     val baseSource = findSource("Base.scala")
     val derivedSource = findSource("Derived.scala")
     def existsText(where: Any, text: String): Boolean = where match {
-      case s: String => s contains text
-      case s: Seq[_] => s exists (existsText(_, text))
+      case s: String  => s contains text
+      case s: Seq[_]  => s exists (existsText(_, text))
       case p: Product => p.productIterator exists (existsText(_, text))
       case c: Comment => existsText(c.body, text)
     }
     val (derived, base) = compiler.ask { () =>
-      val derived = compiler.rootMirror.RootPackage.info.decl(newTermName("p")).info.decl(newTypeName("Derived"))
+      val derived = compiler.rootMirror.RootPackage.info
+        .decl(newTermName("p"))
+        .info
+        .decl(newTypeName("Derived"))
       (derived, derived.ancestors(0))
     }
-    val cmt1 = getComment(derived, derivedSource, (base, baseSource)::(derived, derivedSource)::Nil)
+    val cmt1 = getComment(derived,
+                          derivedSource,
+                          (base, baseSource) :: (derived, derivedSource) :: Nil)
     if (!existsText(cmt1, "This is Derived comment"))
-      println("Unexpected Derived class comment:"+cmt1)
+      println("Unexpected Derived class comment:" + cmt1)
 
     val (fooDerived, fooBase) = compiler.ask { () =>
       val decl = derived.tpe.decl(newTermName("foo"))
       (decl, decl.allOverriddenSymbols(0))
     }
 
-    val cmt2 = getComment(fooDerived, derivedSource, (fooBase, baseSource)::(fooDerived, derivedSource)::Nil)
+    val cmt2 = getComment(
+      fooDerived,
+      derivedSource,
+      (fooBase, baseSource) :: (fooDerived, derivedSource) :: Nil)
     if (!existsText(cmt2, "Base method has documentation"))
-      println("Unexpected foo method comment:"+cmt2)
+      println("Unexpected foo method comment:" + cmt2)
   }
 }

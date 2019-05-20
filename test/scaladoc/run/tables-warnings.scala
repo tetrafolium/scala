@@ -16,18 +16,22 @@ object Test extends ScaladocModelTest {
 
   def testModel(rootPackage: Package): Unit = {
 
-    val base = rootPackage._package("scala")._package("test")._package("scaladoc")._package("tables")._package("warnings")
+    val base = rootPackage
+      ._package("scala")
+      ._package("test")
+      ._package("scaladoc")
+      ._package("tables")
+      ._package("warnings")
 
     val printCommentName = false
 
     def withComment(commentNames: String*)(test: Comment => Unit) = {
-      commentNames foreach {
-        commentName =>
-          if (printCommentName) {
-            println(commentName)
-          }
-          val comment = getComment(commentName, base)
-          test(comment)
+      commentNames foreach { commentName =>
+        if (printCommentName) {
+          println(commentName)
+        }
+        val comment = getComment(commentName, base)
+        test(comment)
       }
     }
 
@@ -37,7 +41,8 @@ object Test extends ScaladocModelTest {
 
     def c(contents: String*): Cell = Cell(contents.toList.map(pt))
 
-    def r(contents: String*): Row = Row(contents.toList.map(content => c(content)))
+    def r(contents: String*): Row =
+      Row(contents.toList.map(content => c(content)))
 
     withComment("PrematureEndOfText") { comment =>
       val header = r("Header")
@@ -75,32 +80,44 @@ object Test extends ScaladocModelTest {
     }
   }
 
-  private def getComment(traitName: String, containingPackage: Package): Comment = {
+  private def getComment(traitName: String,
+                         containingPackage: Package): Comment = {
     containingPackage._trait(traitName).comment.get
   }
 
-  private def assertTableEquals(expectedTable: Table, actualBody: Body): Unit = {
+  private def assertTableEquals(expectedTable: Table,
+                                actualBody: Body): Unit = {
     actualBody.blocks.toList match {
       case (actualTable: Table) :: Nil =>
-        assert(expectedTable == actualTable, s"\n\nExpected:\n${multilineFormat(expectedTable)}\n\nActual:\n${multilineFormat(actualTable)}\n")
+        assert(
+          expectedTable == actualTable,
+          s"\n\nExpected:\n${multilineFormat(expectedTable)}\n\nActual:\n${multilineFormat(actualTable)}\n")
       case _ =>
         val expectedBody = Body(List(expectedTable))
-        assert(expectedBody == actualBody, s"Expected: $expectedBody, Actual: $actualBody")
+        assert(expectedBody == actualBody,
+               s"Expected: $expectedBody, Actual: $actualBody")
     }
   }
 
-  private def assertTableEquals(expectedTable: Table, actualBlock: Block): Unit = {
-    assert(expectedTable == actualBlock, s"Expected: $expectedTable, Actual: $actualBlock")
+  private def assertTableEquals(expectedTable: Table,
+                                actualBlock: Block): Unit = {
+    assert(expectedTable == actualBlock,
+           s"Expected: $expectedTable, Actual: $actualBlock")
   }
 
   private def assertBodiesEquals(expectedBody: Body, actualBody: Body): Unit = {
     val blocks = expectedBody.blocks zip actualBody.blocks
-    val blockComparisons = blocks.zipWithIndex.collect {
-      case ((expectedBlock, actualBlock), idx) if expectedBlock != actualBlock =>
-        s"Block mismatch at index $idx\nExpected block: $expectedBlock\nActual block  : $actualBlock"
-    }.headOption.getOrElse("")
+    val blockComparisons = blocks.zipWithIndex
+      .collect {
+        case ((expectedBlock, actualBlock), idx)
+            if expectedBlock != actualBlock =>
+          s"Block mismatch at index $idx\nExpected block: $expectedBlock\nActual block  : $actualBlock"
+      }
+      .headOption
+      .getOrElse("")
 
-    assert(expectedBody == actualBody, s"$blockComparisons\n\nExpected: $expectedBody, Actual: $actualBody")
+    assert(expectedBody == actualBody,
+           s"$blockComparisons\n\nExpected: $expectedBody, Actual: $actualBody")
   }
 
   private def multilineFormat(table: Table): String = {

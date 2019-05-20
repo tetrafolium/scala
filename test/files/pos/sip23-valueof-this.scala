@@ -10,4 +10,6 @@ class Test3 { self =>
   valueOf[self.type]
 }
 
-class A { outerSelf => class B { valueOf[outerSelf.type] } }
+class A { outerSelf =>
+  class B { valueOf[outerSelf.type] }
+}

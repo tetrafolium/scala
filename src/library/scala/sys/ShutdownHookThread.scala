@@ -14,12 +14,13 @@ package scala
 package sys
 
 /** A minimal Thread wrapper to enhance shutdown hooks.  It knows
- *  how to unregister itself.
- *
- *  @author Paul Phillips
- *  @since   2.9
- */
-class ShutdownHookThread private (runnable: Runnable, name: String) extends Thread(runnable, name) {
+  *  how to unregister itself.
+  *
+  *  @author Paul Phillips
+  *  @since   2.9
+  */
+class ShutdownHookThread private (runnable: Runnable, name: String)
+    extends Thread(runnable, name) {
   def remove() = Runtime.getRuntime removeShutdownHook this
 }
 
@@ -29,9 +30,10 @@ object ShutdownHookThread {
     hookNameCount += 1
     "shutdownHook" + hookNameCount
   }
+
   /** Creates, names, and registers a shutdown hook to run the
-   *  given code.
-   */
+    *  given code.
+    */
   def apply(body: => Unit): ShutdownHookThread = {
     val t = new ShutdownHookThread(() => body, hookName())
     Runtime.getRuntime addShutdownHook t

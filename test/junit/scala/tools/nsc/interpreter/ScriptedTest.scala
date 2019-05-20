@@ -10,8 +10,8 @@ class ScriptedTest {
   import scala.tools.nsc.interpreter.shell.Scripted
 
   def scripted: ScriptEngine with Compilable = Scripted()
-    // same as by service discovery
-    //new ScriptEngineManager().getEngineByName("scala").asInstanceOf[ScriptEngine with Compilable]
+  // same as by service discovery
+  //new ScriptEngineManager().getEngineByName("scala").asInstanceOf[ScriptEngine with Compilable]
 
   // scripted, but also -Yno-predef -Yno-imports
   def scriptedNoNothing: ScriptEngine with Compilable = {
@@ -23,10 +23,10 @@ class ScriptedTest {
 
   @Test def eval() = {
     val engine = scripted
-    engine.put("foo","bar")
+    engine.put("foo", "bar")
     assert("bar" == engine.eval("foo"))
     val bindings = engine.createBindings()
-    bindings.put("foo","baz")
+    bindings.put("foo", "baz")
     assert("baz" == engine.eval("foo", bindings))
     val c = engine.compile("def f = foo.asInstanceOf[String] ; f * 2")
     assert("barbar" == c.eval())
@@ -34,12 +34,13 @@ class ScriptedTest {
   }
   @Test def evalNoNothing() = {
     val engine = scriptedNoNothing
-    engine.put("foo","bar")
+    engine.put("foo", "bar")
     assert("bar" == engine.eval("foo"))
     val bindings = engine.createBindings()
-    bindings.put("foo","baz")
+    bindings.put("foo", "baz")
     assert("baz" == engine.eval("foo", bindings))
-    val c = engine.compile("import scala.Predef.augmentString ; def f = foo.asInstanceOf[java.lang.String] ; f * 2")
+    val c = engine.compile(
+      "import scala.Predef.augmentString ; def f = foo.asInstanceOf[java.lang.String] ; f * 2")
     assert("barbar" == c.eval())
     assert("bazbaz" == c.eval(bindings))
   }
@@ -55,8 +56,8 @@ class ScriptedTest {
   @Test def `t8422 captured i/o`() = {
     import java.io.StringWriter
     val engine = scripted
-    val ctx    = new SimpleScriptContext
-    val w      = new StringWriter
+    val ctx = new SimpleScriptContext
+    val w = new StringWriter
     val code = """print("hello, world")"""
 
     ctx.setWriter(w)
@@ -64,19 +65,19 @@ class ScriptedTest {
     assertEquals("hello, world", w.toString)
   }
   @Test def `t8422 captured multi i/o`() = {
-    import java.io.{ StringWriter, StringReader }
+    import java.io.{StringWriter, StringReader}
     val engine = scripted
-    val ctx    = new SimpleScriptContext
-    val out    = new StringWriter
-    val err    = new StringWriter
-    val text   =
-    """Now is the time
+    val ctx = new SimpleScriptContext
+    val out = new StringWriter
+    val err = new StringWriter
+    val text =
+      """Now is the time
       |for all good
       |dogs to come for supper.""".stripMargin
-    val in     = new StringReader(text)
+    val in = new StringReader(text)
 
     val code =
-    """var s: String = _
+      """var s: String = _
       |var i: Int = 0
       |do {
       |  s = scala.io.StdIn.readLine()
@@ -96,14 +97,16 @@ class ScriptedTest {
   }
   @Test def `on compile error`(): Unit = {
     val engine = scripted
-    val err = "not found: value foo in def f = foo at line number 1 at column number 9"
+    val err =
+      "not found: value foo in def f = foo at line number 1 at column number 9"
     assertThrows[ScriptException](engine.compile("def f = foo"), _ == err)
   }
 
-   @Test def `restore classloader`(): Unit = {
+  @Test def `restore classloader`(): Unit = {
     val saved0 = Thread.currentThread.getContextClassLoader
     try {
-      Thread.currentThread.setContextClassLoader(ClassLoader.getSystemClassLoader)
+      Thread.currentThread.setContextClassLoader(
+        ClassLoader.getSystemClassLoader)
       val saved = Thread.currentThread.getContextClassLoader
       val engine = scripted
       scripted.eval("42")
@@ -116,7 +119,8 @@ class ScriptedTest {
   @Test def `restore classloader script api`(): Unit = {
     val saved0 = Thread.currentThread.getContextClassLoader
     try {
-      Thread.currentThread.setContextClassLoader(ClassLoader.getSystemClassLoader)
+      Thread.currentThread.setContextClassLoader(
+        ClassLoader.getSystemClassLoader)
       val saved = Thread.currentThread.getContextClassLoader
       val engine = new ScriptEngineManager().getEngineByName("scala")
       assertNotNull(engine)

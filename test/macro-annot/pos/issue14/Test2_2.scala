@@ -7,6 +7,7 @@ object test2 {
     import java.lang.reflect
     val dummy1: util.List[_] = ???
     val dummy2: reflect.Method = ???
-    @pkg.happytee val self: P2[T] = ???
+    @pkg.happytee
+    val self: P2[T] = ???
   }
 }

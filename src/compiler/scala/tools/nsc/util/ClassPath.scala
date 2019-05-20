@@ -45,30 +45,31 @@ trait ClassPath {
   private[nsc] def sources(inPackage: String): Seq[SourceFileEntry]
 
   /**
-   * Returns packages and classes (source or classfile) that are members of `inPackage` (not
-   * recursively). The `inPackage` string is a full package name, e.g., "scala.collection".
-   *
-   * This is the main method uses to find classes, see class `PackageLoader`. The
-   * `rootMirror.rootLoader` is created with `inPackage = ""`.
-   */
+    * Returns packages and classes (source or classfile) that are members of `inPackage` (not
+    * recursively). The `inPackage` string is a full package name, e.g., "scala.collection".
+    *
+    * This is the main method uses to find classes, see class `PackageLoader`. The
+    * `rootMirror.rootLoader` is created with `inPackage = ""`.
+    */
   private[nsc] def list(inPackage: String): ClassPathEntries
 
   /**
-   * Returns the class file and / or source file for a given external name, e.g., "java.lang.String".
-   * If there is both a class file and source file, the compiler can decide whether to read the
-   * class file or compile the source file.
-   *
-   * Internally this seems to be used only by `ScriptRunner`, but only to call `.isDefined`. That
-   * could probably be implemented differently.
-   *
-   * Externally, it is used by sbt's compiler interface:
-   * https://github.com/sbt/sbt/blob/v0.13.15/compile/interface/src/main/scala/xsbt/CompilerInterface.scala#L249
-   * Jason has some improvements for that in the works (https://github.com/scala/bug/issues/10289#issuecomment-310022699)
-   */
+    * Returns the class file and / or source file for a given external name, e.g., "java.lang.String".
+    * If there is both a class file and source file, the compiler can decide whether to read the
+    * class file or compile the source file.
+    *
+    * Internally this seems to be used only by `ScriptRunner`, but only to call `.isDefined`. That
+    * could probably be implemented differently.
+    *
+    * Externally, it is used by sbt's compiler interface:
+    * https://github.com/sbt/sbt/blob/v0.13.15/compile/interface/src/main/scala/xsbt/CompilerInterface.scala#L249
+    * Jason has some improvements for that in the works (https://github.com/scala/bug/issues/10289#issuecomment-310022699)
+    */
   def findClass(className: String): Option[ClassRepresentation] = {
     // A default implementation which should be overridden, if we can create the more efficient
     // solution for a given type of ClassPath
-    val (pkg, simpleClassName) = PackageNameUtils.separatePkgAndClassNames(className)
+    val (pkg, simpleClassName) =
+      PackageNameUtils.separatePkgAndClassNames(className)
 
     val foundClassFromClassFiles = classes(pkg).find(_.name == simpleClassName)
     def findClassInSources = sources(pkg).find(_.name == simpleClassName)
@@ -77,14 +78,14 @@ trait ClassPath {
   }
 
   /**
-   * Returns the classfile for an external name, e.g., "java.lang.String". This method does not
-   * return source files.
-   *
-   * This method is used by the classfile parser. When parsing a Java class, its own inner classes
-   * are entered with a `ClassfileLoader` that parses the classfile returned by this method.
-   * It is also used in the backend, by the inliner, to obtain the bytecode when inlining from the
-   * classpath. It's also used by scalap.
-   */
+    * Returns the classfile for an external name, e.g., "java.lang.String". This method does not
+    * return source files.
+    *
+    * This method is used by the classfile parser. When parsing a Java class, its own inner classes
+    * are entered with a `ClassfileLoader` that parses the classfile returned by this method.
+    * It is also used in the backend, by the inliner, to obtain the bytecode when inlining from the
+    * classpath. It's also used by scalap.
+    */
   def findClassFile(className: String): Option[AbstractFile]
 
   def asClassPathStrings: Seq[String]
@@ -110,25 +111,29 @@ object ClassPath {
 
     /* Get all subdirectories, jars, zips out of a directory. */
     def lsDir(dir: Directory, filt: String => Boolean = _ => true) =
-      dir.list.filter(x => filt(x.name) && (x.isDirectory || isJarOrZip(x))).map(_.path).toList
+      dir.list
+        .filter(x => filt(x.name) && (x.isDirectory || isJarOrZip(x)))
+        .map(_.path)
+        .toList
 
     if (pattern == "*") lsDir(Directory("."))
     else if (pattern endsWith wildSuffix) lsDir(Directory(pattern dropRight 2))
     else if (pattern contains '*') {
       try {
-        val regexp = ("^" + pattern.replaceAllLiterally("""\*""", """.*""") + "$").r
+        val regexp =
+          ("^" + pattern.replaceAllLiterally("""\*""", """.*""") + "$").r
         lsDir(Directory(pattern).parent, regexp.findFirstIn(_).isDefined)
-      }
-      catch { case _: PatternSyntaxException => List(pattern) }
-    }
-    else List(pattern)
+      } catch { case _: PatternSyntaxException => List(pattern) }
+    } else List(pattern)
   }
 
   /** Split classpath using platform-dependent path separator */
-  def split(path: String): List[String] = (path split pathSeparator).toList.filterNot(_ == "").distinct
+  def split(path: String): List[String] =
+    (path split pathSeparator).toList.filterNot(_ == "").distinct
 
   /** Join classpath using platform-dependent path separator */
-  def join(paths: String*): String  = paths filterNot (_ == "") mkString pathSeparator
+  def join(paths: String*): String =
+    paths filterNot (_ == "") mkString pathSeparator
 
   /** Split the classpath, apply a transformation function, and reassemble it. */
   def map(cp: String, f: String => String): String = join(split(cp) map f: _*)
@@ -142,21 +147,24 @@ object ClassPath {
   def expandDir(extdir: String): List[String] = {
     AbstractFile getDirectory extdir match {
       case null => Nil
-      case dir  => dir.filter(_.isClassContainer).map(x => new java.io.File(dir.file, x.name).getPath).toList
+      case dir =>
+        dir
+          .filter(_.isClassContainer)
+          .map(x => new java.io.File(dir.file, x.name).getPath)
+          .toList
     }
   }
 
   /** Expand manifest jar classpath entries: these are either urls, or paths
-   *  relative to the location of the jar.
-   */
+    *  relative to the location of the jar.
+    */
   def expandManifestPath(jarPath: String): List[URL] = {
     val file = File(jarPath)
     if (!file.isFile) return Nil
 
     val baseDir = file.parent
     new Jar(file).classPathElements map (elem =>
-      specToURL(elem) getOrElse (baseDir / elem).toURL
-    )
+      specToURL(elem) getOrElse (baseDir / elem).toURL)
   }
 
   def specToURL(spec: String): Option[URL] =
@@ -165,7 +173,10 @@ object ClassPath {
 
   def manifests: List[java.net.URL] = {
     import scala.collection.JavaConverters._
-    val resources = Thread.currentThread().getContextClassLoader().getResources("META-INF/MANIFEST.MF")
+    val resources = Thread
+      .currentThread()
+      .getContextClassLoader()
+      .getResources("META-INF/MANIFEST.MF")
     resources.asScala.filter(_.getProtocol == "jar").toList
   }
 

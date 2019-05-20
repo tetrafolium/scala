@@ -1,6 +1,8 @@
 object Logs {
   val logBuf = new collection.mutable.StringBuilder()
-  def log(m: Any): Unit = { if (logBuf.nonEmpty) logBuf.append(":"); logBuf.append(m) }
+  def log(m: Any): Unit = {
+    if (logBuf.nonEmpty) logBuf.append(":"); logBuf.append(m)
+  }
   def checkLog(expected: String): Unit = {
     val res = logBuf.toString
     assert(res == expected, s"expected:\n$expected\nfound:\n$res")
@@ -11,9 +13,9 @@ object Logs {
 import Logs._
 
 class C {
-  def getInt   : Int    = { log("getInt"); 1 }
+  def getInt: Int = { log("getInt"); 1 }
   def getString: String = { log("getString"); "s" }
-  def getUnit  : Unit   = { log("getUnit") }
+  def getUnit: Unit = { log("getUnit") }
 
   lazy val t1 = getInt
   lazy val t2 = getString
@@ -34,7 +36,6 @@ class C {
   }
   checkLog("")
 
-
   val vl1 = {
     lazy val t1 = getInt
     t1 + t1
@@ -48,7 +49,6 @@ class C {
     log(t1); log(t1)
   }
   checkLog("getInt:getString:getUnit:():()")
-
 
   var vr1 = {
     lazy val t1 = getInt
@@ -64,7 +64,6 @@ class C {
   }
   checkLog("getInt:getString:getUnit:():()")
 
-
   lazy val lvl1 = {
     lazy val t1 = getInt
     t1 + t1
@@ -79,7 +78,6 @@ class C {
   }
   checkLog("")
 
-
   {
     lazy val t1 = getInt
     lazy val t2 = getString
@@ -91,7 +89,6 @@ class C {
   }
   checkLog("getInt:2:getString:ss:getUnit:():()")
 
-
   def run(): Unit = {
     log(t1); log(t1);
     log(t2); log(t2);
@@ -101,7 +98,8 @@ class C {
     log(m1); log(m1)
     log(m2); log(m2)
     log(m3); log(m3)
-    checkLog("getInt:2:getInt:2:getString:ss:getString:ss:getUnit:():():():getUnit:():():()")
+    checkLog(
+      "getInt:2:getInt:2:getString:ss:getString:ss:getUnit:():():():getUnit:():():()")
 
     log(vl1); log(vl1)
     log(vl2); log(vl2)
@@ -110,7 +108,7 @@ class C {
 
     log(vr1); log(vr1); vr1 = 393; log(vr1)
     log(vr2); log(vr2); vr2 = "h"; log(vr2)
-    log(vr3); log(vr3); vr3 = () ; log(vr3)
+    log(vr3); log(vr3); vr3 = (); log(vr3)
     checkLog("2:2:393:ss:ss:h:():():()")
 
     log(lvl1); log(lvl1)
@@ -121,9 +119,9 @@ class C {
 }
 
 trait T {
-  def getInt   : Int    = { log("getInt"); 1 }
+  def getInt: Int = { log("getInt"); 1 }
   def getString: String = { log("getString"); "s" }
-  def getUnit  : Unit   = { log("getUnit") }
+  def getUnit: Unit = { log("getUnit") }
 
   lazy val t1 = getInt
   lazy val t2 = getString
@@ -144,7 +142,6 @@ trait T {
   }
   checkLog("")
 
-
   val vl1 = {
     lazy val t1 = getInt
     t1 + t1
@@ -158,7 +155,6 @@ trait T {
     log(t1); log(t1)
   }
   checkLog("getInt:getString:getUnit:():()")
-
 
   var vr1 = {
     lazy val t1 = getInt
@@ -174,7 +170,6 @@ trait T {
   }
   checkLog("getInt:getString:getUnit:():()")
 
-
   lazy val lvl1 = {
     lazy val t1 = getInt
     t1 + t1
@@ -189,7 +184,6 @@ trait T {
   }
   checkLog("")
 
-
   {
     lazy val t1 = getInt
     lazy val t2 = getString
@@ -201,7 +195,6 @@ trait T {
   }
   checkLog("getInt:2:getString:ss:getUnit:():()")
 
-
   def run(): Unit = {
     log(t1); log(t1);
     log(t2); log(t2);
@@ -211,7 +204,8 @@ trait T {
     log(m1); log(m1)
     log(m2); log(m2)
     log(m3); log(m3)
-    checkLog("getInt:2:getInt:2:getString:ss:getString:ss:getUnit:():():():getUnit:():():()")
+    checkLog(
+      "getInt:2:getInt:2:getString:ss:getString:ss:getUnit:():():():getUnit:():():()")
 
     log(vl1); log(vl1)
     log(vl2); log(vl2)
@@ -220,7 +214,7 @@ trait T {
 
     log(vr1); log(vr1); vr1 = 393; log(vr1)
     log(vr2); log(vr2); vr2 = "h"; log(vr2)
-    log(vr3); log(vr3); vr3 = () ; log(vr3)
+    log(vr3); log(vr3); vr3 = (); log(vr3)
     checkLog("2:2:393:ss:ss:h:():():()")
 
     log(lvl1); log(lvl1)
@@ -275,13 +269,40 @@ object Test {
     val c = new C
     c.run()
 
-    val lzyComputeMethods = c.getClass.getDeclaredMethods.filter(_.getName contains "lzycompute").map(_.getName).toList.sorted
-    val expComputeMethods = List("lvl1$lzycompute", "lvl2$lzycompute", "lvl3$lzycompute", "t1$lzycompute", "t1$lzycompute$1", "t1$lzycompute$10", "t1$lzycompute$11", "t1$lzycompute$12", "t1$lzycompute$13", "t1$lzycompute$2", "t1$lzycompute$3", "t1$lzycompute$4", "t1$lzycompute$5", "t1$lzycompute$6", "t1$lzycompute$7", "t1$lzycompute$8", "t1$lzycompute$9", "t2$lzycompute", "t2$lzycompute$1", "t3$lzycompute", "t3$lzycompute$1")
+    val lzyComputeMethods = c.getClass.getDeclaredMethods
+      .filter(_.getName contains "lzycompute")
+      .map(_.getName)
+      .toList
+      .sorted
+    val expComputeMethods = List(
+      "lvl1$lzycompute",
+      "lvl2$lzycompute",
+      "lvl3$lzycompute",
+      "t1$lzycompute",
+      "t1$lzycompute$1",
+      "t1$lzycompute$10",
+      "t1$lzycompute$11",
+      "t1$lzycompute$12",
+      "t1$lzycompute$13",
+      "t1$lzycompute$2",
+      "t1$lzycompute$3",
+      "t1$lzycompute$4",
+      "t1$lzycompute$5",
+      "t1$lzycompute$6",
+      "t1$lzycompute$7",
+      "t1$lzycompute$8",
+      "t1$lzycompute$9",
+      "t2$lzycompute",
+      "t2$lzycompute$1",
+      "t3$lzycompute",
+      "t3$lzycompute$1"
+    )
     assert(
       lzyComputeMethods == expComputeMethods,
       s"wrong lzycompute methods. expected:\n$expComputeMethods\nfound:\n$lzyComputeMethods")
 
-    val fields: List[String] = c.getClass.getDeclaredFields.toList.sortBy(_.getName).map(_.toString)
+    val fields: List[String] =
+      c.getClass.getDeclaredFields.toList.sortBy(_.getName).map(_.toString)
     val expFields = List[String](
       "private volatile byte C.bitmap$0",
       "private int C.lvl1",
@@ -295,16 +316,16 @@ object Test {
       "private final scala.runtime.BoxedUnit C.vl3",
       "private int C.vr1",
       "private java.lang.String C.vr2",
-      "private scala.runtime.BoxedUnit C.vr3")
-    assert(
-      fields == expFields,
-      s"wrong fields. expected:\n$expFields\nfound:\n$fields")
-
+      "private scala.runtime.BoxedUnit C.vr3"
+    )
+    assert(fields == expFields,
+           s"wrong fields. expected:\n$expFields\nfound:\n$fields")
 
     val d = new D
     d.run()
 
-    val dFields = d.getClass.getDeclaredFields.toList.sortBy(_.getName).map(_.toString)
+    val dFields =
+      d.getClass.getDeclaredFields.toList.sortBy(_.getName).map(_.toString)
     val expDFields = List[String](
       "private volatile byte D.bitmap$0",
       "private int D.lvl1",
@@ -318,10 +339,10 @@ object Test {
       "private scala.runtime.BoxedUnit D.vl3",
       "private int D.vr1",
       "private java.lang.String D.vr2",
-      "private scala.runtime.BoxedUnit D.vr3")
+      "private scala.runtime.BoxedUnit D.vr3"
+    )
     assert(dFields == expDFields,
-      s"wrong fields. expected:\n$expDFields\nfound:\n$dFields")
-
+           s"wrong fields. expected:\n$expDFields\nfound:\n$dFields")
 
     val d1 = new D1
     d1.run()

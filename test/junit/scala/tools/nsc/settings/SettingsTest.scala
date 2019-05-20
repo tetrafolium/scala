@@ -11,7 +11,8 @@ import scala.tools.testing.AssertUtil.assertThrows
 class SettingsTest {
   @Test def booleanSettingColon(): Unit = {
     def check(args: String*): MutableSettings#BooleanSetting = {
-      val s = new MutableSettings(msg => throw new IllegalArgumentException(msg))
+      val s = new MutableSettings(
+        msg => throw new IllegalArgumentException(msg))
       val b1 = new s.BooleanSetting("-Ytest-setting", "")
       s.allSettings += b1
       val (ok, residual) = s.processArguments(args.toList, processAll = true)
@@ -41,50 +42,91 @@ class SettingsTest {
 
   @Test def anonymousLintersCanBeNamed(): Unit = {
     assertTrue(check("-Xlint")(_.warnMissingInterpolator)) // among Xlint
-    assertFalse(check("-Xlint:-missing-interpolator")(_.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:-missing-interpolator")(_.warnMissingInterpolator))
 
     // positive overrides negative, but not the other way around
-    assertTrue(check("-Xlint:-missing-interpolator,missing-interpolator")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:-missing-interpolator", "-Xlint:missing-interpolator")(_.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:-missing-interpolator,missing-interpolator")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:-missing-interpolator", "-Xlint:missing-interpolator")(
+        _.warnMissingInterpolator))
 
-    assertTrue(check("-Xlint:missing-interpolator,-missing-interpolator")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:missing-interpolator", "-Xlint:-missing-interpolator")(_.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:missing-interpolator,-missing-interpolator")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:missing-interpolator", "-Xlint:-missing-interpolator")(
+        _.warnMissingInterpolator))
 
     // -Xlint:_ adds all possible choices, but explicit negative settings will override
-    assertFalse(check("-Xlint:-missing-interpolator,_")(_.warnMissingInterpolator))
-    assertFalse(check("-Xlint:-missing-interpolator", "-Xlint:_")(_.warnMissingInterpolator))
-    assertFalse(check("-Xlint:_", "-Xlint:-missing-interpolator")(_.warnMissingInterpolator))
-    assertFalse(check("-Xlint:_,-missing-interpolator")(_.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:-missing-interpolator,_")(_.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:-missing-interpolator", "-Xlint:_")(
+        _.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:_", "-Xlint:-missing-interpolator")(
+        _.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:_,-missing-interpolator")(_.warnMissingInterpolator))
 
     // -Xlint is the same as -Xlint:_
-    assertFalse(check("-Xlint:-missing-interpolator", "-Xlint")(_.warnMissingInterpolator))
-    assertFalse(check("-Xlint", "-Xlint:-missing-interpolator")(_.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint:-missing-interpolator", "-Xlint")(
+        _.warnMissingInterpolator))
+    assertFalse(
+      check("-Xlint", "-Xlint:-missing-interpolator")(
+        _.warnMissingInterpolator))
 
     // combination of positive, negative and _
-    assertTrue(check("-Xlint:_,-missing-interpolator,missing-interpolator")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:-missing-interpolator,_,missing-interpolator")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:-missing-interpolator,missing-interpolator,_")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:missing-interpolator,-missing-interpolator,_")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint:missing-interpolator,_,-missing-interpolator")(_.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:_,-missing-interpolator,missing-interpolator")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:-missing-interpolator,_,missing-interpolator")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:-missing-interpolator,missing-interpolator,_")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:missing-interpolator,-missing-interpolator,_")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint:missing-interpolator,_,-missing-interpolator")(
+        _.warnMissingInterpolator))
   }
 
   @Test def xLintInvalidChoices(): Unit = {
-    assertThrows[IllegalArgumentException](check("-Xlint:-_")(_.warnAdaptedArgs))
-    assertThrows[IllegalArgumentException](check("-Xlint:-warn-adapted-args")(_.warnAdaptedArgs)) // "warn-" should not be there
+    assertThrows[IllegalArgumentException](
+      check("-Xlint:-_")(_.warnAdaptedArgs))
+    assertThrows[IllegalArgumentException](check("-Xlint:-warn-adapted-args")(
+      _.warnAdaptedArgs)) // "warn-" should not be there
   }
 
   @Test def xLintNonColonated(): Unit = {
-    assertTrue(check("-Xlint", "adapted-args", "-deprecation")(_.warnAdaptedArgs))
-    assertFalse(check("-Xlint", "adapted-args", "-deprecation")(_.warnMissingInterpolator))
-    assertTrue(check("-Xlint", "adapted-args", "missing-interpolator", "-deprecation")(s => s.warnMissingInterpolator && s.warnAdaptedArgs))
-    assertThrows[IllegalArgumentException](check("-Xlint", "adapted-args", "-missing-interpolator")(_.warnAdaptedArgs)) // non-colonated: cannot provide negative args
+    assertTrue(
+      check("-Xlint", "adapted-args", "-deprecation")(_.warnAdaptedArgs))
+    assertFalse(
+      check("-Xlint", "adapted-args", "-deprecation")(
+        _.warnMissingInterpolator))
+    assertTrue(
+      check("-Xlint", "adapted-args", "missing-interpolator", "-deprecation")(
+        s => s.warnMissingInterpolator && s.warnAdaptedArgs))
+    assertThrows[IllegalArgumentException](
+      check("-Xlint", "adapted-args", "-missing-interpolator")(
+        _.warnAdaptedArgs)) // non-colonated: cannot provide negative args
   }
 
   @Test def xLintContainsValues(): Unit = {
     // make sure that lint.contains and lint.value.contains are consistent
     def t(s: MutableSettings, v: String) = {
       val r = s.lint.contains(v)
-      assertSame(r, s.lint.value.contains((s.LintWarnings withName v).asInstanceOf[s.lint.domain.Value]))
+      assertSame(
+        r,
+        s.lint.value.contains(
+          (s.LintWarnings withName v).asInstanceOf[s.lint.domain.Value]))
       r
     }
 
@@ -92,7 +134,8 @@ class SettingsTest {
     assertTrue(check("-Xlint:_")(t(_, "adapted-args")))
     assertFalse(check("-Xlint:_,-adapted-args")(t(_, "adapted-args")))
     assertFalse(check("-Xlint:-adapted-args,_")(t(_, "adapted-args")))
-    assertTrue(check("-Xlint:-adapted-args,_,adapted-args")(t(_, "adapted-args")))
+    assertTrue(
+      check("-Xlint:-adapted-args,_,adapted-args")(t(_, "adapted-args")))
   }
 
   @Test def expandingMultichoice(): Unit = {
@@ -107,9 +150,14 @@ class SettingsTest {
       val ac = Choice("ac", expandsTo = List(a, c))
       val uber = Choice("uber", expandsTo = List(ab, d))
     }
-    val m = s.MultiChoiceSetting("-m", "args", "magic sauce", mChoices, Some(List("ac")))
+    val m = s.MultiChoiceSetting("-m",
+                                 "args",
+                                 "magic sauce",
+                                 mChoices,
+                                 Some(List("ac")))
 
-    def check(args: String*)(t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
+    def check(args: String*)(
+        t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
       m.clear()
       val (ok, rest) = s.processArguments(args.toList, processAll = true)
       assert(rest.isEmpty)
@@ -118,44 +166,56 @@ class SettingsTest {
 
     import mChoices._
 
-    assertTrue(check("-m")(_.value == Set(a,c)))
-    assertTrue(check("-m:a,-b,c")(_.value == Set(a,c)))
+    assertTrue(check("-m")(_.value == Set(a, c)))
+    assertTrue(check("-m:a,-b,c")(_.value == Set(a, c)))
 
     // expanding options don't end up in the value set, only the terminal ones
-    assertTrue(check("-m:ab,ac")(_.value == Set(a,b,c)))
-    assertTrue(check("-m:_")(_.value == Set(a,b,c,d)))
-    assertTrue(check("-m:uber,ac")(_.value == Set(a,b,c,d))) // recursive expansion of uber
+    assertTrue(check("-m:ab,ac")(_.value == Set(a, b, c)))
+    assertTrue(check("-m:_")(_.value == Set(a, b, c, d)))
+    assertTrue(check("-m:uber,ac")(_.value == Set(a, b, c, d))) // recursive expansion of uber
 
     // explicit nays
-    assertTrue(check("-m:_,-b")(_.value == Set(a,c,d)))
-    assertTrue(check("-m:b,_,-b")(_.value == Set(a,b,c,d)))
+    assertTrue(check("-m:_,-b")(_.value == Set(a, c, d)))
+    assertTrue(check("-m:b,_,-b")(_.value == Set(a, b, c, d)))
     assertTrue(check("-m:ac,-c")(_.value == Set(a)))
     assertTrue(check("-m:ac,-a,-c")(_.value == Set()))
-    assertTrue(check("-m:-d,ac")(_.value == Set(a,c)))
-    assertTrue(check("-m:-b,ac,uber")(_.value == Set(a,c,d)))
+    assertTrue(check("-m:-d,ac")(_.value == Set(a, c)))
+    assertTrue(check("-m:-b,ac,uber")(_.value == Set(a, c, d)))
 
     assertFalse(check("-m:uber")(_.contains("i-m-not-an-option")))
 
-    assertThrows[IllegalArgumentException](check("-m:-_")(_ => true), _ contains "'-_' is not a valid choice")
-    assertThrows[IllegalArgumentException](check("-m:a,b,-ab")(_ => true), _ contains "'ab' cannot be negated")
-    assertThrows[IllegalArgumentException](check("-m:a,ac,-uber,uber")(_ => true), _ contains "'uber' cannot be negated")
+    assertThrows[IllegalArgumentException](
+      check("-m:-_")(_ => true),
+      _ contains "'-_' is not a valid choice")
+    assertThrows[IllegalArgumentException](check("-m:a,b,-ab")(_ => true),
+                                           _ contains "'ab' cannot be negated")
+    assertThrows[IllegalArgumentException](
+      check("-m:a,ac,-uber,uber")(_ => true),
+      _ contains "'uber' cannot be negated")
   }
 
   @Test def xSourceTest(): Unit = {
     def check(expected: String, args: String*): Unit = {
-      val s = new MutableSettings(msg => throw new IllegalArgumentException(msg))
+      val s = new MutableSettings(
+        msg => throw new IllegalArgumentException(msg))
       val (_, residual) = s.processArguments(args.toList, processAll = true)
       assert(residual.isEmpty)
       assertTrue(s.source.value == ScalaVersion(expected))
     }
     check(expected = "2.13.0") // default
     check(expected = "2.11.0", "-Xsource:2.11")
-    check(expected = "2.10",   "-Xsource:2.10.0")
-    check(expected = "2.12",   "-Xsource:2.12")
-    check(expected = "2.13",   "-Xsource:2.13")
-    assertThrows[IllegalArgumentException](check(expected = "2.11", "-Xsource"), _ == "-Xsource requires an argument, the syntax is -Xsource:<version>")
-    assertThrows[IllegalArgumentException](check(expected = "2.11", "-Xsource", "2.11"), _ == "-Xsource requires an argument, the syntax is -Xsource:<version>")
-    assertThrows[IllegalArgumentException](check(expected = "2.11", "-Xsource:2.invalid"), _ contains "Bad version (2.invalid)")
+    check(expected = "2.10", "-Xsource:2.10.0")
+    check(expected = "2.12", "-Xsource:2.12")
+    check(expected = "2.13", "-Xsource:2.13")
+    assertThrows[IllegalArgumentException](
+      check(expected = "2.11", "-Xsource"),
+      _ == "-Xsource requires an argument, the syntax is -Xsource:<version>")
+    assertThrows[IllegalArgumentException](
+      check(expected = "2.11", "-Xsource", "2.11"),
+      _ == "-Xsource requires an argument, the syntax is -Xsource:<version>")
+    assertThrows[IllegalArgumentException](
+      check(expected = "2.11", "-Xsource:2.invalid"),
+      _ contains "Bad version (2.invalid)")
   }
 
   // equal with stripped margins and normalized line endings
@@ -171,9 +231,14 @@ class SettingsTest {
       val b = Choice("b", "help b")
       val c = Choice("c", "help c")
     }
-    val m = s.MultiChoiceSetting("-m", "args", "magic sauce", mChoices, Some(List("b")))
+    val m = s.MultiChoiceSetting("-m",
+                                 "args",
+                                 "magic sauce",
+                                 mChoices,
+                                 Some(List("b")))
 
-    def check(args: String*)(t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
+    def check(args: String*)(
+        t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
       m.clear()
       val (ok, rest) = s.processArguments(args.toList, processAll = true)
       assert(rest.isEmpty)
@@ -201,9 +266,14 @@ class SettingsTest {
       val b = Choice("b", "help b")
       val c = Choice("c", "help c")
     }
-    val m = s.MultiChoiceSetting("-m", "args", "magic sauce", mChoices, Some(List("_")))
+    val m = s.MultiChoiceSetting("-m",
+                                 "args",
+                                 "magic sauce",
+                                 mChoices,
+                                 Some(List("_")))
 
-    def check(args: String*)(t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
+    def check(args: String*)(
+        t: s.MultiChoiceSetting[mChoices.type] => Boolean): Boolean = {
       m.clear()
       val (ok, rest) = s.processArguments(args.toList, processAll = true)
       assert(rest.isEmpty)

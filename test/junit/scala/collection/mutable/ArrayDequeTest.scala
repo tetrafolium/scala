@@ -41,7 +41,7 @@ class ArrayDequeTest {
     apply(_.addAll(collection.Iterator.tabulate(100)(identity)))
     apply(_.addAll(collection.immutable.Vector.tabulate(10)(identity)))
 
-    (-100 to 100) foreach {i =>
+    (-100 to 100) foreach { i =>
       assertEquals(buffer.splitAt(i), buffer2.splitAt(i))
     }
 
@@ -50,7 +50,9 @@ class ArrayDequeTest {
       j <- -100 to 100
     } {
       assertEquals(buffer.slice(i, j), buffer2.slice(i, j))
-      if (i > 0 && j > 0) assertEquals(List.from(buffer.sliding(i, j)), List.from(buffer2.sliding(i, j)))
+      if (i > 0 && j > 0)
+        assertEquals(List.from(buffer.sliding(i, j)),
+                     List.from(buffer2.sliding(i, j)))
     }
   }
 
@@ -71,14 +73,17 @@ class ArrayDequeTest {
   @Test
   def copyToArrayOutOfBounds: Unit = {
     val target = Array[Int]()
-    assertEquals(0, collection.mutable.ArrayDeque(1, 2).copyToArray(target, 1, 0))
+    assertEquals(0,
+                 collection.mutable.ArrayDeque(1, 2).copyToArray(target, 1, 0))
   }
 
   @Test
   def insertsWhenResizeIsNeeded: Unit = {
     val arrayDeque = ArrayDeque.from(Array.range(0, 15))
     arrayDeque.insert(1, -1)
-    assertEquals(ArrayDeque(0, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), arrayDeque)
+    assertEquals(
+      ArrayDeque(0, -1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
+      arrayDeque)
   }
 
   @Test
@@ -98,13 +103,15 @@ class ArrayDequeTest {
   }
 
   @Test
-  def sliding: Unit = ArrayDequeTest.genericSlidingTest(ArrayDeque, "ArrayDeque")
+  def sliding: Unit =
+    ArrayDequeTest.genericSlidingTest(ArrayDeque, "ArrayDeque")
 }
 
 object ArrayDequeTest {
 
   // tests scala/bug#11047
-  def genericSlidingTest(factory: SeqFactory[ArrayDeque], collectionName: String): Unit =
+  def genericSlidingTest(factory: SeqFactory[ArrayDeque],
+                         collectionName: String): Unit =
     for {
       i <- 1 to 40
 
@@ -115,13 +122,13 @@ object ArrayDequeTest {
       j <- 1 to 40
       k <- 1 to 40
 
-      iterableSliding = iterable.sliding(j,k).to(Seq)
+      iterableSliding = iterable.sliding(j, k).to(Seq)
       otherSliding = other.sliding(j, k).to(Seq)
-    }
-      assert(iterableSliding == otherSliding,
-        s"""Iterable.from($range)).sliding($j,$k) differs from $collectionName.from($range)).sliding($j,$k)
+    } assert(
+      iterableSliding == otherSliding,
+      s"""Iterable.from($range)).sliding($j,$k) differs from $collectionName.from($range)).sliding($j,$k)
            |Iterable yielded: $iterableSliding
            |$collectionName yielded: $otherSliding
        """.stripMargin
-      )
+    )
 }

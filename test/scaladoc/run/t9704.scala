@@ -2,7 +2,8 @@ import scala.tools.nsc.doc.model._
 import scala.tools.partest.ScaladocModelTest
 
 object Test extends ScaladocModelTest {
-  override def code = """
+  override def code =
+    """
   object Foo {
     /**
     * Demonstrates a scala issue in which the closing link tag is duplicated

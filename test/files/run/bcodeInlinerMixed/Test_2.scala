@@ -16,7 +16,7 @@ object Test extends BytecodeTest {
       assert(i exists {
         // `flop` is not inlined
         case Invoke(_, _, "flop", "()I", _) => true
-        case _ => false
+        case _                              => false
       }, i mkString "\n")
     }
 
@@ -24,7 +24,7 @@ object Test extends BytecodeTest {
     assert(mIns exists {
       // `flop` is inlined, we get a call to `bar`
       case Invoke(_, _, "bar", "()I", _) => true
-      case _ => false
+      case _                             => false
     }, mIns mkString "\n")
   }
 }

@@ -1,4 +1,3 @@
-
 import tools.partest.DirectTest
 import reflect.internal.util._
 
@@ -6,7 +5,8 @@ import reflect.internal.util._
 // the class with new run of same global.
 object Test extends DirectTest {
 
-  override def code = """
+  override def code =
+    """
     object Main {
       def main(args: Array[String]): Unit = {
         Surf xmain args
@@ -42,5 +42,6 @@ object Test extends DirectTest {
     ScalaClassLoader(getClass.getClassLoader) run ("Main", Nil)
   }
 
-  override def extraSettings = s"-usejavacp -d ${testOutput.path} -cp ${testOutput.path}"
+  override def extraSettings =
+    s"-usejavacp -d ${testOutput.path} -cp ${testOutput.path}"
 }

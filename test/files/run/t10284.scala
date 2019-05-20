@@ -1,4 +1,3 @@
-
 // run repl -i script -e expression
 // The Runner normally requires -howtorun:repl to pass -e to REPL.
 
@@ -16,7 +15,7 @@ object Test extends ReplTest {
 
     //grs.processArgumentString(s"-i $script -e f(21)")
     grs.pastefiles.value = List(script.toAbsolute.path)
-    grs.execute.value    = "f(21)"
+    grs.execute.value = "f(21)"
     grs
   }
 }

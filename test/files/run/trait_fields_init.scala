@@ -49,7 +49,8 @@ class C extends AnyRef with T {
 
 object Test extends C {
   def main(args: Array[String]): Unit = {
-  NO
-  new NT{}
-  new NC
-}}
+    NO
+    new NT {}
+    new NC
+  }
+}

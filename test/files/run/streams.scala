@@ -40,7 +40,7 @@ object Test extends App {
   println(s3.length)
 
   // ticket #153
-  def powers(x: Int) = if ((x&(x-1)) == 0) Some(x) else None
+  def powers(x: Int) = if ((x & (x - 1)) == 0) Some(x) else None
   println(s3.flatMap(powers).reverse.head)
 
   // large enough to generate StackOverflows (on most systems)
@@ -53,7 +53,7 @@ object Test extends App {
   println(LazyList.from(1).filter(_ > size).take(5))
   println(LazyList.from(1).take(size).forall(_ >= 0))
   println(LazyList.from(1).exists(_ > size))
-  LazyList.from(1).take(size).foreach( x => () )
+  LazyList.from(1).take(size).foreach(x => ())
   println(LazyList.from(1).take(size).foldLeft(0)(_ + _))
   val arr = new Array[Int](size)
   LazyList.from(1).take(size).copyToArray(arr, 0)

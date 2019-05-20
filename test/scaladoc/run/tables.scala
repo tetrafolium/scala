@@ -16,7 +16,11 @@ object Test extends ScaladocModelTest {
 
   def testModel(rootPackage: Package): Unit = {
 
-    val base = rootPackage._package("scala")._package("test")._package("scaladoc")._package("tables")
+    val base = rootPackage
+      ._package("scala")
+      ._package("test")
+      ._package("scaladoc")
+      ._package("tables")
 
     val allTests = true
     val whitelist = Set[String]()
@@ -25,20 +29,21 @@ object Test extends ScaladocModelTest {
     val printCommentName = false
 
     def includeTest(commentName: String) = {
-      val whitelisted = whitelist(commentName) || whitelistPrefix.map(commentName startsWith _).getOrElse(false)
+      val whitelisted = whitelist(commentName) || whitelistPrefix
+        .map(commentName startsWith _)
+        .getOrElse(false)
       (allTests && !blacklist(commentName)) || whitelisted
     }
 
     def withComment(commentNames: String*)(test: Comment => Unit) = {
-      commentNames foreach {
-        commentName =>
-          if (includeTest(commentName)) {
-            if (printCommentName) {
-              println(commentName)
-            }
-            val comment = getComment(commentName, base)
-            test(comment)
+      commentNames foreach { commentName =>
+        if (includeTest(commentName)) {
+          if (printCommentName) {
+            println(commentName)
           }
+          val comment = getComment(commentName, base)
+          test(comment)
+        }
       }
     }
 
@@ -53,9 +58,9 @@ object Test extends ScaladocModelTest {
     /* None transforms to an empty block list */
     def r(contents: Any*): Row = {
       val cells = contents.toList.map {
-        case "" => Cell(Nil)
+        case ""        => Cell(Nil)
         case x: String => c(x)
-        case None => Cell(Nil)
+        case None      => Cell(Nil)
       }
       Row(cells)
     }
@@ -73,11 +78,12 @@ object Test extends ScaladocModelTest {
       assertTableEquals(Table(header, colOpts, Nil), comment.body)
     }
 
-    withComment("ColumnOptionsAllTypes", "ColumnOptionsMoreThanThreeHyphens") { comment =>
-      val header = r("First Header", "Second Header", "Third Header")
-      val colOpts = ColumnOptionLeft :: ColumnOptionCenter :: ColumnOptionRight :: Nil
-      val row = r("Cell 1", "Cell 2", "Cell 3")
-      assertTableEquals(Table(header, colOpts, row :: Nil), comment.body)
+    withComment("ColumnOptionsAllTypes", "ColumnOptionsMoreThanThreeHyphens") {
+      comment =>
+        val header = r("First Header", "Second Header", "Third Header")
+        val colOpts = ColumnOptionLeft :: ColumnOptionCenter :: ColumnOptionRight :: Nil
+        val row = r("Cell 1", "Cell 2", "Cell 3")
+        assertTableEquals(Table(header, colOpts, row :: Nil), comment.body)
     }
 
     withComment("ColumnOptionsHyphenRepetitions") { comment =>
@@ -99,9 +105,12 @@ object Test extends ScaladocModelTest {
       val header = r("Edibles")
       val colOpts = ColumnOptionLeft :: Nil
 
-      val cell1 = ci(Chain(List(Text("Oranges "), Underline(Text("and")), Text(" Aubergines"))))
+      val cell1 = ci(
+        Chain(
+          List(Text("Oranges "), Underline(Text("and")), Text(" Aubergines"))))
 
-      val cell2 = ci(Chain(List(Text("Peaches "), Monospace(Text("or")), Text(" Pears"))))
+      val cell2 =
+        ci(Chain(List(Text("Peaches "), Monospace(Text("or")), Text(" Pears"))))
 
       val row1 = Row(cell1 :: Nil)
       val row2 = Row(cell2 :: Nil)
@@ -121,7 +130,9 @@ object Test extends ScaladocModelTest {
       val row1 = r("Bread", "Yak", "Vodka")
       val row2 = {
         val cell1 = c("Figs")
-        val cell2 = ci(Chain(Text("Cheese on toast") :: Superscript(Text("three ways")) :: Nil))
+        val cell2 = ci(
+          Chain(
+            Text("Cheese on toast") :: Superscript(Text("three ways")) :: Nil))
         val cell3 = c("Coffee")
         Row(cell1 :: cell2 :: cell3 :: Nil)
       }
@@ -157,12 +168,14 @@ object Test extends ScaladocModelTest {
     withComment("HeadersUsingInlineMarkdown") { comment =>
       val headerCell1 = ci(
         Chain(
-          Text("Fruits, ") :: Subscript(Text("Beverages")) :: Text(" and Vegetables") :: Nil
+          Text("Fruits, ") :: Subscript(Text("Beverages")) :: Text(
+            " and Vegetables") :: Nil
         )
       )
       val headerCell2 = ci(
         Chain(
-          Text("Semiconductors, ") :: Italic(Text("Raptors")) :: Text(", and Poultry") :: Nil
+          Text("Semiconductors, ") :: Italic(Text("Raptors")) :: Text(
+            ", and Poultry") :: Nil
         )
       )
 
@@ -175,7 +188,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("Combined") { comment =>
-
       val header = r("Item", "Price")
       val colOpts = ColumnOptionLeft :: ColumnOptionRight :: Nil
 
@@ -186,7 +198,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("CellInlineMarkdown") { comment =>
-
       val header = r("Header")
       val colOpts = ColumnOptionLeft :: Nil
 
@@ -197,7 +208,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("MultipleTables1") { comment =>
-
       val colOpts = ColumnOptionLeft :: Nil
 
       val table1 = Table(r("Hill Dweller"), colOpts, r("Ant") :: Nil)
@@ -207,7 +217,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("MultipleTables2") { comment =>
-
       val colOpts = ColumnOptionLeft :: Nil
 
       val table1 = Table(r("Hill Dweller"), colOpts, r("Ant") :: Nil)
@@ -223,7 +232,8 @@ object Test extends ScaladocModelTest {
       val table1 = Table(r("Hill Dweller"), colOpts, r("Ant") :: Nil)
       val table2 = Table(r("Hive Dweller"), colOpts, r("Bee") :: Nil)
 
-      val content1 = Paragraph(Chain(List(Summary(Chain(List(Text("Ants are cool"), Text(".")))))))
+      val content1 = Paragraph(
+        Chain(List(Summary(Chain(List(Text("Ants are cool"), Text(".")))))))
       val content2 = pt("But bees are better.\n")
 
       val body = Body(table1 :: content1 :: table2 :: content2 :: Nil)
@@ -234,7 +244,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("ParagraphEnd") { comment =>
-
       val summary = Paragraph(Chain(List(Summary(Text("Summary")))))
       val paragraph = pt("Paragraph text should end here.")
       val header = r("type")
@@ -254,7 +263,8 @@ object Test extends ScaladocModelTest {
       val row3 = r("C|ontent 2", "", "")
       val row4 = r("Content| 3", "", "")
       val row5 = r("Content  |4", "||", "||||")
-      val row6 = Row(Cell(List(Paragraph(Text("Content 5|")))) :: Cell(Nil) :: Cell(Nil) :: Nil)
+      val row6 = Row(
+        Cell(List(Paragraph(Text("Content 5|")))) :: Cell(Nil) :: Cell(Nil) :: Nil)
 
       val rows = row1 :: row2 :: row3 :: row4 :: row5 :: row6 :: Nil
       assertTableEquals(Table(header, colOpts, rows), comment.body)
@@ -272,7 +282,6 @@ object Test extends ScaladocModelTest {
     }
 
     withComment("MissingInitialCellMark") { comment =>
-
       val colOpts = ColumnOptionLeft :: Nil
 
       val table1 = Table(r("Unstarted Row"), colOpts, r("r1c1") :: Nil)
@@ -292,7 +301,8 @@ object Test extends ScaladocModelTest {
 
       val table = Table(header, colOpts, Nil)
 
-      val content = Paragraph(Chain(List(Summary(Text("|Accidental\nnewline|")))))
+      val content =
+        Paragraph(Chain(List(Summary(Text("|Accidental\nnewline|")))))
 
       val body = Body(table :: content :: Nil)
 
@@ -304,7 +314,8 @@ object Test extends ScaladocModelTest {
 
       val table1 = Table(r("Split"), colOpts, Nil)
 
-      val content = Paragraph(Chain(List(Summary(Text("|Accidental\nnewline|")))))
+      val content =
+        Paragraph(Chain(List(Summary(Text("|Accidental\nnewline|")))))
 
       val table2 = Table(r("~FIN~"), colOpts, Nil)
 
@@ -340,7 +351,8 @@ object Test extends ScaladocModelTest {
     withComment("LeadingWhitespaceNotSkipped") { comment =>
       val colOpts = ColumnOptionLeft :: Nil
       val table = Table(r("Leading"), colOpts, Nil)
-      val text = " |-|\n  |whitespace before marks|\n   |Not Yet Skipped|Maybe TO DO|\n"
+      val text =
+        " |-|\n  |whitespace before marks|\n   |Not Yet Skipped|Maybe TO DO|\n"
       val content = Paragraph(Chain(List(Summary(Text(text)))))
 
       val body = Body(table :: content :: Nil)
@@ -348,33 +360,45 @@ object Test extends ScaladocModelTest {
     }
   }
 
-  private def getComment(traitName: String, containingPackage: Package): Comment = {
+  private def getComment(traitName: String,
+                         containingPackage: Package): Comment = {
     containingPackage._trait(traitName).comment.get
   }
 
-  private def assertTableEquals(expectedTable: Table, actualBody: Body): Unit = {
+  private def assertTableEquals(expectedTable: Table,
+                                actualBody: Body): Unit = {
     actualBody.blocks.toList match {
       case (actualTable: Table) :: Nil =>
-        assert(expectedTable == actualTable, s"\n\nExpected:\n${multilineFormat(expectedTable)}\n\nActual:\n${multilineFormat(actualTable)}\n")
+        assert(
+          expectedTable == actualTable,
+          s"\n\nExpected:\n${multilineFormat(expectedTable)}\n\nActual:\n${multilineFormat(actualTable)}\n")
       case _ =>
         val expectedBody = Body(List(expectedTable))
-        assert(expectedBody == actualBody, s"Expected: $expectedBody, Actual: $actualBody")
+        assert(expectedBody == actualBody,
+               s"Expected: $expectedBody, Actual: $actualBody")
     }
   }
 
-  private def assertTablesEquals(expectedTables: Seq[Table], actualBody: Body): Unit = {
+  private def assertTablesEquals(expectedTables: Seq[Table],
+                                 actualBody: Body): Unit = {
     val expectedBody = Body(expectedTables)
-    assert(expectedBody == actualBody, s"Expected: $expectedBody, Actual: $actualBody")
+    assert(expectedBody == actualBody,
+           s"Expected: $expectedBody, Actual: $actualBody")
   }
 
   private def assertBodiesEquals(expectedBody: Body, actualBody: Body): Unit = {
     val blocks = expectedBody.blocks zip actualBody.blocks
-    val blockComparisons = blocks.zipWithIndex.collect {
-      case ((expectedBlock, actualBlock), idx) if expectedBlock != actualBlock =>
-        s"Block mismatch at index $idx\nExpected block: $expectedBlock\nActual block  : $actualBlock"
-    }.headOption.getOrElse("")
+    val blockComparisons = blocks.zipWithIndex
+      .collect {
+        case ((expectedBlock, actualBlock), idx)
+            if expectedBlock != actualBlock =>
+          s"Block mismatch at index $idx\nExpected block: $expectedBlock\nActual block  : $actualBlock"
+      }
+      .headOption
+      .getOrElse("")
 
-    assert(expectedBody == actualBody, s"$blockComparisons\n\nExpected: $expectedBody, Actual: $actualBody")
+    assert(expectedBody == actualBody,
+           s"$blockComparisons\n\nExpected: $expectedBody, Actual: $actualBody")
   }
 
   private def multilineFormat(table: Table): String = {

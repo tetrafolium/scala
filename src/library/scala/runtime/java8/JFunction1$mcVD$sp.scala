@@ -12,7 +12,9 @@
 
 package scala.runtime.java8
 
-@FunctionalInterface trait JFunction1$mcVD$sp extends Function1[Any, Any] with Serializable {
+@FunctionalInterface trait JFunction1$mcVD$sp
+    extends Function1[Any, Any]
+    with Serializable {
   def apply$mcVD$sp(v1: Double): Unit
   override def apply(t: Any): Any = {
     apply$mcVD$sp(scala.runtime.BoxesRunTime.unboxToDouble(t))

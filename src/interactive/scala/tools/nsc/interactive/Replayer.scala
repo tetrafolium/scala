@@ -38,7 +38,7 @@ class Logger(wr0: Writer) extends LogReplay {
     val xx = x
     xx match {
       case Some(y) => insertComma(); pkl[T].labelled(event).pickle(wr, y)
-      case None =>
+      case None    =>
     }
     xx
   }
@@ -66,7 +66,7 @@ class Replayer(raw: Reader) extends LogReplay {
       eatComma()
       pkl[Unit].labelled(event).unpickle(rd) match {
         case UnpickleSuccess(_) => nextComma = true; true
-        case _ => false
+        case _                  => false
       }
     }
 
@@ -76,11 +76,10 @@ class Replayer(raw: Reader) extends LogReplay {
       eatComma()
       pkl[T].labelled(event).unpickle(rd) match {
         case UnpickleSuccess(y) => nextComma = true; Some(y)
-        case _ => None
+        case _                  => None
       }
     }
 
   def close(): Unit = raw.close()
   def flush(): Unit = ()
 }
-

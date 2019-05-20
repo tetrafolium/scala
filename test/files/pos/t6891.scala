@@ -3,7 +3,8 @@
 object O {
   implicit class Foo[A](val value: String) extends AnyVal {
     def bippy() = {
-      @annotation.tailrec def loop(x: A): Unit = loop(x)
+      @annotation.tailrec
+      def loop(x: A): Unit = loop(x)
       ()
     }
 
@@ -24,15 +25,18 @@ object O {
     //}
 
     def boppy() = {
-      @annotation.tailrec def loop(x: Option[value.type]): Unit = loop(x)
+      @annotation.tailrec
+      def loop(x: Option[value.type]): Unit = loop(x)
       ()
     }
 
-    def beppy[C](c: => C) = {
-      () => c
-      @annotation.tailrec def loop(x: Option[value.type]): Unit = loop(x)
-        () => c
-      ()
+    def beppy[C](c: => C) = { () =>
+      c
+      @annotation.tailrec
+      def loop(x: Option[value.type]): Unit = loop(x)
+      () =>
+        c
+        ()
     }
   }
   // uncaught exception during compilation: Types$TypeError("type mismatch;

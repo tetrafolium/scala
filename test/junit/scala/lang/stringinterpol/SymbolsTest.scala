@@ -22,8 +22,10 @@ class SymbolsTest {
 
   @Test
   def symbolListTest: Unit = {
-    assertEquals("List('foo, 'bar, 'baz)", List(sym"foo", sym"bar", sym"baz").toString)
-    assertEquals("List('foo, 'bar, 'baz)", (sym"foo" :: sym"bar" :: sym"baz" :: Nil).toString)
+    assertEquals("List('foo, 'bar, 'baz)",
+                 List(sym"foo", sym"bar", sym"baz").toString)
+    assertEquals("List('foo, 'bar, 'baz)",
+                 (sym"foo" :: sym"bar" :: sym"baz" :: Nil).toString)
   }
 
   @Test

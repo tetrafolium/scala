@@ -7,4 +7,3 @@ object Test {
     assert(t.y == "oof", t.y)
   }
 }
-

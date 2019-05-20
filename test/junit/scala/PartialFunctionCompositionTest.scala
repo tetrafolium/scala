@@ -9,8 +9,12 @@ import org.junit.runners.JUnit4
 class PartialFunctionCompositionTest {
   val fallbackFun = (_: String) => "fallback"
   val passAll: PartialFunction[String, String] = { case any => any }
-  val passShort: PartialFunction[String, String] = { case any if any.length < 5 => any }
-  val passPass: PartialFunction[String, String] = { case s if s.contains("pass") => s }
+  val passShort: PartialFunction[String, String] = {
+    case any if any.length < 5 => any
+  }
+  val passPass: PartialFunction[String, String] = {
+    case s if s.contains("pass") => s
+  }
 
   val allAndThenShort = passAll andThen passShort
   val shortAndThenAll = passShort andThen passAll
@@ -31,13 +35,17 @@ class PartialFunctionCompositionTest {
     assertTrue(allAndThenPass.isDefinedAt("pass"))
     assertTrue(passAndThenAll.isDefinedAt("pass"))
 
-    assertEquals(allAndThenPass.applyOrElse("longpass", fallbackFun), "longpass")
-    assertEquals(passAndThenAll.applyOrElse("longpass", fallbackFun), "longpass")
+    assertEquals(allAndThenPass.applyOrElse("longpass", fallbackFun),
+                 "longpass")
+    assertEquals(passAndThenAll.applyOrElse("longpass", fallbackFun),
+                 "longpass")
     assertTrue(allAndThenPass.isDefinedAt("longpass"))
     assertTrue(passAndThenAll.isDefinedAt("longpass"))
 
-    assertEquals(allAndThenShort.applyOrElse("longpass", fallbackFun), "fallback")
-    assertEquals(shortAndThenAll.applyOrElse("longpass", fallbackFun), "fallback")
+    assertEquals(allAndThenShort.applyOrElse("longpass", fallbackFun),
+                 "fallback")
+    assertEquals(shortAndThenAll.applyOrElse("longpass", fallbackFun),
+                 "fallback")
     assertFalse(allAndThenShort.isDefinedAt("longpass"))
     assertFalse(shortAndThenAll.isDefinedAt("longpass"))
 
@@ -51,13 +59,17 @@ class PartialFunctionCompositionTest {
     assertTrue(passAndThenShort.isDefinedAt("pass"))
     assertTrue(shortAndThenPass.isDefinedAt("pass"))
 
-    assertEquals(passAndThenShort.applyOrElse("longpass", fallbackFun), "fallback")
-    assertEquals(shortAndThenPass.applyOrElse("longpass", fallbackFun), "fallback")
+    assertEquals(passAndThenShort.applyOrElse("longpass", fallbackFun),
+                 "fallback")
+    assertEquals(shortAndThenPass.applyOrElse("longpass", fallbackFun),
+                 "fallback")
     assertFalse(passAndThenShort.isDefinedAt("longpass"))
     assertFalse(shortAndThenPass.isDefinedAt("longpass"))
 
-    assertEquals(shortAndThenPass.applyOrElse("longstr", fallbackFun), "fallback")
-    assertEquals(passAndThenShort.applyOrElse("longstr", fallbackFun), "fallback")
+    assertEquals(shortAndThenPass.applyOrElse("longstr", fallbackFun),
+                 "fallback")
+    assertEquals(passAndThenShort.applyOrElse("longstr", fallbackFun),
+                 "fallback")
     assertFalse(shortAndThenPass.isDefinedAt("longstr"))
     assertFalse(passAndThenShort.isDefinedAt("longstr"))
   }
@@ -81,13 +93,17 @@ class PartialFunctionCompositionTest {
     assertTrue(allComposePass.isDefinedAt("pass"))
     assertTrue(passComposeAll.isDefinedAt("pass"))
 
-    assertEquals(allComposePass.applyOrElse("longpass", fallbackFun), "longpass")
-    assertEquals(passComposeAll.applyOrElse("longpass", fallbackFun), "longpass")
+    assertEquals(allComposePass.applyOrElse("longpass", fallbackFun),
+                 "longpass")
+    assertEquals(passComposeAll.applyOrElse("longpass", fallbackFun),
+                 "longpass")
     assertTrue(allComposePass.isDefinedAt("longpass"))
     assertTrue(passComposeAll.isDefinedAt("longpass"))
 
-    assertEquals(allComposeShort.applyOrElse("longpass", fallbackFun), "fallback")
-    assertEquals(shortComposeAll.applyOrElse("longpass", fallbackFun), "fallback")
+    assertEquals(allComposeShort.applyOrElse("longpass", fallbackFun),
+                 "fallback")
+    assertEquals(shortComposeAll.applyOrElse("longpass", fallbackFun),
+                 "fallback")
     assertFalse(allComposeShort.isDefinedAt("longpass"))
     assertFalse(shortComposeAll.isDefinedAt("longpass"))
 
@@ -101,13 +117,17 @@ class PartialFunctionCompositionTest {
     assertTrue(passComposeShort.isDefinedAt("pass"))
     assertTrue(shortComposePass.isDefinedAt("pass"))
 
-    assertEquals(passComposeShort.applyOrElse("longpass", fallbackFun), "fallback")
-    assertEquals(shortComposePass.applyOrElse("longpass", fallbackFun), "fallback")
+    assertEquals(passComposeShort.applyOrElse("longpass", fallbackFun),
+                 "fallback")
+    assertEquals(shortComposePass.applyOrElse("longpass", fallbackFun),
+                 "fallback")
     assertFalse(passComposeShort.isDefinedAt("longpass"))
     assertFalse(shortComposePass.isDefinedAt("longpass"))
 
-    assertEquals(shortComposePass.applyOrElse("longstr", fallbackFun), "fallback")
-    assertEquals(passComposeShort.applyOrElse("longstr", fallbackFun), "fallback")
+    assertEquals(shortComposePass.applyOrElse("longstr", fallbackFun),
+                 "fallback")
+    assertEquals(passComposeShort.applyOrElse("longstr", fallbackFun),
+                 "fallback")
     assertFalse(shortComposePass.isDefinedAt("longstr"))
     assertFalse(passComposeShort.isDefinedAt("longstr"))
   }
@@ -115,16 +135,19 @@ class PartialFunctionCompositionTest {
   @Test
   def andThenWithTotalFunctionTests(): Unit = {
     val f = (s: String) => s"$s$s"
-    val pf: PartialFunction[String, String] = { case any if any.length < 5 => any }
+    val pf: PartialFunction[String, String] = {
+      case any if any.length < 5 => any
+    }
 
     assertEquals((pf andThen f).applyOrElse("pass", fallbackFun), "passpass")
-    assertEquals((pf andThen f).applyOrElse("passpass", fallbackFun), "fallback")
+    assertEquals((pf andThen f).applyOrElse("passpass", fallbackFun),
+                 "fallback")
   }
 
   @Test
   def andThenWithUpcastPartialFunctionTests(): Unit = {
-    val f: PartialFunction[Int, Int] = {case x if x % 2 == 0 => x + 2}
-    val g: PartialFunction[Int, Int] = {case x if x % 2 == 1 => x - 2}
+    val f: PartialFunction[Int, Int] = { case x if x % 2 == 0 => x + 2 }
+    val g: PartialFunction[Int, Int] = { case x if x % 2 == 1 => x - 2 }
     val c1 = f andThen g
     val c2 = f andThen (g: Int => Int)
     assertEquals(8, c1.applyOrElse(2, (_: Int) => 8))

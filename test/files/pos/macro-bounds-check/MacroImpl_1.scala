@@ -10,10 +10,11 @@ abstract class Encoder[T]
 
 object Macros {
   // these two implicits may be deemed ambiguous if the type argument is not checked for bounds
-  implicit def encodeHList[R <: HList]: Encoder[R] = macro DerivationMacros.encodeHList[R]
-  implicit def encodeCoproduct[R <: Coproduct]: Encoder[R] = macro DerivationMacros.encodeCoproduct[R]
+  implicit def encodeHList[R <: HList]: Encoder[R] =
+    macro DerivationMacros.encodeHList[R]
+  implicit def encodeCoproduct[R <: Coproduct]: Encoder[R] =
+    macro DerivationMacros.encodeCoproduct[R]
 }
-
 
 object Auto {
   final def deriveEncoder[A](implicit encode: Encoder[A]): Encoder[A] =
@@ -23,7 +24,8 @@ object Auto {
 class DerivationMacros(val c: whitebox.Context) {
   import c.universe._
 
-  def encodeHList[R <: HList](implicit R: c.WeakTypeTag[R]): c.Expr[Encoder[R]] = {
+  def encodeHList[R <: HList](
+      implicit R: c.WeakTypeTag[R]): c.Expr[Encoder[R]] = {
     c.Expr[Encoder[R]](
       q"""
         {
@@ -34,7 +36,8 @@ class DerivationMacros(val c: whitebox.Context) {
     )
   }
 
-  def encodeCoproduct[R <: Coproduct](implicit R: c.WeakTypeTag[R]): c.Expr[Encoder[R]] = {
+  def encodeCoproduct[R <: Coproduct](
+      implicit R: c.WeakTypeTag[R]): c.Expr[Encoder[R]] = {
     c.Expr[Encoder[R]](
       q"""
         {

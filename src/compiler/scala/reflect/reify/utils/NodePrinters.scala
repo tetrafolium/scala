@@ -36,40 +36,48 @@ trait NodePrinters {
         var s = line substring 2
         s = s.replace(nme.UNIVERSE_PREFIX.toString, "")
         s = s.replace(".apply", "")
-        s = "([^\"])(_root_\\.)?scala\\.collection\\.immutable\\.".r.replaceAllIn(s, "$1")
+        s = "([^\"])(_root_\\.)?scala\\.collection\\.immutable\\.".r
+          .replaceAllIn(s, "$1")
         s = "List\\[List\\[.*?\\].*?\\]".r.replaceAllIn(s, "List")
         s = "List\\[.*?\\]".r.replaceAllIn(s, "List")
         s = s.replace("immutable.this.Nil", "List()")
-        s = """internal\.reificationSupport\.FlagsRepr\((\d+)[lL]\)""".r.replaceAllIn(s, m => {
-          flagsAreUsed = true
-          show(m.group(1).toLong)
-        })
-        s = s.replace("Modifiers(0L, TypeName(\"\"), List())", "Modifiers()")
-        s = """Modifiers\((\d+)[lL], TypeName\("(.*?)"\), List\((.*?)\)\)""".r.replaceAllIn(s, m => {
-          val buf = new scala.collection.mutable.ListBuffer[String]
-
-          val annotations = m.group(3)
-          if (buf.nonEmpty || annotations != "")
-            buf += s"List($annotations)"
-
-          val privateWithin = "" + m.group(2)
-          if (buf.nonEmpty || privateWithin != "")
-            buf += {"TypeName(\"" + privateWithin + "\")"}
-
-          val bits = m.group(1)
-          if (buf.nonEmpty || bits != "0L") {
+        s = """internal\.reificationSupport\.FlagsRepr\((\d+)[lL]\)""".r
+          .replaceAllIn(s, m => {
             flagsAreUsed = true
-            buf += show(bits.toLong)
-          }
+            show(m.group(1).toLong)
+          })
+        s = s.replace("Modifiers(0L, TypeName(\"\"), List())", "Modifiers()")
+        s = """Modifiers\((\d+)[lL], TypeName\("(.*?)"\), List\((.*?)\)\)""".r
+          .replaceAllIn(
+            s,
+            m => {
+              val buf = new scala.collection.mutable.ListBuffer[String]
 
-          val replacement = "Modifiers(" + buf.reverse.mkString(", ")  + ")"
-          java.util.regex.Matcher.quoteReplacement(replacement)
-        })
+              val annotations = m.group(3)
+              if (buf.nonEmpty || annotations != "")
+                buf += s"List($annotations)"
+
+              val privateWithin = "" + m.group(2)
+              if (buf.nonEmpty || privateWithin != "")
+                buf += { "TypeName(\"" + privateWithin + "\")" }
+
+              val bits = m.group(1)
+              if (buf.nonEmpty || bits != "0L") {
+                flagsAreUsed = true
+                buf += show(bits.toLong)
+              }
+
+              val replacement = "Modifiers(" + buf.reverse.mkString(", ") + ")"
+              java.util.regex.Matcher.quoteReplacement(replacement)
+            }
+          )
         s
       })
 
-      val isExpr = reification.length > 0 && reification(0).trim.startsWith("Expr[")
-      var rtree = reification dropWhile (!_.trim.startsWith(s"val ${nme.UNIVERSE_SHORT}: U = ${nme.MIRROR_UNTYPED}.universe;"))
+      val isExpr = reification.length > 0 && reification(0).trim
+        .startsWith("Expr[")
+      var rtree = reification dropWhile (!_.trim.startsWith(
+        s"val ${nme.UNIVERSE_SHORT}: U = ${nme.MIRROR_UNTYPED}.universe;"))
       rtree = rtree drop 2
       rtree = rtree takeWhile (_ != "    }")
       rtree = rtree map (s0 => {
@@ -81,7 +89,8 @@ trait NodePrinters {
 
       val printout = scala.collection.mutable.ListBuffer[String]()
       printout += universe.trim
-      if (mirrorIsUsed) printout += mirror.replace("Mirror[", "scala.reflect.api.Mirror[").trim
+      if (mirrorIsUsed)
+        printout += mirror.replace("Mirror[", "scala.reflect.api.Mirror[").trim
       val imports = scala.collection.mutable.ListBuffer[String]()
       imports += nme.UNIVERSE_SHORT.toString
       if (mirrorIsUsed) imports += nme.MIRROR_SHORT.toString

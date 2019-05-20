@@ -8,7 +8,9 @@ object Test {
     case Foo() => ()
   }
 
-  APair[({ type L[a] = (Boolean, a) })#L, ({ type L[a] = a => Int })#L, String]((true, "two"), _.length) match {
+  APair[({ type L[a] = (Boolean, a) })#L, ({ type L[a] = a => Int })#L, String](
+    (true, "two"),
+    _.length) match {
     case APair((b, s), f) => ()
   }
 }

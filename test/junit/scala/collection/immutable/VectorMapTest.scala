@@ -16,12 +16,14 @@ class VectorMapTest {
 
   @Test
   def hasCorrectBuilder(): Unit = {
-    val m = VectorMap("a" -> "1", "b" -> "2", "c" -> "3", "b" -> "2.2", "d" -> "4")
+    val m =
+      VectorMap("a" -> "1", "b" -> "2", "c" -> "3", "b" -> "2.2", "d" -> "4")
     // The order here differs from the one returned by ListMap which returns b after c
     // (i.e. at the last position it is supplied), arguably the order returned here is
     // more correct for an insertion ordered map (as opposed to a modification ordered
     // one).
-    assertEquals(List("a" -> "1", "b" -> "2.2", "c" -> "3", "d" -> "4"), m.toList)
+    assertEquals(List("a" -> "1", "b" -> "2.2", "c" -> "3", "d" -> "4"),
+                 m.toList)
   }
 
   @Test
@@ -47,13 +49,16 @@ class VectorMapTest {
   @Test
   def hasCorrectiterator: Unit = {
     val m = VectorMap(1 -> 1, 2 -> 2, 3 -> 3, 5 -> 5, 4 -> 4)
-    assertEquals(List(1 -> 1, 2 -> 2, 3 -> 3, 5 -> 5, 4 -> 4), m.iterator.toList)
+    assertEquals(List(1 -> 1, 2 -> 2, 3 -> 3, 5 -> 5, 4 -> 4),
+                 m.iterator.toList)
   }
 
   @Test
   def keysShouldPreserveOrderAsInserted: Unit = {
-    val m = VectorMap("a" -> "1", "b" -> "2", "c" -> "3", "d" -> "4", "e" -> "5")
-    assertEquals(List("A", "B", "C", "D", "E"), m.keys.map(_.toUpperCase).toList)
+    val m =
+      VectorMap("a" -> "1", "b" -> "2", "c" -> "3", "d" -> "4", "e" -> "5")
+    assertEquals(List("A", "B", "C", "D", "E"),
+                 m.keys.map(_.toUpperCase).toList)
   }
 
   @Test

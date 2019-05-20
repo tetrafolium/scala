@@ -1,4 +1,4 @@
-class TestClazz  {
+class TestClazz {
   def bar(x: "Hi"): x.type = x
 
   final val y = "Hi"

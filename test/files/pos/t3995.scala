@@ -1,4 +1,3 @@
-
 // scalac: -Yrangepos
 //
 class Lift {

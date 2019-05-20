@@ -20,17 +20,20 @@ trait ScaladocGlobalTrait extends Global {
   outer =>
 
   override val useOffsetPositions = false
-  override def newUnitParser(unit: CompilationUnit) = new syntaxAnalyzer.ScaladocUnitParser(unit, Nil)
-  override def newJavaUnitParser(unit: CompilationUnit) = if (createJavadoc) {
-    new syntaxAnalyzer.ScaladocJavaUnitParser(unit)
-  } else {
-    super.newJavaUnitParser(unit)
-  }
+  override def newUnitParser(unit: CompilationUnit) =
+    new syntaxAnalyzer.ScaladocUnitParser(unit, Nil)
+  override def newJavaUnitParser(unit: CompilationUnit) =
+    if (createJavadoc) {
+      new syntaxAnalyzer.ScaladocJavaUnitParser(unit)
+    } else {
+      super.newJavaUnitParser(unit)
+    }
 
-  override lazy val syntaxAnalyzer = new ScaladocSyntaxAnalyzer[outer.type](outer) {
-    val runsAfter = List[String]()
-    val runsRightAfter = None
-  }
+  override lazy val syntaxAnalyzer =
+    new ScaladocSyntaxAnalyzer[outer.type](outer) {
+      val runsAfter = List[String]()
+      val runsRightAfter = None
+    }
 
   override lazy val loaders = new {
     val global: outer.type = outer
@@ -44,16 +47,23 @@ trait ScaladocGlobalTrait extends Global {
   }
 }
 
-class ScaladocGlobal(settings: doc.Settings, reporter: Reporter) extends Global(settings, reporter) with ScaladocGlobalTrait {
+class ScaladocGlobal(settings: doc.Settings, reporter: Reporter)
+    extends Global(settings, reporter)
+    with ScaladocGlobalTrait {
   override protected def computeInternalPhases(): Unit = {
     phasesSet += syntaxAnalyzer
     phasesSet += analyzer.namerFactory
     phasesSet += analyzer.packageObjects
     phasesSet += analyzer.typerFactory
   }
-  override def createJavadoc = if (settings.docNoJavaComments.value) false else true
+  override def createJavadoc =
+    if (settings.docNoJavaComments.value) false else true
 
   override lazy val analyzer =
-    if (settings.YmacroAnnotations) new { val global: ScaladocGlobal.this.type = ScaladocGlobal.this } with ScaladocAnalyzer with MacroAnnotationNamers
-    else new { val global: ScaladocGlobal.this.type = ScaladocGlobal.this } with ScaladocAnalyzer
+    if (settings.YmacroAnnotations) new {
+      val global: ScaladocGlobal.this.type = ScaladocGlobal.this
+    } with ScaladocAnalyzer with MacroAnnotationNamers
+    else
+      new { val global: ScaladocGlobal.this.type = ScaladocGlobal.this }
+      with ScaladocAnalyzer
 }

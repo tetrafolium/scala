@@ -15,9 +15,10 @@ package mutable
 
 import scala.language.higherKinds
 
-trait IndexedSeq[T] extends Seq[T]
-  with scala.collection.IndexedSeq[T]
-  with IndexedSeqOps[T, IndexedSeq, IndexedSeq[T]] {
+trait IndexedSeq[T]
+    extends Seq[T]
+    with scala.collection.IndexedSeq[T]
+    with IndexedSeqOps[T, IndexedSeq, IndexedSeq[T]] {
 
   override def iterableFactory: SeqFactory[IterableCC] = IndexedSeq
 }
@@ -26,7 +27,7 @@ trait IndexedSeq[T] extends Seq[T]
 object IndexedSeq extends SeqFactory.Delegate[IndexedSeq](ArrayBuffer)
 
 trait IndexedSeqOps[A, +CC[_], +C <: AnyRef]
-  extends scala.collection.IndexedSeqOps[A, CC, C]
+    extends scala.collection.IndexedSeqOps[A, CC, C]
     with SeqOps[A, CC, C] {
 
   /** Modifies this $coll by applying a function to all elements of this $coll.
@@ -72,13 +73,15 @@ trait IndexedSeqOps[A, +CC[_], +C <: AnyRef]
     *
     * @see [[scala.collection.SeqOps.sortWith]]
     */
-  def sortInPlaceWith(lt: (A, A) => Boolean): this.type = sortInPlace()(Ordering.fromLessThan(lt))
+  def sortInPlaceWith(lt: (A, A) => Boolean): this.type =
+    sortInPlace()(Ordering.fromLessThan(lt))
 
   /** Sorts this $coll in place according to the Ordering which results from transforming
     * an implicitly given Ordering with a transformation function.
     *
     * @see [[scala.collection.SeqOps.sortBy]]
     */
-  def sortInPlaceBy[B](f: A => B)(implicit ord: Ordering[B]): this.type = sortInPlace()(ord on f)
+  def sortInPlaceBy[B](f: A => B)(implicit ord: Ordering[B]): this.type =
+    sortInPlace()(ord on f)
 
 }

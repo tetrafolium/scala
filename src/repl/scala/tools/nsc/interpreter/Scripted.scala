@@ -17,33 +17,45 @@ import scala.tools.nsc.Settings
 object ImportContextPreamble {
   def empty = ImportContextPreamble(Set.empty, Set.empty, "")
 }
-case class ImportContextPreamble(exclude: Set[String], include: Set[String], preamble: String)
+case class ImportContextPreamble(exclude: Set[String],
+                                 include: Set[String],
+                                 preamble: String)
 
 // TODO: `importContextPreamble` breaks the separation between the repl's core and the frontend
 // because it's a callback in the wrong direction (the frontend is only supposed to call us, we shouldn't know about the frontend)
-class ScriptedInterpreter(initialSettings: Settings, reporter: ReplReporter, importContextPreamble: Set[String] => ImportContextPreamble)
-  extends IMain(initialSettings, None, initialSettings, reporter) with ScriptedRepl {
+class ScriptedInterpreter(
+    initialSettings: Settings,
+    reporter: ReplReporter,
+    importContextPreamble: Set[String] => ImportContextPreamble)
+    extends IMain(initialSettings, None, initialSettings, reporter)
+    with ScriptedRepl {
 
   import global.{Name, TermName}
 
   /* Modify the template to snag definitions from dynamic context.
    * So object $iw { x + 42 } becomes object $iw { def x = $ctx.x ; x + 42 }
    */
-  override protected def importsCode(wanted: Set[Name], request: Request, definesClass: Boolean, generousImports: Boolean) = {
+  override protected def importsCode(wanted: Set[Name],
+                                     request: Request,
+                                     definesClass: Boolean,
+                                     generousImports: Boolean) = {
     val ImportContextPreamble(exclude, include, scriptedPreamble) =
-      importContextPreamble(wanted.filter(_.isTermName).map(_.decodedName.toString))
+      importContextPreamble(
+        wanted.filter(_.isTermName).map(_.decodedName.toString))
 
     if (exclude.nonEmpty) {
-      val scriptedWanted = (wanted &~ exclude.map(TermName.apply)) ++ include.map(TermName.apply)
+      val scriptedWanted = (wanted &~ exclude.map(TermName.apply)) ++ include
+        .map(TermName.apply)
 
       val ComputedImports(header, preamble, trailer, path) =
-        super.importsCode(scriptedWanted, request, definesClass, generousImports)
+        super.importsCode(scriptedWanted,
+                          request,
+                          definesClass,
+                          generousImports)
 
       ComputedImports(header, preamble + scriptedPreamble, trailer, path)
-    }
-    else super.importsCode(wanted, request, definesClass, generousImports)
+    } else super.importsCode(wanted, request, definesClass, generousImports)
   }
-
 
   def addBackReferences(req: Request): Either[String, Request] = {
     val defines = req.definesTermNames
@@ -53,7 +65,7 @@ class ScriptedInterpreter(initialSettings: Settings, reporter: ReplReporter, imp
     } else {
       val newReq = requestFromLine(
         (s"val $$INSTANCE = new ${req.lineRep.readPath}" :: (defines map (d =>
-            s"val `$d` = $$INSTANCE${req.accessPath}.`$d`"))).mkString(";")
+          s"val `$d` = $$INSTANCE${req.accessPath}.`$d`"))).mkString(";")
       ).right.get
       newReq.compile
       Right(newReq)
@@ -61,7 +73,8 @@ class ScriptedInterpreter(initialSettings: Settings, reporter: ReplReporter, imp
   }
 
   private object scriptContextRep extends ReadEvalPrint
-  def call(name: String, args: Any*): Either[Throwable, AnyRef] = scriptContextRep.callEither(name, args: _*)
+  def call(name: String, args: Any*): Either[Throwable, AnyRef] =
+    scriptContextRep.callEither(name, args: _*)
   def compile(code: String): Boolean = scriptContextRep.compile(code)
   def evalName: String = scriptContextRep.evalName
   def evalPath: String = scriptContextRep.evalPath

@@ -21,8 +21,6 @@ class SizeCompareOpsBenchmark {
   var cmpTo: Int = _
 
   var values: List[Int] = _
-
-
   @Setup(Level.Trial) def initKeys(): Unit = {
     values = List.fill(size)(Random.nextInt())
   }

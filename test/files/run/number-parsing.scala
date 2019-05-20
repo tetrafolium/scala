@@ -1,17 +1,17 @@
 object Test {
   def numTests() = {
     val MinusZero = Float.box(-0.0f)
-    val PlusZero  = Float.box(0.0f)
+    val PlusZero = Float.box(0.0f)
 
-    assert(PlusZero match { case MinusZero => true ; case _ => false })
-    assert(MinusZero match { case PlusZero => true ; case _ => false })
+    assert(PlusZero match { case MinusZero => true; case _ => false })
+    assert(MinusZero match { case PlusZero => true; case _ => false })
     assert((MinusZero: scala.Float) == (PlusZero: scala.Float))
     assert(!(MinusZero equals PlusZero))
 
     List(
-      -5f.max(2) ,
-      -5f max 2 ,
-      -5.max(2) ,
+      -5f.max(2),
+      -5f max 2,
+      -5.max(2),
       -5 max 2
     ) foreach (num => assert(num == 2))
   }

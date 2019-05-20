@@ -25,4 +25,4 @@ object Test {
     b += a
   }
 }
-*/
+ */

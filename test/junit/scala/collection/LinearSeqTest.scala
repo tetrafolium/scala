@@ -8,10 +8,13 @@ import org.junit.runners.JUnit4
 class LinearSeqTest {
   // Tests regression on issue 11262
   @Test def extensionIteratorTest: Unit = {
-    class ConstantLinearSeq[A](len: Int, elt: A) extends scala.collection.LinearSeq[A] {
+    class ConstantLinearSeq[A](len: Int, elt: A)
+        extends scala.collection.LinearSeq[A] {
       override val isEmpty: Boolean = len == 0
       override val head = elt
-      override lazy val tail = if(len > 0) new ConstantLinearSeq(len - 1, elt) else throw new Exception("tail of empty Seq")
+      override lazy val tail =
+        if (len > 0) new ConstantLinearSeq(len - 1, elt)
+        else throw new Exception("tail of empty Seq")
     }
 
     val x = new ConstantLinearSeq(4, 7)

@@ -50,10 +50,13 @@ object IsSeq {
       def apply(coll: Seq[Any]): SeqOps[Any, Iterable, Any] = coll
     }
 
-  implicit def seqOpsIsSeq[CC0[X] <: SeqOps[X, Iterable, CC0[X]], A0]: IsSeq[CC0[A0]] { type A = A0; type C = CC0[A0] } =
-    seqOpsIsSeqVal.asInstanceOf[IsSeq[CC0[A0]] { type A = A0; type C = CC0[A0] }]
+  implicit def seqOpsIsSeq[CC0[X] <: SeqOps[X, Iterable, CC0[X]], A0]
+    : IsSeq[CC0[A0]] { type A = A0; type C = CC0[A0] } =
+    seqOpsIsSeqVal
+      .asInstanceOf[IsSeq[CC0[A0]] { type A = A0; type C = CC0[A0] }]
 
-  implicit def seqViewIsSeq[CC0[X] <: SeqView[X], A0]: IsSeq[CC0[A0]] { type A = A0; type C = View[A0] } =
+  implicit def seqViewIsSeq[CC0[X] <: SeqView[X], A0]
+    : IsSeq[CC0[A0]] { type A = A0; type C = View[A0] } =
     new IsSeq[CC0[A0]] {
       type A = A0
       type C = View[A]
@@ -70,21 +73,26 @@ object IsSeq {
           def apply(i: Int): Char = s.charAt(i)
           def toIterable: Iterable[Char] = new immutable.WrappedString(s)
           protected[this] def coll: String = s
-          protected[this] def fromSpecific(coll: IterableOnce[Char]): String = coll.iterator.mkString
-          def iterableFactory: IterableFactory[immutable.ArraySeq] = immutable.ArraySeq.untagged
-          protected[this] def newSpecificBuilder: mutable.Builder[Char, String] = new StringBuilder
+          protected[this] def fromSpecific(coll: IterableOnce[Char]): String =
+            coll.iterator.mkString
+          def iterableFactory: IterableFactory[immutable.ArraySeq] =
+            immutable.ArraySeq.untagged
+          protected[this] def newSpecificBuilder
+            : mutable.Builder[Char, String] = new StringBuilder
           def iterator: Iterator[Char] = s.iterator
         }
     }
 
-  implicit val stringViewIsSeq: IsSeq[StringView] { type A = Char; type C = View[Char] } =
+  implicit val stringViewIsSeq
+    : IsSeq[StringView] { type A = Char; type C = View[Char] } =
     new IsSeq[StringView] {
       type A = Char
       type C = View[Char]
       def apply(coll: StringView): SeqOps[Char, View, View[Char]] = coll
     }
 
-  implicit def arrayIsSeq[A0 : ClassTag]: IsSeq[Array[A0]] { type A = A0; type C = Array[A0] } =
+  implicit def arrayIsSeq[A0: ClassTag]
+    : IsSeq[Array[A0]] { type A = A0; type C = Array[A0] } =
     new IsSeq[Array[A0]] {
       type A = A0
       type C = Array[A0]
@@ -94,9 +102,12 @@ object IsSeq {
           def length: Int = a.length
           def toIterable: Iterable[A] = mutable.ArraySeq.make(a)
           protected def coll: Array[A] = a
-          protected def fromSpecific(coll: IterableOnce[A]): Array[A] = Array.from(coll)
-          def iterableFactory: IterableFactory[mutable.ArraySeq] = mutable.ArraySeq.untagged
-          protected def newSpecificBuilder: mutable.Builder[A, Array[A]] = Array.newBuilder
+          protected def fromSpecific(coll: IterableOnce[A]): Array[A] =
+            Array.from(coll)
+          def iterableFactory: IterableFactory[mutable.ArraySeq] =
+            mutable.ArraySeq.untagged
+          protected def newSpecificBuilder: mutable.Builder[A, Array[A]] =
+            Array.newBuilder
           def iterator: Iterator[A] = a.iterator
         }
     }
@@ -104,7 +115,8 @@ object IsSeq {
   // `Range` can not be unified with the `CC0` parameter of the
   // `seqOpsIsSeq` definition because it does not take a type parameter.
   // Hence the need for a separate case:
-  implicit def rangeIsSeq[C0 <: Range]: IsSeq[C0] { type A = Int; type C = immutable.IndexedSeq[Int] } =
+  implicit def rangeIsSeq[C0 <: Range]
+    : IsSeq[C0] { type A = Int; type C = immutable.IndexedSeq[Int] } =
     new IsSeq[C0] {
       type A = Int
       type C = immutable.IndexedSeq[Int]

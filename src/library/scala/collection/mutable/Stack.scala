@@ -13,7 +13,12 @@
 package scala.collection.mutable
 
 import scala.annotation.migration
-import scala.collection.{IterableOnce, SeqFactory, StrictOptimizedSeqFactory, StrictOptimizedSeqOps}
+import scala.collection.{
+  IterableOnce,
+  SeqFactory,
+  StrictOptimizedSeqFactory,
+  StrictOptimizedSeqOps
+}
 
 /** A stack implements a data structure which allows to store and retrieve
   *  objects in a last-in-first-out (LIFO) fashion.
@@ -30,9 +35,10 @@ import scala.collection.{IterableOnce, SeqFactory, StrictOptimizedSeqFactory, St
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
-@migration("Stack is now based on an ArrayDeque instead of a linked list", "2.13.0")
+@migration("Stack is now based on an ArrayDeque instead of a linked list",
+           "2.13.0")
 class Stack[A] protected (array: Array[AnyRef], start: Int, end: Int)
-  extends ArrayDeque[A](array, start, end)
+    extends ArrayDeque[A](array, start, end)
     with IndexedSeqOps[A, Stack, Stack[A]]
     with StrictOptimizedSeqOps[A, Stack, Stack[A]]
     with Cloneable[Stack[A]] {
@@ -42,7 +48,7 @@ class Stack[A] protected (array: Array[AnyRef], start: Int, end: Int)
 
   override def iterableFactory: SeqFactory[Stack] = Stack
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "Stack"
 
   /**
@@ -61,7 +67,7 @@ class Stack[A] protected (array: Array[AnyRef], start: Int, end: Int)
     */
   def push(elem1: A, elem2: A, elems: A*): this.type = {
     val k = elems.knownSize
-    ensureSize(length + (if(k >= 0) k + 2 else 3))
+    ensureSize(length + (if (k >= 0) k + 2 else 3))
     prepend(elem1).prepend(elem2).pushAll(elems)
   }
 
@@ -74,7 +80,7 @@ class Stack[A] protected (array: Array[AnyRef], start: Int, end: Int)
   def pushAll(elems: scala.collection.IterableOnce[A]): this.type =
     prependAll(elems match {
       case it: scala.collection.Seq[A] => it.view.reverse
-      case it => IndexedSeq.from(it).view.reverse
+      case it                          => IndexedSeq.from(it).view.reverse
     })
 
   /**
@@ -132,6 +138,7 @@ object Stack extends StrictOptimizedSeqFactory[Stack] {
 
   def empty[A]: Stack[A] = new Stack
 
-  def newBuilder[A]: Builder[A, Stack[A]] = new GrowableBuilder[A, Stack[A]](empty)
+  def newBuilder[A]: Builder[A, Stack[A]] =
+    new GrowableBuilder[A, Stack[A]](empty)
 
 }

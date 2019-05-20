@@ -13,21 +13,22 @@
 package scala
 
 /** This class provides a simple way to get unique objects for equal strings.
- *  Since symbols are interned, they can be compared using reference equality.
- *
- *  Instances of `Symbol` can be created with
- *  the `sym` string interpolator:
- *  {{{
- *  val s = sym"mysym"
- *  }}}
- *
- *  @see     [[scala.StringContext.sym]]
- *  @author  Martin Odersky, Iulian Dragos
- *  @since   1.7
- */
+  *  Since symbols are interned, they can be compared using reference equality.
+  *
+  *  Instances of `Symbol` can be created with
+  *  the `sym` string interpolator:
+  *  {{{
+  *  val s = sym"mysym"
+  *  }}}
+  *
+  *  @see     [[scala.StringContext.sym]]
+  *  @author  Martin Odersky, Iulian Dragos
+  *  @since   1.7
+  */
 final class Symbol private (val name: String) extends Serializable {
+
   /** Converts this symbol to a string.
-   */
+    */
   override def toString(): String = "'" + name
 
   @throws(classOf[java.io.ObjectStreamException])
@@ -44,8 +45,7 @@ object Symbol extends UniquenessCache[String, Symbol] {
 
 /** This is private so it won't appear in the library API, but
   * abstracted to offer some hope of reusability.  */
-private[scala] abstract class UniquenessCache[K, V >: Null]
-{
+private[scala] abstract class UniquenessCache[K, V >: Null] {
   import java.lang.ref.WeakReference
   import java.util.WeakHashMap
   import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -64,9 +64,8 @@ private[scala] abstract class UniquenessCache[K, V >: Null]
       try {
         val reference = map get name
         if (reference == null) null
-        else reference.get  // will be null if we were gc-ed
-      }
-      finally rlock.unlock
+        else reference.get // will be null if we were gc-ed
+      } finally rlock.unlock
     }
     def updateCache(): V = {
       wlock.lock
@@ -83,8 +82,7 @@ private[scala] abstract class UniquenessCache[K, V >: Null]
           map.put(name, new WeakReference(sym))
           sym
         }
-      }
-      finally wlock.unlock
+      } finally wlock.unlock
     }
 
     val res = cached()

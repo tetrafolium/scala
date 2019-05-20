@@ -1,2 +1,2 @@
 // scalac: -Ydebug
-case class FT(f : Float)
+case class FT(f: Float)

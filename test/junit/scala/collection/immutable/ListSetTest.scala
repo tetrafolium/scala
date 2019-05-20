@@ -23,7 +23,8 @@ class ListSetTest {
   @Test
   def hasTailRecursiveDelete(): Unit = {
     val s = ListSet(1 to 50000: _*)
-    try s - 25000 catch { case e: StackOverflowError => fail("A stack overflow occurred") }
+    try s - 25000
+    catch { case e: StackOverflowError => fail("A stack overflow occurred") }
   }
 
   @Test

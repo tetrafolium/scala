@@ -16,7 +16,7 @@ import scala.collection.SeqFactory
 import scala.language.higherKinds
 
 trait Seq[A]
-  extends Iterable[A]
+    extends Iterable[A]
     with collection.Seq[A]
     with SeqOps[A, Seq, Seq[A]] {
 
@@ -36,7 +36,7 @@ object Seq extends SeqFactory.Delegate[Seq](ArrayBuffer)
   * @define Coll `mutable.Seq`
   */
 trait SeqOps[A, +CC[_], +C <: AnyRef]
-  extends collection.SeqOps[A, CC, C]
+    extends collection.SeqOps[A, CC, C]
     with Cloneable[C] {
 
   override def clone(): C = {
@@ -55,7 +55,7 @@ trait SeqOps[A, +CC[_], +C <: AnyRef]
   def update(idx: Int, elem: A): Unit
 
   @deprecated("Use `mapInPlace` on an `IndexedSeq` instead", "2.13.0")
-  @`inline`final def transform(f: A => A): this.type = {
+  @`inline` final def transform(f: A => A): this.type = {
     var i = 0
     val siz = size
     while (i < siz) { this(i) = f(this(i)); i += 1 }
@@ -65,4 +65,6 @@ trait SeqOps[A, +CC[_], +C <: AnyRef]
 
 /** Explicit instantiation of the `Seq` trait to reduce class file size in subclasses. */
 @SerialVersionUID(3L)
-abstract class AbstractSeq[A] extends scala.collection.AbstractSeq[A] with Seq[A]
+abstract class AbstractSeq[A]
+    extends scala.collection.AbstractSeq[A]
+    with Seq[A]

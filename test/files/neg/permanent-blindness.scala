@@ -9,12 +9,11 @@ package foo {
 }
 
 package bar {
-  import foo.{ Bippy, Bop, Dingus }
+  import foo.{Bippy, Bop, Dingus}
 
   class Bippy
   object Bop
   object Dingus
-
 
   class Ding {
     def fff = 5

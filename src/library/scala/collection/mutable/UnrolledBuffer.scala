@@ -49,7 +49,7 @@ import scala.collection.immutable.Nil
   */
 @SerialVersionUID(3L)
 sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
-  extends AbstractBuffer[T]
+    extends AbstractBuffer[T]
     with Buffer[T]
     with Seq[T]
     with SeqOps[T, UnrolledBuffer, UnrolledBuffer[T]]
@@ -69,10 +69,13 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
   private[collection] def lastPtr_=(last: Unrolled[T]) = lastptr = last
   private[collection] def size_=(s: Int) = sz = s
 
-  override protected def fromSpecific(coll: scala.collection.IterableOnce[T]) = UnrolledBuffer.from(coll)
-  override protected def newSpecificBuilder: Builder[T, UnrolledBuffer[T]] = new UnrolledBuffer[T]
+  override protected def fromSpecific(coll: scala.collection.IterableOnce[T]) =
+    UnrolledBuffer.from(coll)
+  override protected def newSpecificBuilder: Builder[T, UnrolledBuffer[T]] =
+    new UnrolledBuffer[T]
 
-  override def iterableFactory: SeqFactory[UnrolledBuffer] = UnrolledBuffer.untagged
+  override def iterableFactory: SeqFactory[UnrolledBuffer] =
+    UnrolledBuffer.untagged
 
   protected def newUnrolled = new Unrolled[T](this)
 
@@ -142,11 +145,12 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
       }
     }
     def hasNext = node ne null
-    def next() = if (hasNext) {
-      val r = node.array(pos)
-      scan()
-      r
-    } else Iterator.empty.next()
+    def next() =
+      if (hasNext) {
+        val r = node.array(pos)
+        scan()
+        r
+      } else Iterator.empty.next()
   }
 
   // this should be faster than the iterator
@@ -160,11 +164,15 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
 
   def apply(idx: Int) =
     if (idx >= 0 && idx < sz) headptr(idx)
-    else throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${sz-1})")
+    else
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${sz - 1})")
 
   def update(idx: Int, newelem: T) =
     if (idx >= 0 && idx < sz) headptr(idx) = newelem
-    else throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${sz-1})")
+    else
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${sz - 1})")
 
   def mapInPlace(f: T => T): this.type = {
     headptr.mapInPlace(f)
@@ -175,12 +183,14 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
     if (idx >= 0 && idx < sz) {
       sz -= 1
       headptr.remove(idx, this)
-    } else throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${sz-1})")
+    } else
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${sz - 1})")
 
   @tailrec final def remove(idx: Int, count: Int): Unit =
     if (count > 0) {
       remove(idx)
-      remove(idx, count-1)
+      remove(idx, count - 1)
     }
 
   def prepend(elem: T) = {
@@ -195,7 +205,9 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
   def insertAll(idx: Int, elems: IterableOnce[T]): Unit =
     if (idx >= 0 && idx <= sz) {
       sz += headptr.insertAll(idx, elems, this)
-    } else throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${sz-1})")
+    } else
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${sz - 1})")
 
   override def subtractOne(elem: T): this.type = {
     if (headptr.subtractOne(elem, this)) {
@@ -204,7 +216,9 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
     this
   }
 
-  def patchInPlace(from: Int, patch: collection.IterableOnce[T], replaced: Int): this.type = {
+  def patchInPlace(from: Int,
+                   patch: collection.IterableOnce[T],
+                   replaced: Int): this.type = {
     remove(from, replaced)
     insertAll(from, patch)
     this
@@ -235,18 +249,20 @@ sealed class UnrolledBuffer[T](implicit val tag: ClassTag[T])
 
   override protected[this] def className = "UnrolledBuffer"
 }
-
-
 @SerialVersionUID(3L)
-object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] { self =>
+object UnrolledBuffer
+    extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] { self =>
 
-  val untagged: SeqFactory[UnrolledBuffer] = new ClassTagSeqFactory.AnySeqDelegate(self)
+  val untagged: SeqFactory[UnrolledBuffer] =
+    new ClassTagSeqFactory.AnySeqDelegate(self)
 
-  def empty[A : ClassTag]: UnrolledBuffer[A] = new UnrolledBuffer[A]
+  def empty[A: ClassTag]: UnrolledBuffer[A] = new UnrolledBuffer[A]
 
-  def from[A : ClassTag](source: scala.collection.IterableOnce[A]): UnrolledBuffer[A] = newBuilder[A].addAll(source)
+  def from[A: ClassTag](
+      source: scala.collection.IterableOnce[A]): UnrolledBuffer[A] =
+    newBuilder[A].addAll(source)
 
-  def newBuilder[A : ClassTag]: UnrolledBuffer[A] = new UnrolledBuffer[A]
+  def newBuilder[A: ClassTag]: UnrolledBuffer[A] = new UnrolledBuffer[A]
 
   final val waterline: Int = 50
 
@@ -259,21 +275,29 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
 
   /** Unrolled buffer node.
     */
-  class Unrolled[T: ClassTag] private[collection] (var size: Int, var array: Array[T], var next: Unrolled[T], val buff: UnrolledBuffer[T] = null) {
-    private[collection] def this() = this(0, new Array[T](unrolledlength), null, null)
-    private[collection] def this(b: UnrolledBuffer[T]) = this(0, new Array[T](unrolledlength), null, b)
+  class Unrolled[T: ClassTag] private[collection] (var size: Int,
+                                                   var array: Array[T],
+                                                   var next: Unrolled[T],
+                                                   val buff: UnrolledBuffer[T] =
+                                                     null) {
+    private[collection] def this() =
+      this(0, new Array[T](unrolledlength), null, null)
+    private[collection] def this(b: UnrolledBuffer[T]) =
+      this(0, new Array[T](unrolledlength), null, b)
 
-    private def nextlength = if (buff eq null) unrolledlength else buff.calcNextLength(array.length)
+    private def nextlength =
+      if (buff eq null) unrolledlength else buff.calcNextLength(array.length)
 
     // adds and returns itself or the new unrolled if full
-    @tailrec final def append(elem: T): Unrolled[T] = if (size < array.length) {
-      array(size) = elem
-      size += 1
-      this
-    } else {
-      next = new Unrolled[T](0, new Array[T](nextlength), null, buff)
-      next append elem
-    }
+    @tailrec final def append(elem: T): Unrolled[T] =
+      if (size < array.length) {
+        array(size) = elem
+        size += 1
+        this
+      } else {
+        next = new Unrolled[T](0, new Array[T](nextlength), null, buff)
+        next append elem
+      }
     def foreach[U](f: T => U): Unit = {
       var unrolled = this
       var i = 0
@@ -310,21 +334,22 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
       if (idx < size) array(idx) = newelem else next.update(idx - size, newelem)
     @tailrec final def locate(idx: Int): Unrolled[T] =
       if (idx < size) this else next.locate(idx - size)
-    def prepend(elem: T) = if (size < array.length) {
-      // shift the elements of the array right
-      // then insert the element
-      shiftright()
-      array(0) = elem
-      size += 1
-      this
-    } else {
-      // allocate a new node and store element
-      // then make it point to this
-      val newhead = new Unrolled[T](buff)
-      newhead append elem
-      newhead.next = this
-      newhead
-    }
+    def prepend(elem: T) =
+      if (size < array.length) {
+        // shift the elements of the array right
+        // then insert the element
+        shiftright()
+        array(0) = elem
+        size += 1
+        this
+      } else {
+        // allocate a new node and store element
+        // then make it point to this
+        val newhead = new Unrolled[T](buff)
+        newhead append elem
+        newhead.next = this
+        newhead
+      }
     // shifts right assuming enough space
     private def shiftright(): Unit = {
       var i = size - 1
@@ -345,16 +370,17 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
         r
       } else next.remove(idx - size, buffer)
 
-    @tailrec final def subtractOne(elem: T, buffer: UnrolledBuffer[T]): Boolean = {
+    @tailrec final def subtractOne(elem: T,
+                                   buffer: UnrolledBuffer[T]): Boolean = {
       var i = 0
       while (i < size) {
-        if(array(i) == elem) {
+        if (array(i) == elem) {
           remove(i, buffer)
           return true
         }
         i += 1
       }
-      if(next ne null) next.subtractOne(elem, buffer) else false
+      if (next ne null) next.subtractOne(elem, buffer) else false
     }
 
     // shifts left elements after `leftb` (overwrites `leftb`)
@@ -366,19 +392,23 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
       }
       nullout(i, i + 1)
     }
-    protected def tryMergeWithNext() = if (next != null && (size + next.size) < (array.length * waterline / waterlineDenom)) {
-      // copy the next array, then discard the next node
-      Array.copy(next.array, 0, array, size, next.size)
-      size = size + next.size
-      next = next.next
-      if (next eq null) true else false // checks if last node was thrown out
-    } else false
+    protected def tryMergeWithNext() =
+      if (next != null && (size + next.size) < (array.length * waterline / waterlineDenom)) {
+        // copy the next array, then discard the next node
+        Array.copy(next.array, 0, array, size, next.size)
+        size = size + next.size
+        next = next.next
+        if (next eq null) true else false // checks if last node was thrown out
+      } else false
 
-    @tailrec final def insertAll(idx: Int, t: scala.collection.IterableOnce[T], buffer: UnrolledBuffer[T]): Int = {
+    @tailrec final def insertAll(idx: Int,
+                                 t: scala.collection.IterableOnce[T],
+                                 buffer: UnrolledBuffer[T]): Int = {
       if (idx < size) {
         // divide this node at the appropriate position and insert all into head
         // update new next
-        val newnextnode = new Unrolled[T](0, new Array(array.length), null, buff)
+        val newnextnode =
+          new Unrolled[T](0, new Array(array.length), null, buff)
         Array.copy(array, idx, newnextnode.array, 0, size - idx)
         newnextnode.size = size - idx
         newnextnode.next = next
@@ -401,8 +431,7 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
         if (curr.tryMergeWithNext()) buffer.lastPtr = curr
         else if (newnextnode.next eq null) buffer.lastPtr = newnextnode
         appended
-      }
-      else if (idx == size || (next eq null)) {
+      } else if (idx == size || (next eq null)) {
         var curr = this
         var appended = 0
         for (elem <- t.iterator) {
@@ -410,8 +439,7 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
           appended += 1
         }
         appended
-      }
-      else next.insertAll(idx - size, t, buffer)
+      } else next.insertAll(idx - size, t, buffer)
     }
 
     private def nullout(from: Int, until: Int): Unit = {
@@ -432,13 +460,21 @@ object UnrolledBuffer extends StrictOptimizedClassTagSeqFactory[UnrolledBuffer] 
     }
 
     override def toString: String =
-      array.take(size).mkString("Unrolled@%08x".format(System.identityHashCode(this)) + "[" + size + "/" + array.length + "](", ", ", ")") + " -> " + (if (next ne null) next.toString else "")
+      array
+        .take(size)
+        .mkString(
+          "Unrolled@%08x"
+            .format(System.identityHashCode(this)) + "[" + size + "/" + array.length + "](",
+          ", ",
+          ")") + " -> " + (if (next ne null) next.toString else "")
   }
 }
 
 // This is used by scala.collection.parallel.mutable.UnrolledParArrayCombiner:
 // Todo -- revisit whether inheritance is the best way to achieve this functionality
-private[collection] class DoublingUnrolledBuffer[T](implicit t: ClassTag[T]) extends UnrolledBuffer[T]()(t) {
+private[collection] class DoublingUnrolledBuffer[T](implicit t: ClassTag[T])
+    extends UnrolledBuffer[T]()(t) {
   override def calcNextLength(sz: Int) = if (sz < 10000) sz * 2 else sz
-  protected override def newUnrolled = new UnrolledBuffer.Unrolled[T](0, new Array[T](4), null, this)
+  protected override def newUnrolled =
+    new UnrolledBuffer.Unrolled[T](0, new Array[T](4), null, this)
 }

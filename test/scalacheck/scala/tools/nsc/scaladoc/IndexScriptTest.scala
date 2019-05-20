@@ -9,7 +9,7 @@ import scala.tools.nsc.doc.html.page.IndexScript
 object IndexScriptTest extends Properties("IndexScript") {
 
   val docFactory = {
-    val settings = new doc.Settings({Console.err.println(_)})
+    val settings = new doc.Settings({ Console.err.println(_) })
     settings.scaladocQuietRun = true
     settings.nowarn.value = true
     SettingsUtil.configureClassAndSourcePath(settings)
@@ -21,7 +21,8 @@ object IndexScriptTest extends Properties("IndexScript") {
   val indexModelFactory = doc.model.IndexModelFactory
 
   def createIndexScript(path: String) = {
-    val absolutePath: String = SettingsUtil.checkoutRoot.resolve(path).toAbsolutePath.toString
+    val absolutePath: String =
+      SettingsUtil.checkoutRoot.resolve(path).toAbsolutePath.toString
     docFactory.makeUniverse(Left(List(absolutePath))) match {
       case Some(universe) =>
         Some(new IndexScript(universe))
@@ -31,7 +32,8 @@ object IndexScriptTest extends Properties("IndexScript") {
   }
 
   property("allPackages") = {
-    createIndexScript("src/scaladoc/scala/tools/nsc/doc/html/page/IndexScript.scala") match {
+    createIndexScript(
+      "src/scaladoc/scala/tools/nsc/doc/html/page/IndexScript.scala") match {
       case Some(index) =>
         index.allPackages.map(_.toString) == List(
           "scala",

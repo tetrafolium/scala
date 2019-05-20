@@ -19,16 +19,17 @@ object JsonEncoderInstances {
 
   implicit val stringEncoder: JsonEncoder[String] =
     s => new JsonString
-    //new JsonEncoder[String] {
-    //  def encode(value: String) = new JsonString
-    //}
+  //new JsonEncoder[String] {
+  //  def encode(value: String) = new JsonString
+  //}
 
   def leWorks[A](implicit encoder: JsonEncoder[A]): JsonObjectEncoder[List[A]] =
     new JsonObjectEncoder[List[A]] {
       def encode(value: List[A]) = new JsonObject
     }
 
-  implicit def listEncoder[A](implicit encoder: JsonEncoder[A]): JsonObjectEncoder[List[A]] =
+  implicit def listEncoder[A](
+      implicit encoder: JsonEncoder[A]): JsonObjectEncoder[List[A]] =
     l => new JsonObject
 //    new JsonObjectEncoder[List[A]] {
 //      def encode(value: List[A]) = new JsonObject

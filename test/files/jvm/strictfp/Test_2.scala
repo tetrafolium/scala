@@ -9,7 +9,7 @@ object Test extends BytecodeTest {
   def check(cls: String, mth: String) = {
     val clasz = loadClassNode(s"strictfp/$cls")
     //println(clasz.methods.asScala.map(_.name).toList)
-    val meth  = clasz.methods.asScala.find(_.name == mth).get
+    val meth = clasz.methods.asScala.find(_.name == mth).get
     println(s"$cls.$mth: ${(meth.access & Opcodes.ACC_STRICT) != 0}")
   }
 

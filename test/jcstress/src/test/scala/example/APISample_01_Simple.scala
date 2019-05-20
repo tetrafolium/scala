@@ -55,19 +55,19 @@ import org.openjdk.jcstress.infra.results.II_Result
 // Mark the class as JCStress test.
 @JCStressTest
 @Description("Simple test, checking AtomicInteger")
-@Outcomes(Array(
+@Outcomes(
+  Array(
     new Outcome(
-      id = Array("1, 1"), 
-      expect = Expect.ACCEPTABLE_INTERESTING, 
+      id = Array("1, 1"),
+      expect = Expect.ACCEPTABLE_INTERESTING,
       desc = "Both actors came up with the same value: atomicity failure."),
-    new Outcome(
-      id = Array("1, 2"), 
-      expect = Expect.ACCEPTABLE, 
-      desc = "actor1 incremented, then actor2."),
-    new Outcome(id = Array("2, 1"), 
-      expect = Expect.ACCEPTABLE, desc = "actor2 incremented, then actor1.")
-  )
-)
+    new Outcome(id = Array("1, 2"),
+                expect = Expect.ACCEPTABLE,
+                desc = "actor1 incremented, then actor2."),
+    new Outcome(id = Array("2, 1"),
+                expect = Expect.ACCEPTABLE,
+                desc = "actor2 incremented, then actor1.")
+  ))
 @State
 class APISample_01_Simple {
 

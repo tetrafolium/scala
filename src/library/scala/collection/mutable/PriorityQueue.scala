@@ -56,15 +56,14 @@ import scala.math.Ordering
   *  @define willNotTerminateInf
   */
 sealed class PriorityQueue[A](implicit val ord: Ordering[A])
-  extends AbstractIterable[A]
+    extends AbstractIterable[A]
     with Iterable[A]
     with IterableOps[A, Iterable, PriorityQueue[A]]
     with StrictOptimizedIterableOps[A, Iterable, PriorityQueue[A]]
     with Builder[A, PriorityQueue[A]]
     with Cloneable[PriorityQueue[A]]
     with Growable[A]
-    with Serializable
-{
+    with Serializable {
   import ord._
 
   private class ResizableArrayAccess[A0] extends ArrayBuffer[A0] {
@@ -81,14 +80,17 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
 
   private val resarr = new ResizableArrayAccess[A]
 
-  resarr.p_size0 += 1                  // we do not use array(0)
-  def length: Int = resarr.length - 1  // adjust length accordingly
+  resarr.p_size0 += 1 // we do not use array(0)
+  def length: Int = resarr.length - 1 // adjust length accordingly
   override def size: Int = length
   override def knownSize: Int = length
   override def isEmpty: Boolean = resarr.p_size0 < 2
 
-  override protected def fromSpecific(coll: scala.collection.IterableOnce[A]): PriorityQueue[A] = PriorityQueue.from(coll)
-  override protected def newSpecificBuilder: Builder[A, PriorityQueue[A]] = PriorityQueue.newBuilder
+  override protected def fromSpecific(
+      coll: scala.collection.IterableOnce[A]): PriorityQueue[A] =
+    PriorityQueue.from(coll)
+  override protected def newSpecificBuilder: Builder[A, PriorityQueue[A]] =
+    PriorityQueue.newBuilder
 
   def mapInPlace(f: A => A): this.type = {
     resarr.mapInPlace(f)
@@ -161,23 +163,21 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
 
     if (from <= 2) {
       // no pre-existing order to maintain, do the textbook heapify algorithm
-      for (i <- n/2 to 1 by -1) fixDown(resarr.p_array, i, n)
-    }
-    else if (n - from < 4) {
+      for (i <- n / 2 to 1 by -1) fixDown(resarr.p_array, i, n)
+    } else if (n - from < 4) {
       // for very small adds, doing the simplest fix is faster
       for (i <- from to n) fixUp(resarr.p_array, i)
-    }
-    else {
-      var min = from/2 // tracks the minimum element in the queue
+    } else {
+      var min = from / 2 // tracks the minimum element in the queue
       val queue = scala.collection.mutable.Queue[Int](min)
 
       // do fixDown on the parents of all the new elements
       // except the parent of the first new element, which is in the queue
       // (that parent is treated specially because it might be the root)
-      for (i <- n/2 until min by -1) {
+      for (i <- n / 2 until min by -1) {
         if (fixDown(resarr.p_array, i, n)) {
           // there was a swap, so also need to fixDown i's parent
-          val parent = i/2
+          val parent = i / 2
           if (parent < min) { // make sure same parent isn't added twice
             min = parent
             queue += parent
@@ -188,7 +188,7 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
       while (queue.nonEmpty) {
         val i = queue.dequeue()
         if (fixDown(resarr.p_array, i, n)) {
-          val parent = i/2
+          val parent = i / 2
           if (parent < min && parent > 0) {
             // the "parent > 0" is to avoid adding the parent of the root
             min = parent
@@ -236,7 +236,9 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
     while (nonEmpty) {
       b += dequeue()
     }
-    immutable.ArraySeq.unsafeWrapArray(b.result()).asInstanceOf[immutable.ArraySeq[A1]]
+    immutable.ArraySeq
+      .unsafeWrapArray(b.result())
+      .asInstanceOf[immutable.ArraySeq[A1]]
   }
 
   /** Returns the element with the highest priority in the queue,
@@ -244,7 +246,9 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
     *
     *  @return   the element with the highest priority.
     */
-  override def head: A = if (resarr.p_size0 > 1) toA(resarr.p_array(1)) else throw new NoSuchElementException("queue is empty")
+  override def head: A =
+    if (resarr.p_size0 > 1) toA(resarr.p_array(1))
+    else throw new NoSuchElementException("queue is empty")
 
   /** Removes all elements from the queue. After this operation is completed,
     *  the queue will be empty.
@@ -286,11 +290,10 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
     revq.resarr.p_size0 = n
     val from = resarr.p_array
     val to = revq.resarr.p_array
-    for (i <- 1 until n) to(i) = from(n-i)
+    for (i <- 1 until n) to(i) = from(n - i)
     revq.heapify(1)
     revq
   }
-
 
   /** Returns an iterator which yields all the elements in the reverse order
     *  than that returned by the method `iterator`.
@@ -337,12 +340,13 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
     val pq = new PriorityQueue[A]
     val n = resarr.p_size0
     pq.resarr.p_ensureSize(n)
-    java.lang.System.arraycopy(resarr.p_array, 1, pq.resarr.p_array, 1, n-1)
+    java.lang.System.arraycopy(resarr.p_array, 1, pq.resarr.p_array, 1, n - 1)
     pq.resarr.p_size0 = n
     pq
   }
 
-  override def copyToArray[B >: A](xs: Array[B], start: Int): Int = copyToArray(xs, start, length)
+  override def copyToArray[B >: A](xs: Array[B], start: Int): Int =
+    copyToArray(xs, start, length)
 
   override def copyToArray[B >: A](xs: Array[B], start: Int, len: Int): Int = {
     val copied = IterableOnce.elemsToCopyToArray(length, xs.length, start, len)
@@ -355,15 +359,15 @@ sealed class PriorityQueue[A](implicit val ord: Ordering[A])
   @deprecated("Use `PriorityQueue` instead", "2.13.0")
   def orderedCompanion: PriorityQueue.type = PriorityQueue
 
-  protected[this] def writeReplace(): AnyRef = new DefaultSerializationProxy(PriorityQueue.evidenceIterableFactory[A], this)
+  protected[this] def writeReplace(): AnyRef =
+    new DefaultSerializationProxy(PriorityQueue.evidenceIterableFactory[A],
+                                  this)
 
   override protected[this] def className = "PriorityQueue"
 }
-
-
 @SerialVersionUID(3L)
 object PriorityQueue extends SortedIterableFactory[PriorityQueue] {
-  def newBuilder[A : Ordering]: Builder[A, PriorityQueue[A]] = {
+  def newBuilder[A: Ordering]: Builder[A, PriorityQueue[A]] = {
     new Builder[A, PriorityQueue[A]] {
       val pq = new PriorityQueue[A]
       def addOne(elem: A): this.type = { pq.unsafeAdd(elem); this }
@@ -372,9 +376,9 @@ object PriorityQueue extends SortedIterableFactory[PriorityQueue] {
     }
   }
 
-  def empty[A : Ordering]: PriorityQueue[A] = new PriorityQueue[A]
+  def empty[A: Ordering]: PriorityQueue[A] = new PriorityQueue[A]
 
-  def from[E : Ordering](it: IterableOnce[E]): PriorityQueue[E] = {
+  def from[E: Ordering](it: IterableOnce[E]): PriorityQueue[E] = {
     val b = newBuilder[E]
     b ++= it
     b.result()

@@ -6,7 +6,7 @@ object Test {
       for (i <- 1 until 5) return
     } catch {
       case _: NullPointerException | _: RuntimeException =>
-        // was: "catch block may intercept non-local return from method check"
+      // was: "catch block may intercept non-local return from method check"
     }
   }
 }

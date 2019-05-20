@@ -107,7 +107,7 @@ class ClassOfTest extends RunTesting {
     assertNotEquals(i, ig)
 
     assertEquals(run[List[Class[_]]](code),
-      List(l, l, l, i, i, ig, ig, v, v, ai, al))
+                 List(l, l, l, i, i, ig, ig, v, v, ai, al))
   }
 
   @Test

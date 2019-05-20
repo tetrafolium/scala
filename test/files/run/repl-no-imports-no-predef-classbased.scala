@@ -7,7 +7,8 @@ object Test extends scala.tools.partest.ReplTest {
     settings
   }
 
-  def code = """
+  def code =
+    """
 case class K(s: java.lang.String)
 class C { implicit val k: K = K("OK?"); override def toString = "C(" + k.toString + ")" }
 val c = new C

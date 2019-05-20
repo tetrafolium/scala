@@ -1,4 +1,3 @@
-
 import collection.mutable
 
 object Foo {

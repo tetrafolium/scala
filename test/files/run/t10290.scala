@@ -18,7 +18,7 @@ class B extends A1 with A2 {
 }
 
 object Test {
-  def main(args : Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
     val b = new B
     val c = new b.C
     assert(c.t1 == "A1")

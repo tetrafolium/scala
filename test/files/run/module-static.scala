@@ -1,4 +1,3 @@
-
 class C {
   val c1 = "c"
   println("c")

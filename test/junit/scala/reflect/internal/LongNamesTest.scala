@@ -37,7 +37,8 @@ class LongNamesTest {
 
     val testClass = compiler.classloader.loadClass("pkg.Test")
 
-    val output = testClass.newInstance().asInstanceOf[{ def test(): String }].test()
+    val output =
+      testClass.newInstance().asInstanceOf[{ def test(): String }].test()
     Assert.assertEquals(s"pkg.Outer$$$longClassName", output)
   }
 }

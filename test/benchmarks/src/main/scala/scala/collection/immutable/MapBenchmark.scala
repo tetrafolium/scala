@@ -14,9 +14,7 @@ import org.openjdk.jmh.infra._
 @State(Scope.Benchmark)
 class MapBenchmark {
 
-  var base: Map[String,String] = _
-
-
+  var base: Map[String, String] = _
   @Setup(Level.Trial) def initKeys(): Unit = {
     base = Map("a" -> "a", "b" -> "b", "c" -> "c", "d" -> "d")
   }

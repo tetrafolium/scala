@@ -16,11 +16,10 @@ package mutable
 
 import scala.collection.generic.DefaultSerializable
 
-
 /** $factoryInfo
- *  @define Coll `LinkedHashMap`
- *  @define coll linked hash map
- */
+  *  @define Coll `LinkedHashMap`
+  *  @define coll linked hash map
+  */
 @SerialVersionUID(3L)
 object LinkedHashMap extends MapFactory[LinkedHashMap] {
 
@@ -29,7 +28,7 @@ object LinkedHashMap extends MapFactory[LinkedHashMap] {
   def from[K, V](it: collection.IterableOnce[(K, V)]) =
     it match {
       case lhm: LinkedHashMap[K, V] => lhm
-      case _ => Growable.from(empty[K, V], it)
+      case _                        => Growable.from(empty[K, V], it)
     }
 
   def newBuilder[K, V] = new GrowableBuilder(empty[K, V])
@@ -38,7 +37,7 @@ object LinkedHashMap extends MapFactory[LinkedHashMap] {
     *  @since 2.8
     */
   private[mutable] final class LinkedEntry[K, V](val key: K, var value: V)
-    extends HashEntry[K, LinkedEntry[K, V]] {
+      extends HashEntry[K, LinkedEntry[K, V]] {
     var earlier: LinkedEntry[K, V] = null
     var later: LinkedEntry[K, V] = null
   }
@@ -46,20 +45,20 @@ object LinkedHashMap extends MapFactory[LinkedHashMap] {
 }
 
 /** This class implements mutable maps using a hashtable.
- *  The iterator and all traversal methods of this class visit elements in the order they were inserted.
- *
- *  @tparam K    the type of the keys contained in this hash map.
- *  @tparam V    the type of the values assigned to keys in this hash map.
- *
- *  @define Coll `LinkedHashMap`
- *  @define coll linked hash map
- *  @define mayNotTerminateInf
- *  @define willNotTerminateInf
- *  @define orderDependent
- *  @define orderDependentFold
- */
+  *  The iterator and all traversal methods of this class visit elements in the order they were inserted.
+  *
+  *  @tparam K    the type of the keys contained in this hash map.
+  *  @tparam V    the type of the values assigned to keys in this hash map.
+  *
+  *  @define Coll `LinkedHashMap`
+  *  @define coll linked hash map
+  *  @define mayNotTerminateInf
+  *  @define willNotTerminateInf
+  *  @define orderDependent
+  *  @define orderDependentFold
+  */
 class LinkedHashMap[K, V]
-  extends AbstractMap[K, V]
+    extends AbstractMap[K, V]
     with SeqMap[K, V]
     with MapOps[K, V, LinkedHashMap, LinkedHashMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, LinkedHashMap[K, V]]
@@ -97,22 +96,26 @@ class LinkedHashMap[K, V]
 
     }
 
-  override def last: (K, V) = 
-    if (size > 0) (lastEntry.key, lastEntry.value) 
-    else throw new java.util.NoSuchElementException("Cannot call .last on empty LinkedHashMap")
-      
-  override def lastOption: Option[(K, V)] = 
+  override def last: (K, V) =
+    if (size > 0) (lastEntry.key, lastEntry.value)
+    else
+      throw new java.util.NoSuchElementException(
+        "Cannot call .last on empty LinkedHashMap")
+
+  override def lastOption: Option[(K, V)] =
     if (size > 0) Some((lastEntry.key, lastEntry.value))
     else None
 
-  override def head: (K, V) = 
-    if (size > 0) (firstEntry.key, firstEntry.value) 
-    else throw new java.util.NoSuchElementException("Cannot call .head on empty LinkedHashMap")
-      
-  override def headOption: Option[(K, V)] = 
+  override def head: (K, V) =
+    if (size > 0) (firstEntry.key, firstEntry.value)
+    else
+      throw new java.util.NoSuchElementException(
+        "Cannot call .head on empty LinkedHashMap")
+
+  override def headOption: Option[(K, V)] =
     if (size > 0) Some((firstEntry.key, firstEntry.value))
     else None
-      
+
   override def empty = LinkedHashMap.empty[K, V]
   override def size = table.tableSize
   override def knownSize: Int = size
@@ -156,12 +159,13 @@ class LinkedHashMap[K, V]
     private[this] var cur = firstEntry
     def hasNext = cur ne null
     def next() =
-      if (hasNext) { val res = (cur.key, cur.value); cur = cur.later; res }
-      else Iterator.empty.next()
+      if (hasNext) { val res = (cur.key, cur.value); cur = cur.later; res } else
+        Iterator.empty.next()
   }
 
   protected class LinkedKeySet extends KeySet {
-    override def iterableFactory: IterableFactory[collection.Set] = LinkedHashSet
+    override def iterableFactory: IterableFactory[collection.Set] =
+      LinkedHashSet
   }
 
   override def keySet: collection.Set[K] = new LinkedKeySet
@@ -170,16 +174,16 @@ class LinkedHashMap[K, V]
     private[this] var cur = firstEntry
     def hasNext = cur ne null
     def next() =
-      if (hasNext) { val res = cur.key; cur = cur.later; res }
-      else Iterator.empty.next()
+      if (hasNext) { val res = cur.key; cur = cur.later; res } else
+        Iterator.empty.next()
   }
 
   override def valuesIterator: Iterator[V] = new AbstractIterator[V] {
     private[this] var cur = firstEntry
     def hasNext = cur ne null
     def next() =
-      if (hasNext) { val res = cur.value; cur = cur.later; res }
-      else Iterator.empty.next()
+      if (hasNext) { val res = cur.value; cur = cur.later; res } else
+        Iterator.empty.next()
   }
 
   override def foreach[U](f: ((K, V)) => U): Unit = {
@@ -207,10 +211,11 @@ class LinkedHashMap[K, V]
   private def readObject(in: java.io.ObjectInputStream): Unit = {
     in.defaultReadObject()
     table = newHashTable
-    table.init(in, table.createNewEntry(in.readObject().asInstanceOf[K], in.readObject().asInstanceOf[V]))
+    table.init(in,
+               table.createNewEntry(in.readObject().asInstanceOf[K],
+                                    in.readObject().asInstanceOf[V]))
   }
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "LinkedHashMap"
 }
-

@@ -82,9 +82,11 @@ class ClassTagBenchmark {
     bh.consume(doubleClassTag.newArray(arraySize))
   }
 
-  @Benchmark def refClassTagUnapplyNeg2(bh: Blackhole): Any = refClassTag.unapply(otherValue)
+  @Benchmark def refClassTagUnapplyNeg2(bh: Blackhole): Any =
+    refClassTag.unapply(otherValue)
 
-  @Benchmark def refClassTagUnapplyNeg2Direct(bh: Blackhole): Any = unapplyDirect(refClassTag, otherValue)
+  @Benchmark def refClassTagUnapplyNeg2Direct(bh: Blackhole): Any =
+    unapplyDirect(refClassTag, otherValue)
 
   def unapplyDirect(ct: ClassTag[_], x: AnyRef): Option[_] = {
     if (null != x && (ct.runtimeClass.isInstance(x))) Some(x)

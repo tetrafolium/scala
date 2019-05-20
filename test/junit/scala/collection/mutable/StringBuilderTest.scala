@@ -20,8 +20,6 @@ class StringBuilderTest {
     val b2t: IndexedSeq[Char] = b2
     assertEquals(b2t.toString, "ArrayBuffer(b, c, d, e)")
   }
-
-
   @Test
   def testToArray(): Unit = {
     val b = new StringBuilder("ab")

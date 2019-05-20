@@ -8,7 +8,9 @@ object Test extends App {
   } catch {
     case e: IndexOutOfBoundsException =>
       println(e)
-      e.getStackTrace.take(4).foreach(s => println(s.toString.takeWhile(_ != '(')))
+      e.getStackTrace
+        .take(4)
+        .foreach(s => println(s.toString.takeWhile(_ != '(')))
   }
 
   println()
@@ -18,8 +20,9 @@ object Test extends App {
   } catch {
     case e: IndexOutOfBoundsException =>
       println(e)
-      e.getStackTrace.take(4).foreach(s => println(s.toString.takeWhile(_ != '(')))
+      e.getStackTrace
+        .take(4)
+        .foreach(s => println(s.toString.takeWhile(_ != '(')))
   }
 
 }
-

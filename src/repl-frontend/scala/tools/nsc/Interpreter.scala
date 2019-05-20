@@ -47,9 +47,12 @@ class InterpreterLoop {
   private var parentClassLoader: Option[ClassLoader] = _
 
   @deprecated("Mainly used for passing in settings.", "2.13.0-M2")
-  def interpreter_= (interpreter: Interpreter) = {
+  def interpreter_=(interpreter: Interpreter) = {
     val config = interpreter.config
-    compilerSettings = config._1 match { case null => interpreterSettings case cs => cs }
+    compilerSettings = config._1 match {
+      case null => interpreterSettings
+      case cs   => cs
+    }
     parentClassLoader = Option(config._2)
   }
 
@@ -57,7 +60,10 @@ class InterpreterLoop {
 
   def interpreter: ReplCore = {
     if (intp eq null) {
-      intp = new IMain(interpreterSettings, parentClassLoader, compilerSettings, new ReplReporterImpl(interpreterSettings))
+      intp = new IMain(interpreterSettings,
+                       parentClassLoader,
+                       compilerSettings,
+                       new ReplReporterImpl(interpreterSettings))
     }
     intp
   }
@@ -91,8 +97,17 @@ class InterpreterLoop {
   // See also:
   //   - https://github.com/sbt/zinc/blob/1.0/internal/compiler-bridge/src/main/scala/xsbt/InteractiveConsoleInterface.scala
   //   - https://github.com/sbt/zinc/blob/1.0/internal/compiler-bridge/src/main/scala/xsbt/ConsoleInterface.scala
-  @deprecated("Only here to ensure we don't break the sbt interface.", "2.13.0-M2")
-  private def __SbtConsoleInterface(compilerSettings: Settings, interpreterSettings: Settings, bootClasspathString: String, classpathString: String, initialCommands: String, cleanupCommands: String, loader: ClassLoader, bindNames: Array[String], bindValues: Array[Any]): Unit = {
+  @deprecated("Only here to ensure we don't break the sbt interface.",
+              "2.13.0-M2")
+  private def __SbtConsoleInterface(compilerSettings: Settings,
+                                    interpreterSettings: Settings,
+                                    bootClasspathString: String,
+                                    classpathString: String,
+                                    initialCommands: String,
+                                    cleanupCommands: String,
+                                    loader: ClassLoader,
+                                    bindNames: Array[String],
+                                    bindValues: Array[Any]): Unit = {
     import scala.tools.nsc.interpreter.InteractiveReader
     import scala.tools.nsc.reporters.Reporter
 
@@ -108,7 +123,8 @@ class InterpreterLoop {
             override protected def parentClassLoader =
               if (loader eq null) super.parentClassLoader else loader
 
-            override protected def newCompiler(settings: Settings, reporter: Reporter) =
+            override protected def newCompiler(settings: Settings,
+                                               reporter: Reporter) =
               super.newCompiler(compilerSettings, reporter)
           }
         }
@@ -116,11 +132,14 @@ class InterpreterLoop {
         // for 2.8 compatibility
         final class Compat {
           def bindValue(id: String, value: Any) =
-            interpreter.bind(id, value.asInstanceOf[AnyRef].getClass.getName, value)
+            interpreter.bind(id,
+                             value.asInstanceOf[AnyRef].getClass.getName,
+                             value)
         }
         implicit def compat(a: AnyRef): Compat = new Compat
 
-        interpreter.beQuietDuring(interpreter.bindValue(??? : String, ??? : Any))
+        interpreter.beQuietDuring(
+          interpreter.bindValue(??? : String, ??? : Any))
 
         interpreter.interpret(??? : String)
       }

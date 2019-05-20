@@ -19,7 +19,9 @@ class ReleaseFenceTest extends BytecodeTesting {
     def check(className: String, hasFence: Boolean): Unit = {
       val cnode = classes.find(_.name == className).get
       if (hasFence)
-        assertInvoke(getMethod(cnode, "<init>"), "scala/runtime/Statics", "releaseFence")
+        assertInvoke(getMethod(cnode, "<init>"),
+                     "scala/runtime/Statics",
+                     "releaseFence")
       else
         assertDoesNotInvoke(getMethod(cnode, "<init>"), "releaseFence")
     }

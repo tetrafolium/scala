@@ -24,12 +24,10 @@ class ListBenchmark {
   var mid: Content = _
   var last: Content = _
   var replacement: Content = _
-
-
   @Setup(Level.Trial) def initKeys(): Unit = {
     values = List.tabulate(size)(v => Content(v))
     mid = Content(size / 2)
-    last = Content(Math.max(0,size -1))
+    last = Content(Math.max(0, size - 1))
     replacement = Content(size * 2 + 1)
   }
 

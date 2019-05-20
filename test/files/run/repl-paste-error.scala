@@ -1,4 +1,3 @@
-
 import scala.tools.partest.ReplTest
 
 object Test extends ReplTest {
@@ -11,4 +10,4 @@ object Test extends ReplTest {
     |}
     |END
   """.stripMargin.trim
-} 
+}

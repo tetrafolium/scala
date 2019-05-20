@@ -10,6 +10,8 @@ object Test extends App {
 
   // @Test def compileTimeOnlyOnceOnlyMessage: Unit =
   {
-    assertEquals(cm.staticClass("issue90Class").annotations.head.toString, "scala.annotation.compileTimeOnly(\"this is the only annotation\")")
+    assertEquals(
+      cm.staticClass("issue90Class").annotations.head.toString,
+      "scala.annotation.compileTimeOnly(\"this is the only annotation\")")
   }
 }

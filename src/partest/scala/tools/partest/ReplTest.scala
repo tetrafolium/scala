@@ -18,8 +18,8 @@ import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
 
 /** A class for testing repl code.
- *  It filters the line of output that mentions a version number.
- */
+  *  It filters the line of output that mentions a version number.
+  */
 abstract class ReplTest extends DirectTest {
   // override to transform Settings object immediately before the finish
   def transformSettings(s: Settings): Settings = s
@@ -30,13 +30,14 @@ abstract class ReplTest extends DirectTest {
     if (getClass.getClassLoader.getParent != null) {
       s.classpath.value = s.classpath.value match {
         case "" => testOutput.toString
-        case s => s + java.io.File.pathSeparator + testOutput.toString
+        case s  => s + java.io.File.pathSeparator + testOutput.toString
       }
       s.usejavacp.value = true
     }
     transformSettings(s)
   }
   def normalize(s: String) = s
+
   /** True for SessionTest to preserve session text. */
   def inSession: Boolean = false
   def eval() = {
@@ -49,16 +50,18 @@ abstract class ReplTest extends DirectTest {
   def show() = eval() foreach println
 }
 
-
 /** Run a REPL test from a session transcript.
- *  The `session` is read from the `.check` file.
- */
-abstract class SessionTest extends ReplTest  {
+  *  The `session` is read from the `.check` file.
+  */
+abstract class SessionTest extends ReplTest {
+
   /** Session transcript. */
   def session: String = testPath.changeExtension("check").toFile.slurp
 
   /** Expected output, as an iterator, optionally marginally stripped. */
-  def expected = if (stripMargins) session.stripMargin.linesIterator else session.linesIterator
+  def expected =
+    if (stripMargins) session.stripMargin.linesIterator
+    else session.linesIterator
 
   /** Override with true if session is a """string""" with margin indent. */
   def stripMargins: Boolean = false
@@ -67,21 +70,25 @@ abstract class SessionTest extends ReplTest  {
   override def inSession: Boolean = true
 
   /** Code is the command list culled from the session (or the expected session output).
-   *  Would be nicer if code were lazy lines so you could generate arbitrarily long text.
-   *  Retain user input: prompt lines and continuations, without the prefix; or pasted text plus ctrl-D.
-   */
+    *  Would be nicer if code were lazy lines so you could generate arbitrarily long text.
+    *  Retain user input: prompt lines and continuations, without the prefix; or pasted text plus ctrl-D.
+    */
   import SessionTest._
   lazy val pasted = input(prompt)
-  override final def code = pasted.findAllMatchIn(expected.mkString("", "\n", "\n")).map {
-    case pasted(null, null, prompted) =>
-      def continued(m: Match): Option[String] = m match {
-        case margin(text) => Some(Regex.quoteReplacement(text))
-        case _            => None
+  override final def code =
+    pasted
+      .findAllMatchIn(expected.mkString("", "\n", "\n"))
+      .map {
+        case pasted(null, null, prompted) =>
+          def continued(m: Match): Option[String] = m match {
+            case margin(text) => Some(Regex.quoteReplacement(text))
+            case _            => None
+          }
+          margin.replaceSomeIn(prompted, continued)
+        case pasted(cmd, pasted, null) =>
+          cmd + pasted + "\u0004"
       }
-      margin.replaceSomeIn(prompted, continued)
-    case pasted(cmd, pasted, null) =>
-      cmd + pasted + "\u0004"
-  }.mkString
+      .mkString
 
   // Just the last line of the interactive prompt
   def prompt = "scala> "
@@ -90,13 +97,17 @@ abstract class SessionTest extends ReplTest  {
   def checkSession(): Unit = {
     val evaled = eval().toList
     val wanted = expected.toList
-    if (evaled.size != wanted.size) Console.println(s"Expected ${wanted.size} lines, got ${evaled.size}")
-    if (evaled != wanted) Console.print(nest.FileManager.compareContents(wanted, evaled, "expected", "actual"))
+    if (evaled.size != wanted.size)
+      Console.println(s"Expected ${wanted.size} lines, got ${evaled.size}")
+    if (evaled != wanted)
+      Console.print(
+        nest.FileManager.compareContents(wanted, evaled, "expected", "actual"))
   }
 }
 object SessionTest {
   // \R for line break is Java 8, \v for vertical space might suffice
-  def input(prompt: String) = s"""(?m)^$prompt(:pa.*\u000A)// Entering paste mode.*\u000A\u000A((?:.*\u000A)*)\u000A// Exiting paste mode.*\u000A|^scala> (.*\u000A(?:\\s*\\| .*\u000A)*)""".r
+  def input(prompt: String) =
+    s"""(?m)^$prompt(:pa.*\u000A)// Entering paste mode.*\u000A\u000A((?:.*\u000A)*)\u000A// Exiting paste mode.*\u000A|^scala> (.*\u000A(?:\\s*\\| .*\u000A)*)""".r
 
   val margin = """(?m)^\s*\| (.*)$""".r
 }

@@ -22,7 +22,7 @@ class ArraySeqTest {
 
   @Test
   def t10851(): Unit = {
-    val s1 = ArraySeq.untagged(1,2,3)
+    val s1 = ArraySeq.untagged(1, 2, 3)
     assertTrue(s1.array.getClass == classOf[Array[AnyRef]])
     val s2 = ArraySeq.make(Array(1))
     assertTrue(s2.array.getClass == classOf[Array[Int]])
@@ -32,9 +32,9 @@ class ArraySeqTest {
 
   @Test
   def safeToArray(): Unit = {
-    val a = ArraySeq(1,2,3)
+    val a = ArraySeq(1, 2, 3)
     a.toArray.update(0, 100)
-    assertEquals(a, List(1,2,3))
+    assertEquals(a, List(1, 2, 3))
   }
 
   @Test

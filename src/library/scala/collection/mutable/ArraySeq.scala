@@ -37,22 +37,25 @@ import java.util.Arrays
   */
 @SerialVersionUID(3L)
 sealed abstract class ArraySeq[T]
-  extends AbstractSeq[T]
+    extends AbstractSeq[T]
     with IndexedSeq[T]
     with IndexedSeqOps[T, ArraySeq, ArraySeq[T]]
     with StrictOptimizedSeqOps[T, ArraySeq, ArraySeq[T]]
     with Serializable {
 
-  override def iterableFactory: scala.collection.SeqFactory[ArraySeq] = ArraySeq.untagged
+  override def iterableFactory: scala.collection.SeqFactory[ArraySeq] =
+    ArraySeq.untagged
 
-  override protected def fromSpecific(coll: scala.collection.IterableOnce[T]): ArraySeq[T] = {
+  override protected def fromSpecific(
+      coll: scala.collection.IterableOnce[T]): ArraySeq[T] = {
     val b = ArrayBuilder.make(elemTag).asInstanceOf[ArrayBuilder[T]]
     val s = coll.knownSize
-    if(s > 0) b.sizeHint(s)
+    if (s > 0) b.sizeHint(s)
     b ++= coll
     ArraySeq.make(b.result())
   }
-  override protected def newSpecificBuilder: Builder[T, ArraySeq[T]] = ArraySeq.newBuilder(elemTag).asInstanceOf[Builder[T, ArraySeq[T]]]
+  override protected def newSpecificBuilder: Builder[T, ArraySeq[T]] =
+    ArraySeq.newBuilder(elemTag).asInstanceOf[Builder[T, ArraySeq[T]]]
 
   /** The tag of the element type. This does not have to be equal to the element type of this ArraySeq. A primitive
     * ArraySeq can be backed by an array of boxed values and a reference ArraySeq can be backed by an array of a supertype
@@ -67,17 +70,19 @@ sealed abstract class ArraySeq[T]
     * or subtype of the element type. */
   def array: Array[_]
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "ArraySeq"
 
   /** Clones this object, including the underlying Array. */
-  override def clone(): ArraySeq[T] = ArraySeq.make(array.clone()).asInstanceOf[ArraySeq[T]]
+  override def clone(): ArraySeq[T] =
+    ArraySeq.make(array.clone()).asInstanceOf[ArraySeq[T]]
 
-  override def copyToArray[B >: T](xs: Array[B], start: Int): Int = copyToArray[B](xs, start, length)
+  override def copyToArray[B >: T](xs: Array[B], start: Int): Int =
+    copyToArray[B](xs, start, length)
 
   override def copyToArray[B >: T](xs: Array[B], start: Int, len: Int): Int = {
     val copied = IterableOnce.elemsToCopyToArray(length, xs.length, start, len)
-    if(copied > 0) {
+    if (copied > 0) {
       Array.copy(array, 0, xs, start, copied)
     }
     copied
@@ -91,7 +96,9 @@ sealed abstract class ArraySeq[T]
   }
 
   override def sorted[B >: T](implicit ord: Ordering[B]): ArraySeq[T] =
-    ArraySeq.make(array.sorted(ord.asInstanceOf[Ordering[Any]])).asInstanceOf[ArraySeq[T]]
+    ArraySeq
+      .make(array.sorted(ord.asInstanceOf[Ordering[Any]]))
+      .asInstanceOf[ArraySeq[T]]
 
   override def sortInPlace[B >: T]()(implicit ord: Ordering[B]): this.type = {
     if (length > 1) scala.util.Sorting.stableSort(array.asInstanceOf[Array[B]])
@@ -103,13 +110,14 @@ sealed abstract class ArraySeq[T]
   */
 @SerialVersionUID(3L)
 object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
-  val untagged: SeqFactory[ArraySeq] = new ClassTagSeqFactory.AnySeqDelegate(self)
+  val untagged: SeqFactory[ArraySeq] =
+    new ClassTagSeqFactory.AnySeqDelegate(self)
 
   // This is reused for all calls to empty.
-  private[this] val EmptyArraySeq  = new ofRef[AnyRef](new Array[AnyRef](0))
-  def empty[T : ClassTag]: ArraySeq[T] = EmptyArraySeq.asInstanceOf[ArraySeq[T]]
+  private[this] val EmptyArraySeq = new ofRef[AnyRef](new Array[AnyRef](0))
+  def empty[T: ClassTag]: ArraySeq[T] = EmptyArraySeq.asInstanceOf[ArraySeq[T]]
 
-  def from[A : ClassTag](it: scala.collection.IterableOnce[A]): ArraySeq[A] = {
+  def from[A: ClassTag](it: scala.collection.IterableOnce[A]): ArraySeq[A] = {
     val n = it.knownSize
     if (n > -1) {
       val elements = scala.Array.ofDim[A](n)
@@ -123,33 +131,35 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     } else make(ArrayBuffer.from(it).toArray)
   }
 
-  def newBuilder[A : ClassTag]: Builder[A, ArraySeq[A]] = ArrayBuilder.make[A].mapResult(make)
+  def newBuilder[A: ClassTag]: Builder[A, ArraySeq[A]] =
+    ArrayBuilder.make[A].mapResult(make)
 
   /**
-   * Wrap an existing `Array` into a `ArraySeq` of the proper primitive specialization type
-   * without copying.
-   *
-   * Note that an array containing boxed primitives can be converted to a `ArraySeq` without
-   * copying. For example, `val a: Array[Any] = Array(1)` is an array of `Object` at runtime,
-   * containing `Integer`s. An `ArraySeq[Int]` can be obtained with a cast:
-   * `ArraySeq.make(a).asInstanceOf[ArraySeq[Int]]`. The values are still
-   * boxed, the resulting instance is an [[ArraySeq.ofRef]]. Writing
-   * `ArraySeq.make(a.asInstanceOf[Array[Int]])` does not work, it throws a `ClassCastException`
-   * at runtime.
-   */
-  def make[T](x: Array[T]): ArraySeq[T] = (x.asInstanceOf[Array[_]] match {
-    case null              => null
-    case x: Array[AnyRef]  => new ofRef[AnyRef](x)
-    case x: Array[Int]     => new ofInt(x)
-    case x: Array[Double]  => new ofDouble(x)
-    case x: Array[Long]    => new ofLong(x)
-    case x: Array[Float]   => new ofFloat(x)
-    case x: Array[Char]    => new ofChar(x)
-    case x: Array[Byte]    => new ofByte(x)
-    case x: Array[Short]   => new ofShort(x)
-    case x: Array[Boolean] => new ofBoolean(x)
-    case x: Array[Unit]    => new ofUnit(x)
-  }).asInstanceOf[ArraySeq[T]]
+    * Wrap an existing `Array` into a `ArraySeq` of the proper primitive specialization type
+    * without copying.
+    *
+    * Note that an array containing boxed primitives can be converted to a `ArraySeq` without
+    * copying. For example, `val a: Array[Any] = Array(1)` is an array of `Object` at runtime,
+    * containing `Integer`s. An `ArraySeq[Int]` can be obtained with a cast:
+    * `ArraySeq.make(a).asInstanceOf[ArraySeq[Int]]`. The values are still
+    * boxed, the resulting instance is an [[ArraySeq.ofRef]]. Writing
+    * `ArraySeq.make(a.asInstanceOf[Array[Int]])` does not work, it throws a `ClassCastException`
+    * at runtime.
+    */
+  def make[T](x: Array[T]): ArraySeq[T] =
+    (x.asInstanceOf[Array[_]] match {
+      case null              => null
+      case x: Array[AnyRef]  => new ofRef[AnyRef](x)
+      case x: Array[Int]     => new ofInt(x)
+      case x: Array[Double]  => new ofDouble(x)
+      case x: Array[Long]    => new ofLong(x)
+      case x: Array[Float]   => new ofFloat(x)
+      case x: Array[Char]    => new ofChar(x)
+      case x: Array[Byte]    => new ofByte(x)
+      case x: Array[Short]   => new ofShort(x)
+      case x: Array[Boolean] => new ofBoolean(x)
+      case x: Array[Unit]    => new ofUnit(x)
+    }).asInstanceOf[ArraySeq[T]]
 
   @SerialVersionUID(3L)
   final class ofRef[T <: AnyRef](val array: Array[T]) extends ArraySeq[T] {
@@ -160,9 +170,8 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofRef[_] =>
-        Array.equals(
-          this.array.asInstanceOf[Array[AnyRef]],
-          that.array.asInstanceOf[Array[AnyRef]])
+        Array.equals(this.array.asInstanceOf[Array[AnyRef]],
+                     that.array.asInstanceOf[Array[AnyRef]])
       case _ => super.equals(that)
     }
   }
@@ -176,7 +185,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofByte => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _            => super.equals(that)
     }
   }
 
@@ -189,7 +198,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofShort => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _             => super.equals(that)
     }
   }
 
@@ -202,17 +211,21 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofChar => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _            => super.equals(that)
     }
 
-    override def addString(sb: StringBuilder, start: String, sep: String, end: String): StringBuilder = {
+    override def addString(sb: StringBuilder,
+                           start: String,
+                           sep: String,
+                           end: String): StringBuilder = {
       val jsb = sb.underlying
       if (start.length != 0) jsb.append(start)
       val len = array.length
       if (len != 0) {
         if (sep.isEmpty) jsb.append(array)
         else {
-          jsb.ensureCapacity(jsb.length + len + end.length + (len - 1) * sep.length)
+          jsb.ensureCapacity(
+            jsb.length + len + end.length + (len - 1) * sep.length)
           jsb.append(array(0))
           var i = 1
           while (i < len) {
@@ -236,7 +249,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofInt => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _           => super.equals(that)
     }
   }
 
@@ -249,7 +262,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofLong => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _            => super.equals(that)
     }
   }
 
@@ -262,7 +275,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofFloat => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _             => super.equals(that)
     }
   }
 
@@ -275,7 +288,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofDouble => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _              => super.equals(that)
     }
   }
 
@@ -288,7 +301,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofBoolean => Arrays.equals(array, that.array)
-      case _ => super.equals(that)
+      case _               => super.equals(that)
     }
   }
 
@@ -301,7 +314,7 @@ object ArraySeq extends StrictOptimizedClassTagSeqFactory[ArraySeq] { self =>
     override def hashCode = MurmurHash3.arraySeqHash(array)
     override def equals(that: Any) = that match {
       case that: ofUnit => array.length == that.array.length
-      case _ => super.equals(that)
+      case _            => super.equals(that)
     }
   }
 }

@@ -1,5 +1,4 @@
-
-class C(private[this] var c: String) { c = "good" ; def f = c }
+class C(private[this] var c: String) { c = "good"; def f = c }
 
 object Test {
   def main(args: Array[String]) = println {

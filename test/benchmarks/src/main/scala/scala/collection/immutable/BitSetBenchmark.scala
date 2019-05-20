@@ -24,7 +24,9 @@ class BitSetBenchmark {
   var arg: BitSet = _
 
   @Setup(Level.Iteration) def initNumbers: Unit = {
-    bitSet = (0 to sizeLeft).filter(_ => Random.nextDouble() <= percentageFull).to(BitSet)
+    bitSet = (0 to sizeLeft)
+      .filter(_ => Random.nextDouble() <= percentageFull)
+      .to(BitSet)
   }
 
   @Benchmark

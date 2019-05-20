@@ -13,10 +13,12 @@ class DecoratorsTest {
 
   @Test
   def iterableOnceDecorator: Unit = {
-    implicit def filterMap[Repr](coll: Repr)(implicit it: IsIterableOnce[Repr]): FilterMapImpl[Repr, it.type] =
+    implicit def filterMap[Repr](coll: Repr)(
+        implicit it: IsIterableOnce[Repr]): FilterMapImpl[Repr, it.type] =
       new FilterMapImpl(coll, it)
     class FilterMapImpl[Repr, I <: IsIterableOnce[Repr]](coll: Repr, it: I) {
-      final def filterMap[B, That](f: it.A => Option[B])(implicit bf: BuildFrom[Repr, B, That]): That = {
+      final def filterMap[B, That](f: it.A => Option[B])(
+          implicit bf: BuildFrom[Repr, B, That]): That = {
         val b = bf.newBuilder(coll)
         for (e <- it(coll); y <- f(e)) b += y
         b.result()
@@ -36,14 +38,18 @@ class DecoratorsTest {
 
   @Test
   def iterableDecorator: Unit = {
-    implicit def IterableDecorator[Repr](coll: Repr)(implicit it: IsIterable[Repr]): IterableDecorator[Repr, it.type] =
+    implicit def IterableDecorator[Repr](coll: Repr)(
+        implicit it: IsIterable[Repr]): IterableDecorator[Repr, it.type] =
       new IterableDecorator(coll)(it)
-    class IterableDecorator[Repr, I <: IsIterable[Repr]](coll: Repr)(implicit val it: I) {
-      final def filterMap[B, That](f: it.A => Option[B])(implicit bf: BuildFrom[Repr, B, That]): That =
+    class IterableDecorator[Repr, I <: IsIterable[Repr]](coll: Repr)(
+        implicit val it: I) {
+      final def filterMap[B, That](f: it.A => Option[B])(
+          implicit bf: BuildFrom[Repr, B, That]): That =
         bf.fromSpecific(coll)(it(coll).flatMap(f(_)))
     }
 
-    val f: Int => Option[String] = x => if (x % 2 == 0) Some(x.toString) else None
+    val f: Int => Option[String] = x =>
+      if (x % 2 == 0) Some(x.toString) else None
     val g: Char => Option[Int] = c => if (c.isDigit) Some(c.asDigit) else None
     val h: ((Int, String)) => Option[(String, Int)] = {
       case (x, s) => if (s.length == x) Some((s, x)) else None
@@ -97,13 +103,15 @@ class DecoratorsTest {
   @Test
   def seqDecorator: Unit = {
     // Taken from https://github.com/scala/collection-strawman/pull/286
-    implicit def SeqDecorator[Repr](coll: Repr)(implicit seq: IsSeq[Repr]): SeqDecorator[Repr, seq.type] =
+    implicit def SeqDecorator[Repr](coll: Repr)(
+        implicit seq: IsSeq[Repr]): SeqDecorator[Repr, seq.type] =
       new SeqDecorator(coll)(seq)
-    class SeqDecorator[Repr, S <: IsSeq[Repr]](coll: Repr)(implicit val seq: S) {
-      def groupedWith[Group, That](p: seq.A => Boolean)(implicit
-        group: BuildFrom[Repr, seq.A, Group],
-        bf: BuildFrom[Repr, Group, That]
-      ): That = {
+    class SeqDecorator[Repr, S <: IsSeq[Repr]](coll: Repr)(
+        implicit val seq: S) {
+      def groupedWith[Group, That](p: seq.A => Boolean)(
+          implicit
+          group: BuildFrom[Repr, seq.A, Group],
+          bf: BuildFrom[Repr, Group, That]): That = {
         val `this` = seq(coll)
 
         val groups = bf.newBuilder(coll)
@@ -159,18 +167,23 @@ class DecoratorsTest {
   @Test
   def mapDecorator: Unit = {
 
-    implicit def MapDecorator[Repr](coll: Repr)(implicit map: IsMap[Repr]): MapDecorator[Repr, map.type] =
+    implicit def MapDecorator[Repr](coll: Repr)(
+        implicit map: IsMap[Repr]): MapDecorator[Repr, map.type] =
       new MapDecorator(coll)(map)
 
     class MapDecorator[C, M <: IsMap[C]](coll: C)(implicit val map: M) {
-      def leftOuterJoin[W, That](other: Map[map.K, W])(implicit bf: BuildFrom[C, (map.K, (map.V, Option[W])), That]): That = {
+      def leftOuterJoin[W, That](other: Map[map.K, W])(
+          implicit bf: BuildFrom[C, (map.K, (map.V, Option[W])), That])
+        : That = {
         val b = bf.newBuilder(coll)
         for ((k, v) <- map(coll)) {
           b += k -> (v, other.get(k))
         }
         b.result()
       }
-      def rightOuterJoin[W, That](other: Map[map.K, W])(implicit bf: BuildFrom[C, (map.K, (Option[map.V], W)), That]): That = {
+      def rightOuterJoin[W, That](other: Map[map.K, W])(
+          implicit bf: BuildFrom[C, (map.K, (Option[map.V], W)), That])
+        : That = {
         val b = bf.newBuilder(coll)
         for ((k, w) <- other) {
           b += k -> (map(coll).get(k), w)
@@ -199,9 +212,11 @@ class DecoratorsTest {
 
     val treemapView = TreeMap(1 -> "foo").view
     val treemapViewLJoin = treemapView.leftOuterJoin(Map(1 -> "bar"))
-    val treemapViewLJoinT: View[(Int, (String, Option[String]))] = treemapViewLJoin
+    val treemapViewLJoinT: View[(Int, (String, Option[String]))] =
+      treemapViewLJoin
     val treemapViewRJoin = treemapView.rightOuterJoin(Map(1 -> "bar"))
-    val treemapViewRJoinT: View[(Int, (Option[String], String))] = treemapViewRJoin
+    val treemapViewRJoinT: View[(Int, (Option[String], String))] =
+      treemapViewRJoin
 
     val mmap = mutable.Map(1 -> "foo")
     val mmapLJoin = mmap.leftOuterJoin(Map(1 -> "bar"))
@@ -217,9 +232,11 @@ class DecoratorsTest {
 
     val anyrefmap = mutable.AnyRefMap("foo" -> 1)
     val anyrefmapLJoin = anyrefmap.leftOuterJoin(Map("bar" -> true))
-    val anyrefmapLJoinT: mutable.AnyRefMap[String, (Int, Option[Boolean])] = anyrefmapLJoin
+    val anyrefmapLJoinT: mutable.AnyRefMap[String, (Int, Option[Boolean])] =
+      anyrefmapLJoin
     val anyrefmapRJoin = anyrefmap.rightOuterJoin(Map("bar" -> true))
-    val anyrefmapRJoinT: mutable.AnyRefMap[String, (Option[Int], Boolean)] = anyrefmapRJoin
+    val anyrefmapRJoinT: mutable.AnyRefMap[String, (Option[Int], Boolean)] =
+      anyrefmapRJoin
 
     val intmap = IntMap(1 -> "foo")
     val intmapLJoin = intmap.leftOuterJoin(Map(1 -> "bar"))
@@ -235,9 +252,11 @@ class DecoratorsTest {
 
     val mlongmap = mutable.LongMap(1L -> "foo")
     val mlongmapLJoin = mlongmap.leftOuterJoin(Map(1L -> "bar"))
-    val mlongmapLJoinT: mutable.LongMap[(String, Option[String])] = mlongmapLJoin
+    val mlongmapLJoinT: mutable.LongMap[(String, Option[String])] =
+      mlongmapLJoin
     val mlongmapRJoin = mlongmap.rightOuterJoin(Map(1L -> "bar"))
-    val mlongmapRJoinT: mutable.LongMap[(Option[String], String)] = mlongmapRJoin
+    val mlongmapRJoinT: mutable.LongMap[(Option[String], String)] =
+      mlongmapRJoin
   }
 
 }

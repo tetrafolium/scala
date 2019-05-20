@@ -46,6 +46,7 @@ class StringLiteralTest {
   def testHighlightingRawStringLiteralIgnoringQuote() {
     val in = "\"\"\"content\"\"content\"\"\""
     val out = SyntaxHigh(in).map(_.toText).mkString
-    assertEquals("<span class=\"lit\">\"\"\"content\"\"content\"\"\"</span>", out)
+    assertEquals("<span class=\"lit\">\"\"\"content\"\"content\"\"\"</span>",
+                 out)
   }
 }

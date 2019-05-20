@@ -6,16 +6,19 @@ object Test extends StoreReporterDirectTest {
   def code = ???
 
   private def compileCode(code: String, jarFileName: String) = {
-    val classpath = List(sys.props("partest.lib"), testOutput.path) mkString sys.props("path.separator")
-    compileString(newCompiler("-cp", classpath, "-d", s"${testOutput.path}/$jarFileName"))(code)
+    val classpath = List(sys.props("partest.lib"), testOutput.path) mkString sys
+      .props("path.separator")
+    compileString(
+      newCompiler("-cp", classpath, "-d", s"${testOutput.path}/$jarFileName"))(
+      code)
   }
   private def runAdded(codeToRun: String): String = {
     val lines = ILoop.run(codeToRun, settings).linesIterator.toList
-    val (added, output) = lines.partition(l => l.contains("Added") && l.contains("test1.jar"))
+    val (added, output) =
+      lines.partition(l => l.contains("Added") && l.contains("test1.jar"))
     assert(added.nonEmpty, lines)
     output.mkString("\n")
   }
-
 
   def app1 = """
     package test
@@ -73,7 +76,10 @@ object Test extends StoreReporterDirectTest {
       |:require ${testOutput.path}/$jar2
       |""".stripMargin.trim
     val msg = runAdded(codeToRun)
-    assert(msg.contains("test2.jar") && msg.contains("contains a classfile that already exists on the classpath: test.Test$"), msg)
+    assert(
+      msg.contains("test2.jar") && msg.contains(
+        "contains a classfile that already exists on the classpath: test.Test$"),
+      msg)
   }
 
   def test3(): Unit = {
@@ -93,13 +99,16 @@ object Test extends StoreReporterDirectTest {
 
   def test4(): Unit = {
     // twice the same jar should be rejected
-    val jar1   = "test1.jar"
+    val jar1 = "test1.jar"
     val codeToRun = s"""
       |:require ${testOutput.path}/$jar1
       |:require ${testOutput.path}/$jar1
       |""".stripMargin.trim
     val msg = runAdded(codeToRun)
-    assert(msg.contains("test1.jar") && msg.contains("contains a classfile that already exists on the classpath: test.Test$"), msg)
+    assert(
+      msg.contains("test1.jar") && msg.contains(
+        "contains a classfile that already exists on the classpath: test.Test$"),
+      msg)
   }
 
   def test5(): Unit = {

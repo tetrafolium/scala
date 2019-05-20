@@ -21,29 +21,43 @@ class NullnessAnalyzerTest extends BytecodeTesting {
   import compiler._
   import global.genBCode.postProcessor.backendUtils._
 
-  def newNullnessAnalyzer(methodNode: MethodNode, classInternalName: InternalName = "C") = new NullnessAnalyzer(methodNode, classInternalName, isNonNullMethodInvocation, true)
+  def newNullnessAnalyzer(methodNode: MethodNode,
+                          classInternalName: InternalName = "C") =
+    new NullnessAnalyzer(methodNode,
+                         classInternalName,
+                         isNonNullMethodInvocation,
+                         true)
 
-  def testNullness(analyzer: AsmAnalyzer[NullnessValue], method: MethodNode, query: String, index: Int, nullness: NullnessValue): Unit = {
+  def testNullness(analyzer: AsmAnalyzer[NullnessValue],
+                   method: MethodNode,
+                   query: String,
+                   index: Int,
+                   nullness: NullnessValue): Unit = {
     for (i <- findInstrs(method, query)) {
       val r = analyzer.frameAt(i).getValue(index)
-      assertTrue(s"Expected: $nullness, found: $r. At instr ${textify(i)}", nullness == r)
+      assertTrue(s"Expected: $nullness, found: $r. At instr ${textify(i)}",
+                 nullness == r)
     }
   }
 
   // debug / helper for writing tests
-  def showAllNullnessFrames(analyzer: AsmAnalyzer[NullnessValue], method: MethodNode): String = {
-    val instrLength = method.instructions.iterator.asScala.map(textify(_).length).max
+  def showAllNullnessFrames(analyzer: AsmAnalyzer[NullnessValue],
+                            method: MethodNode): String = {
+    val instrLength =
+      method.instructions.iterator.asScala.map(textify(_).length).max
     val lines = for (i <- method.instructions.iterator.asScala) yield {
       val f = analyzer.frameAt(i)
       val frameString = {
         if (f == null) "null"
-        else (0 until (f.getLocals + f.getStackSize)).iterator
-          .map(f.getValue(_).toString)
-          .map(s => "%8s".format(s))
-          .zipWithIndex.map({case (s, i) => s"$i: $s"})
-          .mkString(", ")
+        else
+          (0 until (f.getLocals + f.getStackSize)).iterator
+            .map(f.getValue(_).toString)
+            .map(s => "%8s".format(s))
+            .zipWithIndex
+            .map({ case (s, i) => s"$i: $s" })
+            .mkString(", ")
       }
-      ("%"+ instrLength +"s: %s").format(textify(i), frameString)
+      ("%" + instrLength + "s: %s").format(textify(i), frameString)
     }
     lines.mkString("\n")
   }
@@ -96,14 +110,14 @@ class NullnessAnalyzerTest extends BytecodeTesting {
     //                                 ARETURN: 0: NotNull, 1: NotNull, 2: Unknown
 
     for ((insn, index, nullness) <- List(
-      ("+NEW", 2, UnknownValue1),                                    // new value at slot 2 on the stack
-      ("+DUP", 3, UnknownValue1),
-      ("+INVOKESPECIAL java/lang/Object", 2, NotNullValue),          // after calling the initializer on 3, the value at 2 becomes NotNull
-      ("ASTORE 1", 1, UnknownValue1),                                // before the ASTORE 1, nullness of the value in local 1 is Unknown
-      ("+ASTORE 1", 1, NotNullValue),                                // after storing the value at 2 in local 1, the local 1 is NotNull
-      ("+ALOAD 1", 2, NotNullValue),                                 // loading the value 1 puts a NotNull value on the stack (at 2)
-      ("+INVOKEVIRTUAL java/lang/Object.toString", 2, UnknownValue1) // nullness of value returned by `toString` is Unknown
-    )) testNullness(a, m, insn, index, nullness)
+           ("+NEW", 2, UnknownValue1), // new value at slot 2 on the stack
+           ("+DUP", 3, UnknownValue1),
+           ("+INVOKESPECIAL java/lang/Object", 2, NotNullValue), // after calling the initializer on 3, the value at 2 becomes NotNull
+           ("ASTORE 1", 1, UnknownValue1), // before the ASTORE 1, nullness of the value in local 1 is Unknown
+           ("+ASTORE 1", 1, NotNullValue), // after storing the value at 2 in local 1, the local 1 is NotNull
+           ("+ALOAD 1", 2, NotNullValue), // loading the value 1 puts a NotNull value on the stack (at 2)
+           ("+INVOKEVIRTUAL java/lang/Object.toString", 2, UnknownValue1) // nullness of value returned by `toString` is Unknown
+         )) testNullness(a, m, insn, index, nullness)
   }
 
   @Test
@@ -111,10 +125,10 @@ class NullnessAnalyzerTest extends BytecodeTesting {
     val m = compileAsmMethod("def f = { var a: Object = null; a }")
     val a = newNullnessAnalyzer(m)
     for ((insn, index, nullness) <- List(
-      ("+ACONST_NULL", 2, NullValue),
-      ("+ASTORE 1", 1, NullValue),
-      ("+ALOAD 1", 2, NullValue)
-    )) testNullness(a, m, insn, index, nullness)
+           ("+ACONST_NULL", 2, NullValue),
+           ("+ASTORE 1", 1, NullValue),
+           ("+ALOAD 1", 2, NullValue)
+         )) testNullness(a, m, insn, index, nullness)
   }
 
   @Test
@@ -129,7 +143,7 @@ class NullnessAnalyzerTest extends BytecodeTesting {
     val m = compileAsmMethod("def f = { val a = new Array[Int](2); a(0) }")
     val a = newNullnessAnalyzer(m)
     testNullness(a, m, "+NEWARRAY T_INT", 2, NotNullValue) // new array on stack
-    testNullness(a, m, "+ASTORE 1", 1, NotNullValue)       // local var (a)
+    testNullness(a, m, "+ASTORE 1", 1, NotNullValue) // local var (a)
   }
 
   @Test
@@ -175,25 +189,23 @@ class NullnessAnalyzerTest extends BytecodeTesting {
 
     val trim = "INVOKEVIRTUAL java/lang/String.trim"
     val toSt = "INVOKEVIRTUAL java/lang/Object.toString"
-    val end  = s"+$toSt"
+    val end = s"+$toSt"
     for ((insn, index, nullness) <- List(
-      (trim, 0, NotNullValue),  // this
-      (trim, 1, UnknownValue1), // parameter o
-      (trim, 2, UnknownValue1), // a
-      (trim, 3, NullValue),     // b
-      (trim, 4, NullValue),     // c
-      (trim, 5, UnknownValue1), // d
-
-      (toSt, 2, UnknownValue1), // a, still the same
-      (toSt, 3, UnknownValue1), // b, was re-assinged in both branches to Unknown
-      (toSt, 4, UnknownValue1), // c, was re-assigned in one branch to Unknown
-      (toSt, 5, NullValue),     // d, was assigned to null in both branches
-
-      (end, 2, NotNullValue),   // a, NotNull (alias of b)
-      (end, 3, NotNullValue),   // b, receiver of toString
-      (end, 4, UnknownValue1),  // c, no change (not an alias of b)
-      (end, 5, NullValue)       // d, no change
-    )) testNullness(a, m, insn, index, nullness)
+           (trim, 0, NotNullValue), // this
+           (trim, 1, UnknownValue1), // parameter o
+           (trim, 2, UnknownValue1), // a
+           (trim, 3, NullValue), // b
+           (trim, 4, NullValue), // c
+           (trim, 5, UnknownValue1), // d
+           (toSt, 2, UnknownValue1), // a, still the same
+           (toSt, 3, UnknownValue1), // b, was re-assinged in both branches to Unknown
+           (toSt, 4, UnknownValue1), // c, was re-assigned in one branch to Unknown
+           (toSt, 5, NullValue), // d, was assigned to null in both branches
+           (end, 2, NotNullValue), // a, NotNull (alias of b)
+           (end, 3, NotNullValue), // b, receiver of toString
+           (end, 4, UnknownValue1), // c, no change (not an alias of b)
+           (end, 5, NullValue) // d, no change
+         )) testNullness(a, m, insn, index, nullness)
   }
 
   @Test
@@ -210,16 +222,16 @@ class NullnessAnalyzerTest extends BytecodeTesting {
     val a = newNullnessAnalyzer(m)
 
     val instof = "+INSTANCEOF"
-    val tost   = "+INVOKEVIRTUAL java/lang/Object.toString"
-    val trim   = "INVOKEVIRTUAL java/lang/String.trim"
+    val tost = "+INVOKEVIRTUAL java/lang/Object.toString"
+    val trim = "INVOKEVIRTUAL java/lang/String.trim"
 
     for ((insn, index, nullness) <- List(
-      (instof, 1, UnknownValue1), // a after INSTANCEOF
-      (instof, 2, UnknownValue1), // x after INSTANCEOF
-      (tost, 1, NotNullValue),
-      (tost, 2, NotNullValue),
-      (trim, 3, NotNullValue)  // receiver at `trim`
-    )) testNullness(a, m, insn, index, nullness)
+           (instof, 1, UnknownValue1), // a after INSTANCEOF
+           (instof, 2, UnknownValue1), // x after INSTANCEOF
+           (tost, 1, NotNullValue),
+           (tost, 2, NotNullValue),
+           (trim, 3, NotNullValue) // receiver at `trim`
+         )) testNullness(a, m, insn, index, nullness)
   }
 
   @Test
@@ -233,9 +245,9 @@ class NullnessAnalyzerTest extends BytecodeTesting {
     val m = compileAsmMethod(code)
     val a = newNullnessAnalyzer(m)
     for ((insn, index, nullness) <- List(
-      ("IFNULL", 1, UnknownValue1),
-      ("ACONST_NULL", 1, NullValue),
-      ("INVOKEVIRTUAL java/lang/Object.toString", 1, NotNullValue) // after branch: known not null
-    )) testNullness(a, m, insn, index, nullness)
+           ("IFNULL", 1, UnknownValue1),
+           ("ACONST_NULL", 1, NullValue),
+           ("INVOKEVIRTUAL java/lang/Object.toString", 1, NotNullValue) // after branch: known not null
+         )) testNullness(a, m, insn, index, nullness)
   }
 }

@@ -14,7 +14,9 @@ import scala.tools.testing.BytecodeTesting._
 class InnerClassAttributeTest extends BytecodeTesting {
   import compiler._
 
-  val optCompiler = cached("optCompiler", () => newCompiler(extraArgs = "-opt:l:inline -opt-inline-from:**"))
+  val optCompiler = cached(
+    "optCompiler",
+    () => newCompiler(extraArgs = "-opt:l:inline -opt-inline-from:**"))
 
   @Test
   def javaInnerClassInGenericSignatureOnly(): Unit = {
@@ -63,11 +65,13 @@ class InnerClassAttributeTest extends BytecodeTesting {
     // In 2.12, the $deserializeLambda$ was generated anyway, and would cause an InnerClass entry
     // This is fixed in 2.13 (scala-dev#62)
     assertSameSummary(getMethod(c, "f"), List(ICONST_1, IRETURN))
-    assert(!c.methods.asScala.exists(_.name == "$deserializeLambda$"), c.methods.asScala.map(_.name).toList)
+    assert(!c.methods.asScala.exists(_.name == "$deserializeLambda$"),
+           c.methods.asScala.map(_.name).toList)
     assertEquals(c.innerClasses.asScala.toList.map(_.name), Nil)
 
     val cn = compileClass(code)
     getMethod(cn, "$deserializeLambda$") // exists
-    assertEquals(cn.innerClasses.asScala.toList.map(_.name), List("java/lang/invoke/MethodHandles$Lookup"))
+    assertEquals(cn.innerClasses.asScala.toList.map(_.name),
+                 List("java/lang/invoke/MethodHandles$Lookup"))
   }
 }

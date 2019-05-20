@@ -12,10 +12,10 @@ object t4889 {
   }
 
   implicit def adderImplicit[S, R[s] <: Matrix[s, R]] = new MatrixAdder[S, R] {
-    def addTo(m: R[S]) = { }
+    def addTo(m: R[S]) = {}
   }
 
-  val m1 = new SparseMatrix[Int] { }
+  val m1 = new SparseMatrix[Int] {}
   m1.foo
 
 }

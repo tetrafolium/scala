@@ -1,9 +1,8 @@
 package p
 
 @A(subInterface = classOf[T.S])
-trait T {
-}
+trait T {}
 
 object T {
-  private[p] trait S extends T { }
+  private[p] trait S extends T {}
 }

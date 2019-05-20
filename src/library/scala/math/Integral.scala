@@ -16,8 +16,8 @@ package math
 import scala.language.implicitConversions
 
 /**
- * @since 2.8
- */
+  * @since 2.8
+  */
 trait Integral[T] extends Numeric[T] {
   def quot(x: T, y: T): T
   def rem(x: T, y: T): T
@@ -34,11 +34,14 @@ object Integral {
   @inline def apply[T](implicit int: Integral[T]): Integral[T] = int
 
   trait ExtraImplicits {
+
     /** The regrettable design of Numeric/Integral/Fractional has them all
-     *  bumping into one another when searching for this implicit, so they
-     *  are exiled into their own companions.
-     */
-    implicit def infixIntegralOps[T](x: T)(implicit num: Integral[T]): Integral[T]#IntegralOps = new num.IntegralOps(x)
+      *  bumping into one another when searching for this implicit, so they
+      *  are exiled into their own companions.
+      */
+    implicit def infixIntegralOps[T](x: T)(
+        implicit num: Integral[T]): Integral[T]#IntegralOps =
+      new num.IntegralOps(x)
   }
   object Implicits extends ExtraImplicits
 }

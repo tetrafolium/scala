@@ -1,4 +1,3 @@
-
 package scala.util.matching
 
 import org.junit.Assert._
@@ -66,7 +65,7 @@ class RegexTest {
 
   type NoGroup = IllegalArgumentException
   type NoMatch = NoSuchElementException
-  type NoData  = IllegalStateException
+  type NoData = IllegalStateException
 
   @Test def `t9666: throw on bad name`(): Unit = {
     assertThrows[NoGroup] {

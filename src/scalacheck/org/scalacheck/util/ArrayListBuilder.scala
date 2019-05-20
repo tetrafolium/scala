@@ -6,7 +6,7 @@ import java.util.ArrayList
 import scala.collection.mutable
 
 private[scalacheck] class ArrayListBuilder[T]
-  extends mutable.Builder[T, util.ArrayList[T]] {
+    extends mutable.Builder[T, util.ArrayList[T]] {
   val al = new ArrayList[T]
   def addOne(x: T) = {
     al.add(x)

@@ -1,4 +1,3 @@
-
 package scala.util
 
 import org.junit.Assert._
@@ -9,9 +8,9 @@ import org.junit.runners.JUnit4
 import scala.tools.testing.AssertUtil._
 
 /** The java version property uses the spec version
- *  and must work for legacy "major.minor" and plain version_number,
- *  and fail otherwise.
- */
+  *  and must work for legacy "major.minor" and plain version_number,
+  *  and fail otherwise.
+  */
 @RunWith(classOf[JUnit4])
 class SpecVersionTest {
   class TestProperties(versionAt: String) extends PropertiesTrait {
@@ -58,7 +57,8 @@ class SpecVersionTest {
 
   @Test def variousBadVersionStrings(): Unit = {
     val sut = new TestProperties("9")
-    assertThrows[NumberFormatException](sut.isJavaAtLeast("1.9"), _ == "Not a version: 1.9")
+    assertThrows[NumberFormatException](sut.isJavaAtLeast("1.9"),
+                                        _ == "Not a version: 1.9")
     assertThrows[NumberFormatException](sut.isJavaAtLeast("1."))
     assertThrows[NumberFormatException](sut.isJavaAtLeast("1.8."))
     assertThrows[NumberFormatException](sut.isJavaAtLeast("1.a"))
@@ -66,7 +66,7 @@ class SpecVersionTest {
     assertThrows[NumberFormatException](sut.isJavaAtLeast("."))
     assertThrows[NumberFormatException](sut.isJavaAtLeast(".."))
     assertThrows[NumberFormatException](sut.isJavaAtLeast(".5"))
-    assertThrows[NumberFormatException](sut.isJavaAtLeast("9-ea"))  //version number, not version string
+    assertThrows[NumberFormatException](sut.isJavaAtLeast("9-ea")) //version number, not version string
   }
 
   @Test def `spec has minor or more`(): Unit = {

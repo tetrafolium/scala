@@ -27,7 +27,8 @@ class LazyRef[T] extends Serializable {
     value
   }
 
-  override def toString = s"LazyRef ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyRef ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -43,7 +44,8 @@ class LazyBoolean extends Serializable {
     value
   }
 
-  override def toString = s"LazyBoolean ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyBoolean ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -61,7 +63,8 @@ class LazyByte extends Serializable {
     value
   }
 
-  override def toString = s"LazyByte ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyByte ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -77,7 +80,8 @@ class LazyChar extends Serializable {
     value
   }
 
-  override def toString = s"LazyChar ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyChar ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -93,7 +97,8 @@ class LazyShort extends Serializable {
     value
   }
 
-  override def toString = s"LazyShort ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyShort ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -109,7 +114,8 @@ class LazyInt extends Serializable {
     value
   }
 
-  override def toString = s"LazyInt ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyInt ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -125,7 +131,8 @@ class LazyLong extends Serializable {
     value
   }
 
-  override def toString = s"LazyLong ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyLong ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -141,7 +148,8 @@ class LazyFloat extends Serializable {
     value
   }
 
-  override def toString = s"LazyFloat ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyFloat ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)
@@ -157,7 +165,8 @@ class LazyDouble extends Serializable {
     value
   }
 
-  override def toString = s"LazyDouble ${if (_initialized) s"of: ${_value}" else "thunk"}"
+  override def toString =
+    s"LazyDouble ${if (_initialized) s"of: ${_value}" else "thunk"}"
 }
 
 @SerialVersionUID(1L)

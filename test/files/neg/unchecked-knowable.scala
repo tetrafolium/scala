@@ -17,8 +17,12 @@ class Bippy
 trait Dingus
 
 class A {
-  /*   warn */ (new Bippy).isInstanceOf[A1]
-  /*   warn */ (new Bippy).isInstanceOf[B1]
-  /* nowarn */ (null: Dingus).isInstanceOf[B1]
-  /* nowarn */ ((new Bippy): Any).isInstanceOf[A1]
+  /*   warn */
+  (new Bippy).isInstanceOf[A1]
+  /*   warn */
+  (new Bippy).isInstanceOf[B1]
+  /* nowarn */
+  (null: Dingus).isInstanceOf[B1]
+  /* nowarn */
+  ((new Bippy): Any).isInstanceOf[A1]
 }

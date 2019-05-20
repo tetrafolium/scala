@@ -160,39 +160,71 @@ class BoxUnboxTest extends BytecodeTesting {
     assertSameSummary(getMethod(c, "t8"), List(ICONST_0, IRETURN))
     assertNoInvoke(getMethod(c, "t9"))
     // t10: no invocation of unbox
-    assertEquals(getInstructions(c, "t10") collect { case Invoke(_, owner, name, _, _) => (owner, name) }, List(
-      ("java/lang/Integer", "valueOf"),
-      ("C", "escape")))
+    assertEquals(getInstructions(c, "t10") collect {
+      case Invoke(_, owner, name, _, _) => (owner, name)
+    }, List(("java/lang/Integer", "valueOf"), ("C", "escape")))
 
-    assertSameSummary(getMethod(c, "t11"), List(
-      BIPUSH, "valueOf", ASTORE /*2*/ ,
-      BIPUSH, "valueOf", ASTORE /*3*/ ,
-      ALOAD /*0*/ , ALOAD /*2*/ , "escape",
-      ILOAD /*1*/ , IFEQ /*L1*/ , ALOAD /*2*/ , GOTO /*L2*/ , /*Label L1*/ -1, ALOAD /*3*/ , /*Label L2*/ -1,
-      ASTORE /*4*/ , GETSTATIC /*Predef*/ , ALOAD /*4*/ , "Integer2int", IRETURN))
+    assertSameSummary(
+      getMethod(c, "t11"),
+      List(
+        BIPUSH,
+        "valueOf",
+        ASTORE /*2*/,
+        BIPUSH,
+        "valueOf",
+        ASTORE /*3*/,
+        ALOAD /*0*/,
+        ALOAD /*2*/,
+        "escape",
+        ILOAD /*1*/,
+        IFEQ /*L1*/,
+        ALOAD /*2*/,
+        GOTO /*L2*/, /*Label L1*/ -1,
+        ALOAD /*3*/, /*Label L2*/ -1,
+        ASTORE /*4*/,
+        GETSTATIC /*Predef*/,
+        ALOAD /*4*/,
+        "Integer2int",
+        IRETURN
+      )
+    )
 
     // no unbox invocations
-    assertEquals(getInstructions(c, "t12") collect { case Invoke(_, owner, name, _, _) => (owner, name) }, List(
-      ("java/lang/Integer", "valueOf"),
-      ("java/lang/Integer", "valueOf"),
-      ("C", "escape")))
+    assertEquals(
+      getInstructions(c, "t12") collect {
+        case Invoke(_, owner, name, _, _) => (owner, name)
+      },
+      List(("java/lang/Integer", "valueOf"),
+           ("java/lang/Integer", "valueOf"),
+           ("C", "escape"))
+    )
 
     assertNoInvoke(getMethod(c, "t13"))
-    assertSameSummary(getInstructions(c, "t13"), List(ILOAD /*1*/, ILOAD /*2*/, IADD, IRETURN))
+    assertSameSummary(getInstructions(c, "t13"),
+                      List(ILOAD /*1*/, ILOAD /*2*/, IADD, IRETURN))
 
-    assertEquals(getInstructions(c, "t14") collect { case Invoke(_, owner, name, _, _) => (owner, name) }, List(
-      ("scala/runtime/IntRef", "create"),
-      ("scala/runtime/IntRef", "create"),
-      ("C", "escape")
-    ))
+    assertEquals(
+      getInstructions(c, "t14") collect {
+        case Invoke(_, owner, name, _, _) => (owner, name)
+      },
+      List(
+        ("scala/runtime/IntRef", "create"),
+        ("scala/runtime/IntRef", "create"),
+        ("C", "escape")
+      )
+    )
 
-    assertEquals(getInstructions(c, "t14") collect { case Field(_, owner, name, _) => (owner, name) }, List(
-      ("scala/runtime/IntRef", "elem"),
-      ("scala/runtime/IntRef", "elem")
-    ))
+    assertEquals(getInstructions(c, "t14") collect {
+                   case Field(_, owner, name, _) => (owner, name)
+                 },
+                 List(
+                   ("scala/runtime/IntRef", "elem"),
+                   ("scala/runtime/IntRef", "elem")
+                 ))
 
     assertDoesNotInvoke(getInstructions(c, "t15"), "boxToInteger")
-    assertSameSummary(getMethod(c, "t15"), List(NEW, DUP, ICONST_1, ICONST_1, "<init>", ARETURN))
+    assertSameSummary(getMethod(c, "t15"),
+                      List(NEW, DUP, ICONST_1, ICONST_1, "<init>", ARETURN))
 
     assertDoesNotInvoke(getInstructions(c, "t16"), "boxToInteger")
     assertDoesNotInvoke(getInstructions(c, "t16"), "boxToLong")
@@ -251,10 +283,16 @@ class BoxUnboxTest extends BytecodeTesting {
     assertNoInvoke(getMethod(c, "t2"))
     assertSameSummary(getMethod(c, "t3"), List(LDC, LDC, LADD, LRETURN))
     assertNoInvoke(getMethod(c, "t4"))
-    assertEquals(getInstructions(c, "t5") collect { case Field(_, owner, name, _) => s"$owner.$name" },
-      List("scala/runtime/IntRef.elem"))
-    assertEquals(getInstructions(c, "t6") collect { case Field(op, owner, name, _) => s"$op $owner.$name" },
-      List(s"$PUTFIELD scala/runtime/IntRef.elem", s"$GETFIELD scala/runtime/IntRef.elem"))
+    assertEquals(getInstructions(c, "t5") collect {
+      case Field(_, owner, name, _) => s"$owner.$name"
+    }, List("scala/runtime/IntRef.elem"))
+    assertEquals(
+      getInstructions(c, "t6") collect {
+        case Field(op, owner, name, _) => s"$op $owner.$name"
+      },
+      List(s"$PUTFIELD scala/runtime/IntRef.elem",
+           s"$GETFIELD scala/runtime/IntRef.elem")
+    )
   }
 
   @Test
@@ -312,19 +350,36 @@ class BoxUnboxTest extends BytecodeTesting {
       """.stripMargin
     val c = compileClass(code)
     assertNoInvoke(getMethod(c, "t1"))
-    assertSameSummary(getMethod(c, "t2"), List(ICONST_1, ICONST_3, IADD, IRETURN))
-    assertSameSummary(getMethod(c, "t3"), List(ICONST_3, ICONST_4, IADD, IRETURN))
-    assertSameSummary(getMethod(c, "t4"), List(ICONST_3, "boxToInteger", ARETURN))
-    assertEquals(getInstructions(c, "t5") collect { case Invoke(_, owner, name, _, _) => (owner, name) }, List(
-      ("scala/runtime/BoxesRunTime", "boxToInteger"),
-      ("scala/runtime/BoxesRunTime", "boxToInteger"),
-      ("C", "tpl"),
-      ("scala/Tuple2", "_1$mcI$sp")))
-    assertSameSummary(getMethod(c, "t6"), List(ICONST_1, ICONST_2, ISUB, IRETURN))
-    assertSameSummary(getMethod(c, "t7"), List(
-      ICONST_1, ICONST_2, ISTORE, ISTORE,
-      ICONST_3, ISTORE,
-      ILOAD, ILOAD, IADD, ILOAD, IADD, IRETURN))
+    assertSameSummary(getMethod(c, "t2"),
+                      List(ICONST_1, ICONST_3, IADD, IRETURN))
+    assertSameSummary(getMethod(c, "t3"),
+                      List(ICONST_3, ICONST_4, IADD, IRETURN))
+    assertSameSummary(getMethod(c, "t4"),
+                      List(ICONST_3, "boxToInteger", ARETURN))
+    assertEquals(
+      getInstructions(c, "t5") collect {
+        case Invoke(_, owner, name, _, _) => (owner, name)
+      },
+      List(("scala/runtime/BoxesRunTime", "boxToInteger"),
+           ("scala/runtime/BoxesRunTime", "boxToInteger"),
+           ("C", "tpl"),
+           ("scala/Tuple2", "_1$mcI$sp"))
+    )
+    assertSameSummary(getMethod(c, "t6"),
+                      List(ICONST_1, ICONST_2, ISUB, IRETURN))
+    assertSameSummary(getMethod(c, "t7"),
+                      List(ICONST_1,
+                           ICONST_2,
+                           ISTORE,
+                           ISTORE,
+                           ICONST_3,
+                           ISTORE,
+                           ILOAD,
+                           ILOAD,
+                           IADD,
+                           ILOAD,
+                           IADD,
+                           IRETURN))
     assertNoInvoke(getMethod(c, "t8"))
     assertNoInvoke(getMethod(c, "t9"))
   }
@@ -345,11 +400,28 @@ class BoxUnboxTest extends BytecodeTesting {
         |  0
         |}""".stripMargin
     val m = compileMethod(code)
-    assertSameCode(m, List(
-      TypeOp(NEW, "java/lang/Object"), Op(DUP), Invoke(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false), TypeOp(CHECKCAST, "java/lang/Integer"), Op(POP),
-      Ldc(LDC, ""), TypeOp(CHECKCAST, "java/lang/Long"), Op(POP),
-      VarOp(ALOAD, 1), Jump(IFNONNULL, Label(18)), Op(ACONST_NULL), Op(ATHROW), Label(18),
-      VarOp(ALOAD, 0), TypeOp(CHECKCAST, "java/lang/Integer"), Op(POP),
-      Op(ICONST_0), Op(IRETURN)))
+    assertSameCode(
+      m,
+      List(
+        TypeOp(NEW, "java/lang/Object"),
+        Op(DUP),
+        Invoke(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false),
+        TypeOp(CHECKCAST, "java/lang/Integer"),
+        Op(POP),
+        Ldc(LDC, ""),
+        TypeOp(CHECKCAST, "java/lang/Long"),
+        Op(POP),
+        VarOp(ALOAD, 1),
+        Jump(IFNONNULL, Label(18)),
+        Op(ACONST_NULL),
+        Op(ATHROW),
+        Label(18),
+        VarOp(ALOAD, 0),
+        TypeOp(CHECKCAST, "java/lang/Integer"),
+        Op(POP),
+        Op(ICONST_0),
+        Op(IRETURN)
+      )
+    )
   }
 }

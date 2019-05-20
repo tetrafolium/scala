@@ -8,7 +8,7 @@ package test {
 
 object Test extends App {
   import test.NotNoPrefix._
-  
+
   def check[A](cls: Class[A])(implicit tag: reflect.ClassTag[A]): Unit = {
     val suffix = if (cls != tag.runtimeClass) " != " + tag.runtimeClass else ""
     println(cls.toString + suffix)

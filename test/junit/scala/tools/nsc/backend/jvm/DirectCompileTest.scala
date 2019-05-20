@@ -17,8 +17,7 @@ class DirectCompileTest extends BytecodeTesting {
 
   @Test
   def testCompile(): Unit = {
-    val List(("C.class", bytes)) = compileToBytes(
-      """class C {
+    val List(("C.class", bytes)) = compileToBytes("""class C {
         |  def f = 1
         |}
       """.stripMargin)
@@ -41,35 +40,38 @@ class DirectCompileTest extends BytecodeTesting {
 
   @Test
   def testCompileMethods(): Unit = {
-    val List(f, g) = compileMethods(
-      """def f = 10
+    val List(f, g) = compileMethods("""def f = 10
         |def g = f
       """.stripMargin)
 
     assertSameCode(f.instructions.dropNonOp,
-      List(IntOp(BIPUSH, 10), Op(IRETURN)))
+                   List(IntOp(BIPUSH, 10), Op(IRETURN)))
 
     assertSameCode(g.instructions.dropNonOp,
-      List(VarOp(ALOAD, 0), Invoke(INVOKEVIRTUAL, "C", "f", "()I", itf = false), Op(IRETURN)))
+                   List(VarOp(ALOAD, 0),
+                        Invoke(INVOKEVIRTUAL, "C", "f", "()I", itf = false),
+                        Op(IRETURN)))
   }
 
   @Test
   def testDropNonOpAliveLabels(): Unit = {
     // makes sure that dropNoOp doesn't drop labels that are being used
     val is = compileInstructions("""def f(x: Int) = if (x == 0) "a" else "b"""")
-    assertSameCode(is.dropLinesFrames, List(
-      Label(0),
-      VarOp(ILOAD, 1),
-      Op(ICONST_0),
-      Jump(IF_ICMPNE,
-      Label(7)),
-      Ldc(LDC, "a"),
-      Op(ARETURN),
-      Label(7),
-      Ldc(LDC, "b"),
-      Op(ARETURN),
-      Label(11)
-    ))
+    assertSameCode(
+      is.dropLinesFrames,
+      List(
+        Label(0),
+        VarOp(ILOAD, 1),
+        Op(ICONST_0),
+        Jump(IF_ICMPNE, Label(7)),
+        Ldc(LDC, "a"),
+        Op(ARETURN),
+        Label(7),
+        Ldc(LDC, "b"),
+        Op(ARETURN),
+        Label(11)
+      )
+    )
   }
 
   @Test
@@ -80,13 +82,14 @@ class DirectCompileTest extends BytecodeTesting {
     val ins = getInstructions(b, "g")
     assert(ins exists {
       case Invoke(_, "B", "f", _, _) => true
-      case _ => false
+      case _                         => false
     }, ins)
   }
 
   @Test
   def compileErroneous(): Unit = {
-    compileToBytes("class C { def f: String = 1 }", allowMessage = _.msg contains "type mismatch")
+    compileToBytes("class C { def f: String = 1 }",
+                   allowMessage = _.msg contains "type mismatch")
   }
 
   @Test

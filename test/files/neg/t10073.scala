@@ -3,6 +3,7 @@ class Yo[Unused] {
 }
 
 class MacroNotExpanded {
-  implicit def toYo[Unused](a: Any)(implicit ct: reflect.ClassTag[Unused]): Yo[Unused] = new Yo[Unused]
+  implicit def toYo[Unused](a: Any)(
+      implicit ct: reflect.ClassTag[Unused]): Yo[Unused] = new Yo[Unused]
   "".yo()
 }

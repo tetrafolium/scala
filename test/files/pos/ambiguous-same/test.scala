@@ -1,4 +1,3 @@
-
 import p._
 
 package p {
@@ -32,4 +31,4 @@ import p._
     def f = X.x
             ^
 one error found
-*/
+ */

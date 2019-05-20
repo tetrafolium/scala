@@ -1,10 +1,11 @@
 import language.implicitConversions
 
 object Test {
-  def f[T](x1: Set[T]) = () => new {
-    def apply(x2: Set[_ <: T]) = List(x1, x2)
-  }
-
+  def f[T](x1: Set[T]) =
+    () =>
+      new {
+        def apply(x2: Set[_ <: T]) = List(x1, x2)
+    }
 
   class Matcher[X]
   object Problem2 {
@@ -15,8 +16,7 @@ object Test {
   def equalTo[X](x: X) = new Matcher[X]
   val a = equalTo("g")
   val b = Problem2.allOf(a)
-  val c = Problem2.allOf(a,a)
-
+  val c = Problem2.allOf(a, a)
 
   class JObserver[T]
   class JSubscriber[T] extends JObserver[T]
@@ -25,7 +25,6 @@ object Test {
   implicit def convertObserver[T](s: JObserver[_ >: T]): Converted = ???
   val jSubscriber: JSubscriber[_ >: Int] = ???
   val conv: Converted = jSubscriber
-
 
   sealed trait Foo[A]
   case class Bar[A](f: A) extends Foo[A]
@@ -39,7 +38,6 @@ object Test {
     case Extractor(f) => f
     case _            => ???
   }
-
 
   class F[+T]
   class I[T]

@@ -5,7 +5,7 @@ class Test {
   }
 
   def crashTyper: Array[_] = {
-   val x : Q[_] = ???
-   x.toArray // crashes while doing overload resolution
+    val x: Q[_] = ???
+    x.toArray // crashes while doing overload resolution
   }
 }

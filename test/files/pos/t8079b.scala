@@ -1,4 +1,4 @@
-trait F1[/* - */T, /* + */ R]
+trait F1[ /* - */ T, /* + */ R]
 
 object Test {
   import scala.annotation.unchecked._

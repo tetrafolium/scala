@@ -7,5 +7,7 @@
 /* \12 object foo */
 // \12 object foo
 /* \u000a object foo */
-// object foo \u000a
-// \u000a object foo
+// object foo \u000
+
+// \u000
+object foo

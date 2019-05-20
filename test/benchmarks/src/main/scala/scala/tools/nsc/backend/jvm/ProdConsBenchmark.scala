@@ -29,7 +29,11 @@ class ProdConsBenchmark {
     val global = new Global(settings)
     import global._
     this.global = global.asInstanceOf[G]
-    classNode = AsmUtils.readClass(global.classPath.findClassFile("scala.tools.nsc.typechecker.Implicits$ImplicitSearch").get.toByteArray)
+    classNode = AsmUtils.readClass(
+      global.classPath
+        .findClassFile("scala.tools.nsc.typechecker.Implicits$ImplicitSearch")
+        .get
+        .toByteArray)
   }
 
   @Benchmark
@@ -41,4 +45,3 @@ class ProdConsBenchmark {
     }
   }
 }
-

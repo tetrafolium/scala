@@ -9,10 +9,11 @@ import scala.ref.WeakReference
 
 @RunWith(classOf[JUnit4])
 class ListTest {
+
   /**
-   * Test that empty iterator does not hold reference
-   * to complete List
-   */
+    * Test that empty iterator does not hold reference
+    * to complete List
+    */
   @Test
   def testIteratorGC(): Unit = {
     var num = 0
@@ -28,8 +29,8 @@ class ListTest {
 
       emptyIterators = (i, ref) +: emptyIterators
 
-      num+=1
-    } while (emptyIterators.forall(_._2.get.isDefined) && num<1000)
+      num += 1
+    } while (emptyIterators.forall(_._2.get.isDefined) && num < 1000)
 
     // check something is result to protect from JIT optimizations
     for ((i, _) <- emptyIterators) {
@@ -38,7 +39,7 @@ class ListTest {
 
     // await gc up to ~5 seconds
     var forceLoops = 50
-    while (emptyIterators.forall(_._2.get.isDefined) && forceLoops>0) {
+    while (emptyIterators.forall(_._2.get.isDefined) && forceLoops > 0) {
       System.gc()
       Thread.sleep(100)
       forceLoops -= 1
@@ -74,5 +75,6 @@ class ListTest {
     assertSame(ls, List.from(ls))
   }
 
-  @Test def checkSearch: Unit = SeqTests.checkSearch(List(0 to 1000: _*), 15,  implicitly[Ordering[Int]])
+  @Test def checkSearch: Unit =
+    SeqTests.checkSearch(List(0 to 1000: _*), 15, implicitly[Ordering[Int]])
 }

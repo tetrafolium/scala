@@ -38,12 +38,13 @@ object Test extends App {
   type ~>[F[_], G[_]] = Forall[({ type L[A] = F[A] => G[A] })#L]
 
   // binatural transformation
-  type ~~>[F[_, _], G[_, _]] = Forall2[({ type L[A, B] = F[A, B] => G[A, B] })#L]
+  type ~~>[F[_, _], G[_, _]] =
+    Forall2[({ type L[A, B] = F[A, B] => G[A, B] })#L]
 
-
-  type RightAction[G[_], F[_, _]] = Forall2[({ type L[A, B] = (G[A], F[A, B]) => G[B] })#L]
-  type  LeftAction[G[_], F[_, _]] = Forall2[({ type L[A, B] = (F[A, B], G[B]) => G[A] })#L]
-
+  type RightAction[G[_], F[_, _]] =
+    Forall2[({ type L[A, B] = (G[A], F[A, B]) => G[B] })#L]
+  type LeftAction[G[_], F[_, _]] =
+    Forall2[({ type L[A, B] = (F[A, B], G[B]) => G[A] })#L]
 
   val headOpt = new (List ~> Option) {
     def instantiate[A]: List[A] => Option[A] = _.headOption
@@ -62,13 +63,17 @@ object Test extends App {
   println(someEntry[String, Int](Map(("hi", 5))))
 
   def kleisliPostCompose[F[_], Z](implicit F: FlatMap[F]) =
-    new RightAction[({ type L[A] = Z => F[A] })#L, ({ type L[A, B] = A => F[B] })#L] {
-      def instantiate[A, B]: (Z => F[A], A => F[B]) => (Z => F[B]) = (f, g) => (z => F.flatMap(f(z))(g))
+    new RightAction[({ type L[A] = Z => F[A] })#L,
+                    ({ type L[A, B] = A => F[B] })#L] {
+      def instantiate[A, B]: (Z => F[A], A => F[B]) => (Z => F[B]) =
+        (f, g) => (z => F.flatMap(f(z))(g))
     }
 
   def kleisliPreCompose[F[_], C](implicit F: FlatMap[F]) =
-    new LeftAction[({ type L[B] = B => F[C] })#L, ({ type L[A, B] = A => F[B] })#L] {
-      def instantiate[A, B]: (A => F[B], B => F[C]) => (A => F[C]) = (f, g) => (a => F.flatMap(f(a))(g))
+    new LeftAction[({ type L[B] = B => F[C] })#L,
+                   ({ type L[A, B] = A => F[B] })#L] {
+      def instantiate[A, B]: (A => F[B], B => F[C]) => (A => F[C]) =
+        (f, g) => (a => F.flatMap(f(a))(g))
     }
 
   def parseInt(s: String): Option[Int] = Some(42)
@@ -78,8 +83,8 @@ object Test extends App {
   val la = kleisliPreCompose[Option, Char]
 
   // tests that implicit Forall2.Ops is found
-  println( ra.apply(parseInt(_), toChar(_)).apply("")  )
-  println( ra[Int, Char](parseInt(_), toChar(_))("")   )
-  println( la.apply(parseInt(_), toChar(_))("")        )
-  println( la[String, Int](parseInt(_), toChar(_))("") )
+  println(ra.apply(parseInt(_), toChar(_)).apply(""))
+  println(ra[Int, Char](parseInt(_), toChar(_))(""))
+  println(la.apply(parseInt(_), toChar(_))(""))
+  println(la[String, Int](parseInt(_), toChar(_))(""))
 }

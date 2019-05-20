@@ -1,1 +1,1 @@
-case class X(@volatile var x:Int)
+case class X(@volatile var x: Int)

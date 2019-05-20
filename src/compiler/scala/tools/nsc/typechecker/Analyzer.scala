@@ -16,25 +16,25 @@ package typechecker
 import scala.reflect.internal.util.StatisticsStatics
 
 /** The main attribution phase.
- */
-trait Analyzer extends AnyRef
-            with Contexts
-            with Namers
-            with Typers
-            with Infer
-            with Implicits
-            with EtaExpansion
-            with SyntheticMethods
-            with Unapplies
-            with Macros
-            with NamesDefaults
-            with TypeDiagnostics
-            with ContextErrors
-            with StdAttachments
-            with MacroAnnotationAttachments
-            with AnalyzerPlugins
-{
-  val global : Global
+  */
+trait Analyzer
+    extends AnyRef
+    with Contexts
+    with Namers
+    with Typers
+    with Infer
+    with Implicits
+    with EtaExpansion
+    with SyntheticMethods
+    with Unapplies
+    with Macros
+    with NamesDefaults
+    with TypeDiagnostics
+    with ContextErrors
+    with StdAttachments
+    with MacroAnnotationAttachments
+    with AnalyzerPlugins {
+  val global: Global
   import global._
 
   object namerFactory extends {
@@ -58,7 +58,7 @@ trait Analyzer extends AnyRef
   } with SubComponent {
     val phaseName = "packageobjects"
     val runsAfter = List[String]()
-    val runsRightAfter= Some("namer")
+    val runsRightAfter = Some("namer")
 
     def newPhase(_prev: Phase): StdPhase = new StdPhase(_prev) {
       override val checkable = false
@@ -71,7 +71,7 @@ trait Analyzer extends AnyRef
               openPackageModule(tree.symbol, tree.symbol.owner)
             }
           case ClassDef(_, _, _, _) => () // make it fast
-          case _ => tree.traverse(this)
+          case _                    => tree.traverse(this)
         }
       }
 
@@ -97,7 +97,10 @@ trait Analyzer extends AnyRef
       // compiler run). This is good enough for the resident compiler, which was the most affected.
       undoLog.clear()
       override def run(): Unit = {
-        val start = if (StatisticsStatics.areSomeColdStatsEnabled) statistics.startTimer(statistics.typerNanos) else null
+        val start =
+          if (StatisticsStatics.areSomeColdStatsEnabled)
+            statistics.startTimer(statistics.typerNanos)
+          else null
         global.echoPhaseSummary(this)
         val units = currentRun.units
         while (units.hasNext) {
@@ -107,7 +110,8 @@ trait Analyzer extends AnyRef
         finishComputeParamAlias()
         // defensive measure in case the bookkeeping in deferred macro expansion is buggy
         clearDelayed()
-        if (StatisticsStatics.areSomeColdStatsEnabled) statistics.stopTimer(statistics.typerNanos, start)
+        if (StatisticsStatics.areSomeColdStatsEnabled)
+          statistics.stopTimer(statistics.typerNanos, start)
       }
       def apply(unit: CompilationUnit): Unit = {
         try {
@@ -118,8 +122,7 @@ trait Analyzer extends AnyRef
             warnUnusedImports(unit)
           if (settings.warnUnused.isSetByUser)
             new checkUnused(typer).apply(unit)
-        }
-        finally {
+        } finally {
           unit.toCheck.clear()
         }
       }

@@ -1,4 +1,3 @@
-
 import scala.tools.partest._
 import scala.tools.nsc._
 import scala.tools.nsc.{Global, Settings}

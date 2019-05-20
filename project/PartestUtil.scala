@@ -4,26 +4,40 @@ import sbt._
 import sbt.complete._, Parser._, Parsers._
 
 object PartestUtil {
-  private case class TestFiles(srcPath: String, globalBase: File, testBase: File) {
-    private val testCaseDir = new SimpleFileFilter(f => f.isDirectory && f.listFiles.nonEmpty && !(f.getParentFile / (f.name + ".res")).exists)
-    private val testCaseFilter = GlobFilter("*.scala") | GlobFilter("*.java") | GlobFilter("*.res") || testCaseDir
-    private def testCaseFinder = (testBase / srcPath).*(AllPassFilter).*(testCaseFilter)
-    private val basePaths = allTestCases.map(_._2.split('/').take(3).mkString("/") + "/").distinct
+  private case class TestFiles(srcPath: String,
+                               globalBase: File,
+                               testBase: File) {
+    private val testCaseDir = new SimpleFileFilter(f =>
+      f.isDirectory && f.listFiles.nonEmpty && !(f.getParentFile / (f.name + ".res")).exists)
+    private val testCaseFilter = GlobFilter("*.scala") | GlobFilter("*.java") | GlobFilter(
+      "*.res") || testCaseDir
+    private def testCaseFinder =
+      (testBase / srcPath).*(AllPassFilter).*(testCaseFilter)
+    private val basePaths =
+      allTestCases.map(_._2.split('/').take(3).mkString("/") + "/").distinct
 
     def allTestCases = testCaseFinder.pair(io.Path.relativeTo(globalBase))
     def basePathExamples = new FixedSetExamples(basePaths)
-    private def equiv(f1: File, f2: File) = f1.getCanonicalFile == f2.getCanonicalFile
+    private def equiv(f1: File, f2: File) =
+      f1.getCanonicalFile == f2.getCanonicalFile
     def parentChain(f: File): Iterator[File] =
       if (f == null || !f.exists) Iterator()
-      else Iterator(f) ++ (if (f.getParentFile == null) Nil else parentChain(f.getParentFile))
+      else
+        Iterator(f) ++ (if (f.getParentFile == null) Nil
+                        else parentChain(f.getParentFile))
     def isParentOf(parent: File, f2: File, maxDepth: Int) =
       parentChain(f2).take(maxDepth).exists(p1 => equiv(p1, parent))
     def isTestCase(f: File) = {
-      val grandParent = if (f != null && f.getParentFile != null) f.getParentFile.getParentFile else null
-      grandParent != null && equiv(grandParent, testBase / srcPath) && testCaseFilter.accept(f)
+      val grandParent =
+        if (f != null && f.getParentFile != null) f.getParentFile.getParentFile
+        else null
+      grandParent != null && equiv(grandParent, testBase / srcPath) && testCaseFilter
+        .accept(f)
     }
     def mayContainTestCase(f: File) = {
-      isParentOf(testBase / srcPath, f, 2) || isParentOf(f, testBase / srcPath, Int.MaxValue)
+      isParentOf(testBase / srcPath, f, 2) || isParentOf(f,
+                                                         testBase / srcPath,
+                                                         Int.MaxValue)
     }
   }
 
@@ -33,9 +47,27 @@ object PartestUtil {
   /** A parser for the custom `partest` command */
   def partestParser(globalBase: File, testBase: File): Parser[String] = {
     val knownUnaryOptions = List(
-      "--pos", "--neg", "--run", "--jvm", "--res", "--ant", "--scalap", "--specialized",
-      "--instrumented", "--presentation", "--failed", "--update-check", "--no-exec",
-      "--show-diff", "--show-log", "--verbose", "--terse", "--debug", "--version", "--help")
+      "--pos",
+      "--neg",
+      "--run",
+      "--jvm",
+      "--res",
+      "--ant",
+      "--scalap",
+      "--specialized",
+      "--instrumented",
+      "--presentation",
+      "--failed",
+      "--update-check",
+      "--no-exec",
+      "--show-diff",
+      "--show-log",
+      "--verbose",
+      "--terse",
+      "--debug",
+      "--version",
+      "--help"
+    )
     val srcPathOption = "--srcpath"
     val grepOption = "--grep"
 
@@ -45,12 +77,14 @@ object PartestUtil {
     var srcPath = "files"
     var _testFiles: TestFiles = null
     def testFiles = {
-      if (_testFiles == null || _testFiles.srcPath != srcPath) _testFiles = new TestFiles(srcPath, globalBase, testBase)
+      if (_testFiles == null || _testFiles.srcPath != srcPath)
+        _testFiles = new TestFiles(srcPath, globalBase, testBase)
       _testFiles
     }
     val TestPathParser = ParserUtil.FileParser(
       new SimpleFileFilter(f => testFiles.isTestCase(f)),
-      new SimpleFileFilter(f => testFiles.mayContainTestCase(f)), globalBase)
+      new SimpleFileFilter(f => testFiles.mayContainTestCase(f)),
+      globalBase)
 
     // allow `--grep "is unchecked" | --grep *t123*, in the spirit of ./bin/partest-ack
     // superset of the --grep built into partest itself.
@@ -60,10 +94,17 @@ object PartestUtil {
           val Pattern = ("(?i)" + x).r
           testFiles.allTestCases.filter {
             case (testFile, testPath) =>
-              val assocFiles = List(".check", ".flags").map(testFile.getParentFile / _)
-              val sourceFiles = if (testFile.isFile) List(testFile) else testFile.**(AllPassFilter).get.toList
+              val assocFiles =
+                List(".check", ".flags").map(testFile.getParentFile / _)
+              val sourceFiles =
+                if (testFile.isFile) List(testFile)
+                else testFile.**(AllPassFilter).get.toList
               val allFiles = testFile :: assocFiles ::: sourceFiles
-              allFiles.exists { f => f.exists && f.isFile && Pattern.findFirstIn(IO.read(f)).isDefined }
+              allFiles.exists { f =>
+                f.exists && f.isFile && Pattern
+                  .findFirstIn(IO.read(f))
+                  .isDefined
+              }
           }
         } catch {
           case _: Throwable => Nil
@@ -77,25 +118,34 @@ object PartestUtil {
         (matchingFileContent ++ matchingFileName).map(_._2).distinct.sorted
       }
 
-      val completion = Completions.strict(Set("<filename glob>", "<regex> (for source, flags or checkfile contents)").map(s => Completion.displayOnly(s)))
+      val completion = Completions.strict(
+        Set("<filename glob>",
+            "<regex> (for source, flags or checkfile contents)").map(s =>
+          Completion.displayOnly(s)))
       val tokenCompletion = TokenCompletions.fixed((seen, level) => completion)
 
       val globOrPattern = StringBasic.map(expandGrep).flatMap {
         case Seq() => failure("no tests match pattern / glob")
-        case x => success(x.mkString(" "))
+        case x     => success(x.mkString(" "))
       }
       token(grepOption <~ Space) ~> token(globOrPattern, tokenCompletion)
     }
 
-    val SrcPath = ((token(srcPathOption) <~ Space) ~ token(StringBasic.examples(Set("files", "scaladoc")))) map {
+    val SrcPath = ((token(srcPathOption) <~ Space) ~ token(
+      StringBasic.examples(Set("files", "scaladoc")))) map {
       case opt ~ path =>
         srcPath = path
         opt + " " + path
     }
 
-    val ScalacOptsParser = (token("-Dpartest.scalac_opts=") ~ token(NotSpace)) map { case opt ~ v => opt + v }
+    val ScalacOptsParser = (token("-Dpartest.scalac_opts=") ~ token(NotSpace)) map {
+      case opt ~ v => opt + v
+    }
 
     val P = oneOf(knownUnaryOptions.map(x => token(x))) | SrcPath | TestPathParser | Grep | ScalacOptsParser
-    (Space ~> repsep(P, oneOrMore(Space))).map(_.mkString(" ")).?.map(_.getOrElse(""))
+    (Space ~> repsep(P, oneOrMore(Space)))
+      .map(_.mkString(" "))
+      .?
+      .map(_.getOrElse(""))
   }
 }

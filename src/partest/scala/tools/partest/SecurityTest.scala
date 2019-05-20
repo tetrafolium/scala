@@ -20,7 +20,7 @@ abstract class SecurityTest extends App {
   def propertyCheck(p: PropertyPermission): Unit = throwIt(p)
 
   def check(perm: Permission): Unit = perm match {
-    case p: PropertyPermission  => propertyCheck(p)
-    case _                      => ()
+    case p: PropertyPermission => propertyCheck(p)
+    case _                     => ()
   }
 }

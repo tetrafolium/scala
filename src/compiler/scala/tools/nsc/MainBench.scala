@@ -13,8 +13,8 @@
 package scala.tools.nsc
 
 /** The main class for NSC, a compiler for the programming
- *  language Scala.
- */
+  *  language Scala.
+  */
 object MainBench extends Driver with EvalLoop {
 
   lazy val theCompiler = Global(settings, reporter)
@@ -28,14 +28,14 @@ object MainBench extends Driver with EvalLoop {
     val times = new Array[Long](NIter)
     var start = System.nanoTime()
     for (i <- 0 until NIter) {
-      if (i == NIter-1) {
+      if (i == NIter - 1) {
         theCompiler.settings.Ystatistics.value = List("all")
         theCompiler.statistics.enabled = true
         theCompiler.statistics.hotEnabled = true
       }
       process(args)
       val end = System.nanoTime()
-      val duration = (end-start)/1000000
+      val duration = (end - start) / 1000000
       println(s"${duration}ms")
       times(i) = duration
       start = end

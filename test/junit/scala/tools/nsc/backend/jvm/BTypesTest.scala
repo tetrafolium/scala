@@ -19,7 +19,8 @@ class BTypesTest extends BytecodeTesting {
   }
   import global.genBCode.bTypes._
 
-  def classBTFS(sym: global.Symbol) = global.exitingDelambdafy(classBTypeFromSymbol(sym))
+  def classBTFS(sym: global.Symbol) =
+    global.exitingDelambdafy(classBTypeFromSymbol(sym))
 
   def jlo = global.definitions.ObjectClass
   def jls = global.definitions.StringClass
@@ -32,7 +33,7 @@ class BTypesTest extends BytecodeTesting {
   def classBTypesEquality(): Unit = {
     val s1 = classBTFS(jls)
     val s2 = classBTFS(jls)
-    val o  = classBTFS(jlo)
+    val o = classBTFS(jlo)
     assertEquals(s1, s2)
     assertEquals(s1.hashCode, s2.hashCode)
     assert(s1 != o)
@@ -41,27 +42,27 @@ class BTypesTest extends BytecodeTesting {
 
   @Test
   def typedOpcodes(): Unit = {
-    assert(UNIT.typedOpcode(Opcodes.IALOAD)   == Opcodes.IALOAD)
-    assert(INT.typedOpcode(Opcodes.IALOAD)    == Opcodes.IALOAD)
-    assert(BOOL.typedOpcode(Opcodes.IALOAD)   == Opcodes.BALOAD)
-    assert(BYTE.typedOpcode(Opcodes.IALOAD)   == Opcodes.BALOAD)
-    assert(CHAR.typedOpcode(Opcodes.IALOAD)   == Opcodes.CALOAD)
-    assert(SHORT.typedOpcode(Opcodes.IALOAD)  == Opcodes.SALOAD)
-    assert(FLOAT.typedOpcode(Opcodes.IALOAD)  == Opcodes.FALOAD)
-    assert(LONG.typedOpcode(Opcodes.IALOAD)   == Opcodes.LALOAD)
+    assert(UNIT.typedOpcode(Opcodes.IALOAD) == Opcodes.IALOAD)
+    assert(INT.typedOpcode(Opcodes.IALOAD) == Opcodes.IALOAD)
+    assert(BOOL.typedOpcode(Opcodes.IALOAD) == Opcodes.BALOAD)
+    assert(BYTE.typedOpcode(Opcodes.IALOAD) == Opcodes.BALOAD)
+    assert(CHAR.typedOpcode(Opcodes.IALOAD) == Opcodes.CALOAD)
+    assert(SHORT.typedOpcode(Opcodes.IALOAD) == Opcodes.SALOAD)
+    assert(FLOAT.typedOpcode(Opcodes.IALOAD) == Opcodes.FALOAD)
+    assert(LONG.typedOpcode(Opcodes.IALOAD) == Opcodes.LALOAD)
     assert(DOUBLE.typedOpcode(Opcodes.IALOAD) == Opcodes.DALOAD)
     assert(classBTFS(jls).typedOpcode(Opcodes.IALOAD) == Opcodes.AALOAD)
 
-    assert(UNIT.typedOpcode(Opcodes.IRETURN)   == Opcodes.RETURN)
-    assert(BOOL.typedOpcode(Opcodes.IRETURN)   == Opcodes.IRETURN)
-    assert(CHAR.typedOpcode(Opcodes.IRETURN)   == Opcodes.IRETURN)
-    assert(BYTE.typedOpcode(Opcodes.IRETURN)   == Opcodes.IRETURN)
-    assert(SHORT.typedOpcode(Opcodes.IRETURN)  == Opcodes.IRETURN)
-    assert(INT.typedOpcode(Opcodes.IRETURN)    == Opcodes.IRETURN)
-    assert(FLOAT.typedOpcode(Opcodes.IRETURN)  == Opcodes.FRETURN)
-    assert(LONG.typedOpcode(Opcodes.IRETURN)   == Opcodes.LRETURN)
+    assert(UNIT.typedOpcode(Opcodes.IRETURN) == Opcodes.RETURN)
+    assert(BOOL.typedOpcode(Opcodes.IRETURN) == Opcodes.IRETURN)
+    assert(CHAR.typedOpcode(Opcodes.IRETURN) == Opcodes.IRETURN)
+    assert(BYTE.typedOpcode(Opcodes.IRETURN) == Opcodes.IRETURN)
+    assert(SHORT.typedOpcode(Opcodes.IRETURN) == Opcodes.IRETURN)
+    assert(INT.typedOpcode(Opcodes.IRETURN) == Opcodes.IRETURN)
+    assert(FLOAT.typedOpcode(Opcodes.IRETURN) == Opcodes.FRETURN)
+    assert(LONG.typedOpcode(Opcodes.IRETURN) == Opcodes.LRETURN)
     assert(DOUBLE.typedOpcode(Opcodes.IRETURN) == Opcodes.DRETURN)
-    assert(classBTFS(jls).typedOpcode(Opcodes.IRETURN)   == Opcodes.ARETURN)
+    assert(classBTFS(jls).typedOpcode(Opcodes.IRETURN) == Opcodes.ARETURN)
   }
 
   @Test
@@ -79,10 +80,13 @@ class BTypesTest extends BytecodeTesting {
     }
   }
 
-  def lazyLockForceTestCommon(doToString:Boolean, early:Boolean, withLock:Boolean): Unit = {
+  def lazyLockForceTestCommon(doToString: Boolean,
+                              early: Boolean,
+                              withLock: Boolean): Unit = {
     val res = new mutable.StringBuilder()
-    val l = if (withLock) Lazy.withLock({res append "forced;"; "VALUE"})
-    else Lazy.withoutLock({res append "forced;"; "VALUE"})
+    val l =
+      if (withLock) Lazy.withLock({ res append "forced;"; "VALUE" })
+      else Lazy.withoutLock({ res append "forced;"; "VALUE" })
     if (doToString) assertEquals("<?>", l.toString)
     assertEquals("", res.toString)
 
@@ -115,19 +119,33 @@ class BTypesTest extends BytecodeTesting {
     assertEquals("VALUE", l.toString)
     lazyLockAcquired(withLock)
   }
-  def lazyLockAcquired(withLock:Boolean): Unit = {
+  def lazyLockAcquired(withLock: Boolean): Unit = {
     val res = new mutable.StringBuilder()
-    val l = if (withLock) Lazy.withLock({res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};"; "VALUE"})
-    else Lazy.withoutLock({res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};"; "VALUE"})
+    val l =
+      if (withLock) Lazy.withLock({
+        res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};";
+        "VALUE"
+      })
+      else
+        Lazy.withoutLock({
+          res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};";
+          "VALUE"
+        })
 
-    l.onForce(v => res append s"onF1:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
-    l.onForce(v => res append s"onF2:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    l.onForce(v =>
+      res append s"onF1:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    l.onForce(v =>
+      res append s"onF2:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
     assertEquals("", res.toString)
 
     l.force
-    assertEquals(s"forced:$withLock;onF2:VALUE:false;onF1:VALUE:false;", res.toString)
-    l.onForce(v => res append s"onF3:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
-    assertEquals(s"forced:$withLock;onF2:VALUE:false;onF1:VALUE:false;onF3:VALUE:false;", res.toString)
+    assertEquals(s"forced:$withLock;onF2:VALUE:false;onF1:VALUE:false;",
+                 res.toString)
+    l.onForce(v =>
+      res append s"onF3:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    assertEquals(
+      s"forced:$withLock;onF2:VALUE:false;onF1:VALUE:false;onF3:VALUE:false;",
+      res.toString)
   }
 
   @Test
@@ -156,9 +174,9 @@ class BTypesTest extends BytecodeTesting {
   def lazyNoLockForceTest4(): Unit =
     lazyLockForceTestCommon(doToString = false, early = false, withLock = false)
 
-  def lazyEagerTestCommon(doToString:Boolean, early:Boolean): Unit = {
+  def lazyEagerTestCommon(doToString: Boolean, early: Boolean): Unit = {
     val res = new mutable.StringBuilder()
-    val l = Lazy.eager({res append "forced;"; "VALUE"})
+    val l = Lazy.eager({ res append "forced;"; "VALUE" })
     if (doToString) assertEquals("VALUE", l.toString)
     assertEquals("forced;", res.toString)
 
@@ -191,16 +209,26 @@ class BTypesTest extends BytecodeTesting {
   }
   def lazyEagerAcquired(): Unit = {
     val res = new mutable.StringBuilder()
-    val l = Lazy.eager({res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};"; "VALUE"})
+    val l = Lazy.eager({
+      res append s"forced:${Thread.holdsLock(frontendAccess.frontendLock)};";
+      "VALUE"
+    })
     assertEquals(s"forced:false;", res.toString)
-    l.onForce(v => res append s"onF1:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
-    l.onForce(v => res append s"onF2:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
-    assertEquals("forced:false;onF1:VALUE:false;onF2:VALUE:false;", res.toString)
+    l.onForce(v =>
+      res append s"onF1:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    l.onForce(v =>
+      res append s"onF2:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    assertEquals("forced:false;onF1:VALUE:false;onF2:VALUE:false;",
+                 res.toString)
 
     l.force
-    assertEquals("forced:false;onF1:VALUE:false;onF2:VALUE:false;", res.toString)
-    l.onForce(v => res append s"onF3:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
-    assertEquals("forced:false;onF1:VALUE:false;onF2:VALUE:false;onF3:VALUE:false;", res.toString)
+    assertEquals("forced:false;onF1:VALUE:false;onF2:VALUE:false;",
+                 res.toString)
+    l.onForce(v =>
+      res append s"onF3:$v:${Thread.holdsLock(frontendAccess.frontendLock)};")
+    assertEquals(
+      "forced:false;onF1:VALUE:false;onF2:VALUE:false;onF3:VALUE:false;",
+      res.toString)
   }
   @Test
   def lazyEagerForceTest1(): Unit =
@@ -215,12 +243,9 @@ class BTypesTest extends BytecodeTesting {
   def lazyEagerForceTest4(): Unit =
     lazyEagerTestCommon(doToString = false, early = false)
 
-
   // TODO @lry do more tests
   @Test
-  def maxTypeTest(): Unit = {
-
-  }
+  def maxTypeTest(): Unit = {}
 
   @Test
   def arraySubtypeTest(): Unit = global.exitingDelambdafy {

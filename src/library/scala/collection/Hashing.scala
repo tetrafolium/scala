@@ -13,7 +13,6 @@
 package scala
 package collection
 
-
 protected[collection] object Hashing {
 
   def elemHashCode(key: Any): Int = key.##

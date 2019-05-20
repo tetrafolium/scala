@@ -21,6 +21,8 @@ object Test extends ScaladocModelTest {
     val foo = root._class("Foo")
 
     val fooStr = Page.inlineToStrForTitleTag(foo.comment.get.short)
-    assert(fooStr == "This is a multi-line comment containing html tags and extra white space between lines.", fooStr)
+    assert(
+      fooStr == "This is a multi-line comment containing html tags and extra white space between lines.",
+      fooStr)
   }
 }

@@ -16,4 +16,5 @@ package runtime
 import scala.reflect.internal.util.Position
 import scala.util.control.ControlThrowable
 
-class AbortMacroException(val pos: Position, val msg: String) extends ControlThrowable(msg)
+class AbortMacroException(val pos: Position, val msg: String)
+    extends ControlThrowable(msg)

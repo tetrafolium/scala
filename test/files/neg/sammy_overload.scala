@@ -3,7 +3,7 @@ trait ToString { def convert(x: Int): String }
 class ExplicitSamType {
   object O {
     def m(x: Int => String): Int = 0 // (1)
-    def m(x: ToString): Int = 1      // (2)
+    def m(x: ToString): Int = 1 // (2)
   }
 
   O.m((x: Int) => x.toString) // ok, function type takes precedence, because (1) is more specific than (2),

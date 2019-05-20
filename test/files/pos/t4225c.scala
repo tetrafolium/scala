@@ -1,4 +1,3 @@
-
 // scalac: -Yrangepos
 //
 trait A
@@ -9,7 +8,7 @@ class Foo[A2, B2 <: A2] {
   object Bar {
     implicit def fromString(a: String) = new Bar
   }
-  def andThen(b : Bar) = b
+  def andThen(b: Bar) = b
 }
 
 object Test {

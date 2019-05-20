@@ -9,8 +9,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import scala.reflect.io.VirtualDirectory
-
-
 @RunWith(classOf[JUnit4])
 class VirtualDirectoryClassPathTest {
 
@@ -33,9 +31,12 @@ class VirtualDirectoryClassPathTest {
     assertEquals(None, classPath.findClassFile("p2/DoesNotExist"))
     assertEquals(None, classPath.findClassFile("p4/DoesNotExist"))
 
-    assertEquals(List("p1", "p2"), classPath.packages("").toList.map(_.name).sorted)
+    assertEquals(List("p1", "p2"),
+                 classPath.packages("").toList.map(_.name).sorted)
     assertEquals(List(), classPath.packages("p1").toList.map(_.name).sorted)
-    assertEquals(List("p2.p3"), classPath.packages("p2").toList.map(_.name).sorted)
-    assertEquals(List("p2.p3.p4"), classPath.packages("p2.p3").toList.map(_.name).sorted)
+    assertEquals(List("p2.p3"),
+                 classPath.packages("p2").toList.map(_.name).sorted)
+    assertEquals(List("p2.p3.p4"),
+                 classPath.packages("p2.p3").toList.map(_.name).sorted)
   }
 }

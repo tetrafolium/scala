@@ -19,14 +19,18 @@ import scala.tools.nsc.{ConsoleWriter, NewLinePrintWriter, Settings}
 import scala.tools.nsc.interpreter.{Naming, ReplReporter, ReplRequest}
 import scala.tools.nsc.reporters.{AbstractReporter, DisplayReporter}
 
-
 object ReplReporterImpl {
   val defaultOut = new NewLinePrintWriter(new ConsoleWriter, true)
 }
 
 // settings are for AbstractReporter (noWarnings, isVerbose, isDebug)
-class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Settings, writer: PrintWriter = ReplReporterImpl.defaultOut) extends AbstractReporter with ReplReporter  {
-  def this(settings: Settings, writer: PrintWriter) = this(ShellConfig(settings), settings, writer)
+class ReplReporterImpl(val config: ShellConfig,
+                       val settings: Settings = new Settings,
+                       writer: PrintWriter = ReplReporterImpl.defaultOut)
+    extends AbstractReporter
+    with ReplReporter {
+  def this(settings: Settings, writer: PrintWriter) =
+    this(ShellConfig(settings), settings, writer)
   def this(settings: Settings) = this(ShellConfig(settings), settings)
 
   val out: PrintWriter = new ReplStrippingWriter(writer)
@@ -43,14 +47,17 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
     flush()
   }
 
-  private def indentDepth: Int = config.promptText.linesIterator.toList.last.length
+  private def indentDepth: Int =
+    config.promptText.linesIterator.toList.last.length
   private[this] var indentation: String = " " * indentDepth
   def indenting(n: Int)(body: => Unit): Unit = {
     val save = indentation
     indentation = " " * n
-    try body finally indentation = save
+    try body
+    finally indentation = save
   }
-  private def indented(str: String) = str.linesIterator.mkString(indentation, "\n" + indentation, "")
+  private def indented(str: String) =
+    str.linesIterator.mkString(indentation, "\n" + indentation, "")
 
   def colorOk: Boolean = config.colorOk
   def isDebug: Boolean = config.isReplDebug
@@ -71,13 +78,13 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
         if (!success.isEmpty && printResults)
           printMessage(success stripSuffix "\n") // TODO: can we avoid having to strip the trailing "\n"?
         else if (isDebug) // show quiet-mode activity
-          printMessage(success.trim.linesIterator map ("[quiet] " + _) mkString "\n")
+          printMessage(
+            success.trim.linesIterator map ("[quiet] " + _) mkString "\n")
 
       case Left(error) =>
         // don't truncate stack traces
         withoutTruncating { printMessage(error) }
     }
-
 
   // whether to print anything
   var totalSilence: Boolean = false
@@ -102,7 +109,8 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
   var truncationOK: Boolean = !settings.verbose
 
   def truncate(str: String): String =
-    if (truncationOK && (maxPrintString != 0 && str.length > maxPrintString)) (str take maxPrintString - 3) + "..."
+    if (truncationOK && (maxPrintString != 0 && str.length > maxPrintString))
+      (str take maxPrintString - 3) + "..."
     else str
 
   def withoutTruncating[T](body: => T): T = {
@@ -118,7 +126,9 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
   var unwrapStrings = true
   def withoutUnwrapping(op: => Unit): Unit = {
     val saved = unwrapStrings
-    unwrapStrings = false ; try op finally unwrapStrings = saved
+    unwrapStrings = false;
+    try op
+    finally unwrapStrings = saved
   }
   def unwrap(str: String): String =
     if (unwrapStrings) Naming.unmangle(str)
@@ -128,12 +138,15 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
 
   var currentRequest: ReplRequest = _
 
-  def printUntruncatedMessage(msg: String): Unit = withoutTruncating(printMessage(msg))
+  def printUntruncatedMessage(msg: String): Unit =
+    withoutTruncating(printMessage(msg))
 
-  override def warning(pos: Position, msg: String): Unit = withoutTruncating(super.warning(pos, msg))
-  override def error(pos: Position, msg: String): Unit   = withoutTruncating(super.error(pos, msg))
+  override def warning(pos: Position, msg: String): Unit =
+    withoutTruncating(super.warning(pos, msg))
+  override def error(pos: Position, msg: String): Unit =
+    withoutTruncating(super.error(pos, msg))
 
-  import scala.io.AnsiColor.{ RED, YELLOW, RESET }
+  import scala.io.AnsiColor.{RED, YELLOW, RESET}
 
   private def label(severity: Severity): String = severity match {
     case ERROR   => "error"
@@ -179,7 +192,7 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
       val locationPrefix =
         posIn.source.file.name match {
           case "<console>" => s"On line ${posIn.line}: "
-          case n =>
+          case n           =>
             // add newline to get away from prompt when we're reporting on a script/paste
             printMessage("")
             s"$n:${posIn.line}: "
@@ -202,7 +215,9 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
           printMessage(indented(msgRest))
       }
 
-      if (isSynthetic) printMessage("\n(To diagnose errors in synthetic code, try adding `// show` to the end of your input.)")
+      if (isSynthetic)
+        printMessage(
+          "\n(To diagnose errors in synthetic code, try adding `// show` to the end of your input.)")
     }
   }
 
@@ -227,20 +242,23 @@ class ReplReporterImpl(val config: ShellConfig, val settings: Settings = new Set
       }
     }
 
-  override def rerunWithDetails(setting: reflect.internal.settings.MutableSettings#Setting, name: String): String =
+  override def rerunWithDetails(
+      setting: reflect.internal.settings.MutableSettings#Setting,
+      name: String): String =
     s"; for details, enable `:setting $name' or `:replay $name'"
 
   def display(pos: Position, msg: String, severity: Severity): Unit = {
     val ok = severity match {
-      case ERROR   => ERROR.count   <= settings.maxerrs.value
+      case ERROR   => ERROR.count <= settings.maxerrs.value
       case WARNING => WARNING.count <= settings.maxwarns.value
-      case _     => true
+      case _       => true
     }
     if (ok) print(pos, msg, severity)
   }
 
   override def finish() =
     for (k <- List(WARNING, ERROR) if k.count > 0)
-      printMessage(s"${StringOps.countElementsAsString(k.count, label(k))} found")
+      printMessage(
+        s"${StringOps.countElementsAsString(k.count, label(k))} found")
 
 }

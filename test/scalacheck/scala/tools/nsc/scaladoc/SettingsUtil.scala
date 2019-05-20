@@ -21,7 +21,10 @@ object SettingsUtil {
   val checkoutRoot: Path = {
     // Don't assume the working dir is the root of the git checkout to make this work
     // by default in IntelliJ.
-    val parents = Iterator.iterate(Paths.get(".").toAbsolutePath)(_.getParent).takeWhile(_ ne null).toList
+    val parents = Iterator
+      .iterate(Paths.get(".").toAbsolutePath)(_.getParent)
+      .takeWhile(_ ne null)
+      .toList
     val temp = parents.find(x => Files.exists(x.resolve(RESOURCES)))
     val checkoutRoot = temp.getOrElse(Paths.get("."))
     checkoutRoot.toAbsolutePath

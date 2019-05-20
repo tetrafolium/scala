@@ -19,18 +19,22 @@ import java.nio.file.{Files, OpenOption, Path}
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 import scala.util.{Failure, Success}
 
 object FileUtils {
-  def newAsyncBufferedWriter(path: Path, charset: Charset = StandardCharsets.UTF_8, options: Array[OpenOption] = NO_OPTIONS, threadsafe: Boolean = false): LineWriter = {
+  def newAsyncBufferedWriter(path: Path,
+                             charset: Charset = StandardCharsets.UTF_8,
+                             options: Array[OpenOption] = NO_OPTIONS,
+                             threadsafe: Boolean = false): LineWriter = {
     val encoder: CharsetEncoder = charset.newEncoder
-    val writer = new OutputStreamWriter(Files.newOutputStream(path, options: _*), encoder)
+    val writer =
+      new OutputStreamWriter(Files.newOutputStream(path, options: _*), encoder)
     newAsyncBufferedWriter(new BufferedWriter(writer), threadsafe)
   }
-  def newAsyncBufferedWriter(underlying: Writer, threadsafe: Boolean): LineWriter = {
+  def newAsyncBufferedWriter(underlying: Writer,
+                             threadsafe: Boolean): LineWriter = {
     val async = new AsyncBufferedWriter(underlying)
     if (threadsafe) new ThreadsafeWriter(async) else async
   }
@@ -39,31 +43,32 @@ object FileUtils {
   sealed abstract class LineWriter extends Writer {
     def newLine(): Unit
   }
-  private class ThreadsafeWriter(val underlying: AsyncBufferedWriter) extends LineWriter {
+  private class ThreadsafeWriter(val underlying: AsyncBufferedWriter)
+      extends LineWriter {
     lock = underlying
     override def write(c: Int): Unit =
-      lock.synchronized (underlying.write(c))
+      lock.synchronized(underlying.write(c))
 
     override def write(cbuf: Array[Char]): Unit =
-      lock.synchronized (underlying.write(cbuf))
+      lock.synchronized(underlying.write(cbuf))
 
     override def write(cbuf: Array[Char], off: Int, len: Int): Unit =
-      lock.synchronized (underlying.write(cbuf, off, len))
+      lock.synchronized(underlying.write(cbuf, off, len))
 
     override def write(str: String): Unit =
-      lock.synchronized (underlying.write(str))
+      lock.synchronized(underlying.write(str))
 
     override def write(str: String, off: Int, len: Int): Unit =
-      lock.synchronized (underlying.write(str, off, len))
+      lock.synchronized(underlying.write(str, off, len))
 
     override def flush(): Unit =
-      lock.synchronized (underlying.flush())
+      lock.synchronized(underlying.flush())
 
     override def close(): Unit =
-      lock.synchronized (underlying.close())
+      lock.synchronized(underlying.close())
 
     override def newLine(): Unit =
-      lock.synchronized (underlying.newLine())
+      lock.synchronized(underlying.newLine())
 
   }
 
@@ -71,7 +76,9 @@ object FileUtils {
     private val Close = CharBuffer.allocate(0)
     private val Flush = CharBuffer.allocate(0)
   }
-  private class AsyncBufferedWriter(val underlying: Writer, bufferSize : Int = 4096) extends LineWriter {
+  private class AsyncBufferedWriter(val underlying: Writer,
+                                    bufferSize: Int = 4096)
+      extends LineWriter {
     private var current: CharBuffer = allocate
     override def write(c: Int): Unit = super.write(c)
     private def flushAsync(): Unit = {
@@ -81,7 +88,7 @@ object FileUtils {
 //    allocate or reuse a CharArray which is guaranteed to have a backing array
     private def allocate: CharBuffer = {
       val reused = background.reuseBuffer
-      if (reused eq null)      CharBuffer.allocate(bufferSize)
+      if (reused eq null) CharBuffer.allocate(bufferSize)
       else {
         //we don't care about race conditions
         background.reuseBuffer = null
@@ -90,7 +97,9 @@ object FileUtils {
       }
     }
 
-    override def write(cbuf: Array[Char], initialOffset: Int, initialLength: Int): Unit = {
+    override def write(cbuf: Array[Char],
+                       initialOffset: Int,
+                       initialLength: Int): Unit = {
       var offset = initialOffset
       var length = initialLength
       while (length > 0) {
@@ -107,7 +116,9 @@ object FileUtils {
       }
     }
 
-    override def write(s: String,  initialOffset: Int, initialLength: Int): Unit = {
+    override def write(s: String,
+                       initialOffset: Int,
+                       initialLength: Int): Unit = {
       var offset = initialOffset
       var length = initialLength
       while (length > 0) {
@@ -138,7 +149,7 @@ object FileUtils {
       Await.result(background.asyncStatus.future, Duration.Inf)
       underlying.close()
     }
-    private object background extends Runnable{
+    private object background extends Runnable {
 
       import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -152,7 +163,7 @@ object FileUtils {
         if (asyncStatus.isCompleted) {
           asyncStatus.future.value.get match {
             case Success(()) => throw new IllegalStateException("closed")
-            case Failure(t) => throw new IOException("async failure", t)
+            case Failure(t)  => throw new IOException("async failure", t)
           }
         }
 
@@ -176,7 +187,9 @@ object FileUtils {
             } else {
               val array = next.array()
               next.flip()
-              underlying.write(array, next.arrayOffset() + next.position(), next.limit())
+              underlying.write(array,
+                               next.arrayOffset() + next.position(),
+                               next.limit())
               reuseBuffer = next
             }
           }
@@ -184,8 +197,7 @@ object FileUtils {
           case t: Throwable =>
             asyncStatus.tryFailure(t)
             throw t
-        }
-        finally scheduled.set(false)
+        } finally scheduled.set(false)
 
         //we are not scheduled any more
         //as a last check ensure that we didnt race with an addition to the queue

@@ -1,6 +1,6 @@
 object Test extends App {
   def noisyIdentity(x: AnyRef): x.type = {
-    println("got "+x)
+    println("got " + x)
     x
   }
 
@@ -9,7 +9,7 @@ object Test extends App {
 
   trait Assoc[K] { type V; val value: V }
   def mkAssoc[V0](k: String, v: V0): Assoc[k.type] { type V = V0 } =
-    new Assoc[k.type] { type V = V0 ; val value = v }
+    new Assoc[k.type] { type V = V0; val value = v }
 
   def lookup(k: String)(implicit assoc: Assoc[k.type]): assoc.V = assoc.value
 

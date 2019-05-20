@@ -16,8 +16,8 @@ package tools.nsc
 import scala.reflect.internal.Positions
 
 /** Similar to Reporting: gather global functionality specific to parsing.
- */
-trait Parsing { self : Positions with Reporting =>
+  */
+trait Parsing { self: Positions with Reporting =>
   def currentRun: RunParsing
 
   trait RunParsing {
@@ -29,7 +29,8 @@ trait Parsing { self : Positions with Reporting =>
   class PerRunParsing {
     // for repl
     private[this] var incompleteHandler: (Position, String) => Unit = null
-    def withIncompleteHandler[T](handler: (Position, String) => Unit)(thunk: => T) = {
+    def withIncompleteHandler[T](handler: (Position, String) => Unit)(
+        thunk: => T) = {
       val saved = incompleteHandler
       incompleteHandler = handler
       try thunk

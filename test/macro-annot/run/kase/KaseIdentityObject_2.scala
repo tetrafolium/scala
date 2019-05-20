@@ -56,7 +56,9 @@ class KaseIdentityObject {
     @kase object CPostLocalPostcomp
     @identity class CPostLocalPostcomp
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |CPreToplevelNocomp
       |CPreToplevelPrecomp
       |CPreToplevelPostcomp
@@ -69,7 +71,8 @@ class KaseIdentityObject {
       |CPostLocalNocomp
       |CPostLocalPrecomp
       |CPostLocalPostcomp
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 

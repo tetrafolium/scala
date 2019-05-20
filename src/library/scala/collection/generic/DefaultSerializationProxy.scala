@@ -25,7 +25,10 @@ import scala.collection.mutable.Builder
   * additional state required to create the proper `Builder` needs to be captured by the `factory`.
   */
 @SerialVersionUID(3L)
-final class DefaultSerializationProxy[A](factory: Factory[A, Any], @transient private[this] val coll: Iterable[A]) extends Serializable {
+final class DefaultSerializationProxy[A](
+    factory: Factory[A, Any],
+    @transient private[this] val coll: Iterable[A])
+    extends Serializable {
 
   @transient protected var builder: Builder[A, Any] = _
 
@@ -38,8 +41,10 @@ final class DefaultSerializationProxy[A](factory: Factory[A, Any], @transient pr
       out.writeObject(x)
       count += 1
     }
-    if(k >= 0) {
-      if(count != k) throw new IllegalStateException(s"Illegal size $count of collection, expected $k")
+    if (k >= 0) {
+      if (count != k)
+        throw new IllegalStateException(
+          s"Illegal size $count of collection, expected $k")
     } else out.writeObject(SerializeEnd)
   }
 
@@ -47,17 +52,17 @@ final class DefaultSerializationProxy[A](factory: Factory[A, Any], @transient pr
     in.defaultReadObject()
     builder = factory.newBuilder
     val k = in.readInt()
-    if(k >= 0) {
+    if (k >= 0) {
       builder.sizeHint(k)
       var count = 0
-      while(count < k) {
+      while (count < k) {
         builder += in.readObject().asInstanceOf[A]
         count += 1
       }
     } else {
       while (true) in.readObject match {
         case SerializeEnd => return
-        case a => builder += a.asInstanceOf[A]
+        case a            => builder += a.asInstanceOf[A]
       }
     }
   }
@@ -74,12 +79,19 @@ private[collection] case object SerializeEnd
   * it directly without using this trait if you need a non-standard factory or if you want to use a different
   * serialization scheme.
   */
-trait DefaultSerializable extends Serializable { this: scala.collection.Iterable[_] =>
+trait DefaultSerializable extends Serializable {
+  this: scala.collection.Iterable[_] =>
   protected[this] def writeReplace(): AnyRef = {
     val f: Factory[Any, Any] = this match {
-      case it: scala.collection.SortedMap[_, _] => it.sortedMapFactory.sortedMapFactory[Any, Any](it.ordering.asInstanceOf[Ordering[Any]]).asInstanceOf[Factory[Any, Any]]
-      case it: scala.collection.Map[_, _] => it.mapFactory.mapFactory[Any, Any].asInstanceOf[Factory[Any, Any]]
-      case it: scala.collection.SortedSet[_] => it.sortedIterableFactory.evidenceIterableFactory[Any](it.ordering.asInstanceOf[Ordering[Any]])
+      case it: scala.collection.SortedMap[_, _] =>
+        it.sortedMapFactory
+          .sortedMapFactory[Any, Any](it.ordering.asInstanceOf[Ordering[Any]])
+          .asInstanceOf[Factory[Any, Any]]
+      case it: scala.collection.Map[_, _] =>
+        it.mapFactory.mapFactory[Any, Any].asInstanceOf[Factory[Any, Any]]
+      case it: scala.collection.SortedSet[_] =>
+        it.sortedIterableFactory
+          .evidenceIterableFactory[Any](it.ordering.asInstanceOf[Ordering[Any]])
       case it => it.iterableFactory.iterableFactory
     }
     new DefaultSerializationProxy(f, this)

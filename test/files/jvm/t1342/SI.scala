@@ -1,7 +1,7 @@
 class SI extends JI {
-   def varArgsMethod( args : String*): Unit = {
-        for( arg <- args ) println( arg )
-   }
+  def varArgsMethod(args: String*): Unit = {
+    for (arg <- args) println(arg)
+  }
 }
 
 object Test extends App {

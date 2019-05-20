@@ -1,4 +1,3 @@
-
 // scalac: -Ycheck:typer
 //
 class A {

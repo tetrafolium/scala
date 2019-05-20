@@ -1,10 +1,9 @@
-
 package top {
   package middle {
     import bottom.B.b
     class C {
       def p() = println("hello, world")
-      def f = b     // comment me to see Predef exclusion
+      def f = b // comment me to see Predef exclusion
     }
   }
 }

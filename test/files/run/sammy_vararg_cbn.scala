@@ -7,6 +7,6 @@ object Test extends App {
 
   val nam: SamByName = (a) => (a, a)
   var v = 0
-  assert(nam.accept({v += 1; v}) == (1, 2))
+  assert(nam.accept({ v += 1; v }) == (1, 2))
   assert(v == 2, "by name arg should be evaluated twice")
 }

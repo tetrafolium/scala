@@ -25,12 +25,13 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
   import CODE._
 
   val EmptyThicket = EmptyTree
-  def Thicket(trees: List[Tree]) = if (trees.isEmpty) EmptyTree else Block(trees, EmptyTree)
+  def Thicket(trees: List[Tree]) =
+    if (trees.isEmpty) EmptyTree else Block(trees, EmptyTree)
   def mustExplodeThicket(tree: Tree): Boolean =
     tree match {
-      case EmptyTree => true
+      case EmptyTree           => true
       case Block(_, EmptyTree) => true
-      case _ => false
+      case _                   => false
     }
   def explodeThicket(tree: Tree): List[Tree] = tree match {
     case EmptyTree                 => Nil
@@ -38,31 +39,34 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
     case stat                      => stat :: Nil
   }
 
-
   trait AccessorTreeSynthesis {
     protected def typedPos(pos: Position)(tree: Tree): Tree
 
     // used while we still need to synthesize some accessors in mixins: paramaccessors and presupers
-    class UncheckedAccessorSynth(protected val clazz: Symbol){
+    class UncheckedAccessorSynth(protected val clazz: Symbol) {
       protected val _newDefs = mutable.ListBuffer[Tree]()
 
       def newDefs = _newDefs.toList
 
       /** Add tree at given position as new definition */
-      protected def addDef(tree: ValOrDefDef): Unit = _newDefs += typedPos(position(tree.symbol))(tree)
+      protected def addDef(tree: ValOrDefDef): Unit =
+        _newDefs += typedPos(position(tree.symbol))(tree)
 
       /** The position of given symbol, or, if this is undefined,
         * the position of the current class.
         */
-      private def position(sym: Symbol) = if (sym.pos == NoPosition) clazz.pos else sym.pos
+      private def position(sym: Symbol) =
+        if (sym.pos == NoPosition) clazz.pos else sym.pos
 
       /** Add new method definition.
         *
         * @param sym The method symbol.
         * @param rhs The method body.
         */
-      def addDefDef(sym: Symbol, rhs: Tree = EmptyTree) = addDef(DefDef(sym, rhs))
-      def addValDef(sym: Symbol, rhs: Tree = EmptyTree) = addDef(ValDef(sym, rhs))
+      def addDefDef(sym: Symbol, rhs: Tree = EmptyTree) =
+        addDef(DefDef(sym, rhs))
+      def addValDef(sym: Symbol, rhs: Tree = EmptyTree) =
+        addDef(ValDef(sym, rhs))
 
       /** Complete `stats` with init checks and bitmaps,
         * removing any abstract method definitions in `stats` that are
@@ -75,7 +79,8 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
           case DefDef(_, _, _, _, _, _) =>
             val sym = tree.symbol
             !(sym.isDeferred &&
-              (newSyms exists (nsym => nsym.name == sym.name && (nsym.tpe matches sym.tpe))))
+              (newSyms exists (nsym =>
+                nsym.name == sym.name && (nsym.tpe matches sym.tpe))))
           case _ => true
         }
         if (newDefs.isEmpty) stats
@@ -83,7 +88,8 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
       }
 
       def accessorBody(sym: Symbol) =
-        if (sym.isSetter) setterBody(sym, sym.getterIn(clazz)) else getterBody(sym)
+        if (sym.isSetter) setterBody(sym, sym.getterIn(clazz))
+        else getterBody(sym)
 
       protected def getterBody(getter: Symbol): Tree = {
         assert(getter.isGetter)
@@ -93,7 +99,9 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
       }
 
       protected def setterBody(setter: Symbol, getter: Symbol): Tree = {
-        assert(getter.hasFlag(PARAMACCESSOR), s"missing implementation for non-paramaccessor $setter in $clazz")
+        assert(
+          getter.hasFlag(PARAMACCESSOR),
+          s"missing implementation for non-paramaccessor $setter in $clazz")
 
         Assign(fieldAccess(setter), Ident(setter.firstParam))
       }
@@ -106,9 +114,12 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
 
   case class BitmapInfo(symbol: Symbol, mask: Literal) {
     def select(on: This): Tree = Select(on, symbol)
-    def applyToMask(on: This, op: Name): Tree  = Apply(member(select(on), op), List(mask))
-    def member(bitmapRef: Tree, name: Name): Tree  = Select(bitmapRef, getMember(storageClass, name))
-    def convert(bitmapRef: Tree): Tree = Apply(member(bitmapRef, newTermName("to" + storageClass.name)), Nil)
+    def applyToMask(on: This, op: Name): Tree =
+      Apply(member(select(on), op), List(mask))
+    def member(bitmapRef: Tree, name: Name): Tree =
+      Select(bitmapRef, getMember(storageClass, name))
+    def convert(bitmapRef: Tree): Tree =
+      Apply(member(bitmapRef, newTermName("to" + storageClass.name)), Nil)
 
     def isLong: Boolean = storageClass == LongClass
     def isBoolean: Boolean = storageClass == BooleanClass
@@ -116,9 +127,8 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
     lazy val storageClass: ClassSymbol = symbol.info.typeSymbol.asClass
   }
 
-
   // TODO: better way to communicate from info transform to tree transform?
-  private[this] val _bitmapInfo  = perRunCaches.newMap[Symbol, BitmapInfo]
+  private[this] val _bitmapInfo = perRunCaches.newMap[Symbol, BitmapInfo]
   private[this] val _slowPathFor = perRunCaches.newMap[Symbol, Symbol]()
 
   def checkedAccessorSymbolSynth(clz: Symbol): CheckedAccessorSymbolSynth =
@@ -126,6 +136,7 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
 
   // base trait, with enough functionality for generating bitmap symbols for lazy vals and -Xcheckinit fields
   class CheckedAccessorSymbolSynth(val clazz: Symbol) {
+
     /**
       * Note: fields of classes inheriting DelayedInit are not checked.
       * This is because they are neither initialized in the constructor
@@ -136,9 +147,10 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
       */
     private[this] val doCheckInit = settings.checkInit.value && !(clazz isSubClass DelayedInitClass)
 
-    private[AccessorSynthesis] def bitmapFor(field: Symbol): BitmapInfo = _bitmapInfo(field)
-    protected def bitmapOf(field: Symbol): Option[BitmapInfo] = _bitmapInfo.get(field)
-
+    private[AccessorSynthesis] def bitmapFor(field: Symbol): BitmapInfo =
+      _bitmapInfo(field)
+    protected def bitmapOf(field: Symbol): Option[BitmapInfo] =
+      _bitmapInfo.get(field)
 
     /** Fill the map from fields to bitmap infos.
       * This is called for all fields in each transformed class (by the fields info transformer),
@@ -151,17 +163,19 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
         import nme._
 
         if (field.isLazy)
-          if (field hasAnnotation TransientAttr) BITMAP_TRANSIENT else BITMAP_NORMAL
+          if (field hasAnnotation TransientAttr) BITMAP_TRANSIENT
+          else BITMAP_NORMAL
         else if (doCheckInit && !(field hasFlag DEFAULTINIT | PRESUPER | PARAMACCESSOR))
-          if (field hasAnnotation TransientAttr) BITMAP_CHECKINIT_TRANSIENT else BITMAP_CHECKINIT
+          if (field hasAnnotation TransientAttr) BITMAP_CHECKINIT_TRANSIENT
+          else BITMAP_CHECKINIT
         else NO_NAME
       }
 
       def allocateBitmaps(fieldsWithBitmaps: List[Symbol], category: Name) = {
         val nbFields = fieldsWithBitmaps.length // we know it's > 0
         val (bitmapClass, bitmapCapacity) =
-          if (nbFields == 1)       (BooleanClass, 1)
-          else if (nbFields <= 8)  (ByteClass, 8)
+          if (nbFields == 1) (BooleanClass, 1)
+          else if (nbFields <= 8) (ByteClass, 8)
           else if (nbFields <= 32) (IntClass, 32)
           else (LongClass, 64)
 
@@ -175,10 +189,12 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
         val bitmapSyms =
           (0 to maxBitmapNumber).toArray map { bitmapNumber =>
             val bitmapSym = (
-              clazz.newVariable(nme.newBitmapName(category, bitmapNumber).toTermName, clazz.pos.focus)
+              clazz.newVariable(
+                nme.newBitmapName(category, bitmapNumber).toTermName,
+                clazz.pos.focus)
                 setInfo bitmapClass.tpe
                 setFlag PrivateLocal | NEEDS_TREES
-              )
+            )
 
             bitmapSym addAnnotation VolatileAttr
 
@@ -187,37 +203,44 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
             bitmapSym
           }
 
-        fieldsWithBitmaps.zipWithIndex foreach { case (f, idx) =>
-          val bitmapIdx = idx / bitmapCapacity
-          val offsetInBitmap = idx % bitmapCapacity
-          val mask =
-            if (bitmapClass == LongClass) Constant(1L << offsetInBitmap)
-            else Constant(1 << offsetInBitmap)
+        fieldsWithBitmaps.zipWithIndex foreach {
+          case (f, idx) =>
+            val bitmapIdx = idx / bitmapCapacity
+            val offsetInBitmap = idx % bitmapCapacity
+            val mask =
+              if (bitmapClass == LongClass) Constant(1L << offsetInBitmap)
+              else Constant(1 << offsetInBitmap)
 
-          _bitmapInfo(f) = BitmapInfo(bitmapSyms(bitmapIdx), Literal(mask))
+            _bitmapInfo(f) = BitmapInfo(bitmapSyms(bitmapIdx), Literal(mask))
         }
 
         bitmapSyms
       }
 
-      fields.groupBy(bitmapCategory).flatMap {
-        case (category, fields) if category != nme.NO_NAME && fields.nonEmpty => allocateBitmaps(fields, category): Iterable[Symbol]
-        case _ => Nil
-      }.toList
+      fields
+        .groupBy(bitmapCategory)
+        .flatMap {
+          case (category, fields)
+              if category != nme.NO_NAME && fields.nonEmpty =>
+            allocateBitmaps(fields, category): Iterable[Symbol]
+          case _ => Nil
+        }
+        .toList
     }
 
     def slowPathFor(lzyVal: Symbol): Symbol = _slowPathFor(lzyVal)
 
     def newSlowPathSymbol(lzyVal: Symbol): Symbol = {
       val pos = if (lzyVal.pos != NoPosition) lzyVal.pos else clazz.pos.focus // TODO: is the else branch ever taken?
-      val sym = clazz.newMethod(nme.newLazyValSlowComputeName(lzyVal.name.toTermName), pos, PRIVATE) setInfo MethodType(Nil, lzyVal.tpe.resultType)
+      val sym = clazz.newMethod(
+        nme.newLazyValSlowComputeName(lzyVal.name.toTermName),
+        pos,
+        PRIVATE) setInfo MethodType(Nil, lzyVal.tpe.resultType)
       _slowPathFor(lzyVal) = sym
       sym
     }
 
   }
-
-
 
   // synthesize trees based on info gathered during info transform
   // (which are known to have been run because the tree transform runs afterOwnPhase)
@@ -226,10 +249,10 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
   // TODO: can we use attachments instead of _bitmapInfo and _slowPathFor?
   trait CheckedAccessorTreeSynthesis extends AccessorTreeSynthesis {
     // note: we deal in getters here, not field symbols
-    class SynthCheckedAccessorsTreesInClass(clazz: Symbol) extends CheckedAccessorSymbolSynth(clazz) {
+    class SynthCheckedAccessorsTreesInClass(clazz: Symbol)
+        extends CheckedAccessorSymbolSynth(clazz) {
       def isUnitGetter(sym: Symbol) = sym.tpe.resultType.typeSymbol == UnitClass
       def thisRef = gen.mkAttributedThis(clazz)
-
 
       /** Return an (untyped) tree of the form 'clazz.this.bitmapSym & mask (==|!=) 0', the
         * precise comparison operator depending on the value of 'equalToZero'.
@@ -238,21 +261,27 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
         if (bm.isBoolean)
           if (equalToZero) NOT(bm.select(thisRef)) else bm.select(thisRef)
         else
-          Apply(bm.member(bm.applyToMask(thisRef, nme.AND), if (equalToZero) nme.EQ else nme.NE), List(ZERO))
+          Apply(bm.member(bm.applyToMask(thisRef, nme.AND),
+                          if (equalToZero) nme.EQ else nme.NE),
+                List(ZERO))
 
       /** Return an (untyped) tree of the form 'Clazz.this.bmp = Clazz.this.bmp | mask'. */
       def mkSetFlag(bitmap: BitmapInfo): Tree =
-        Assign(bitmap.select(thisRef),
+        Assign(
+          bitmap.select(thisRef),
           if (bitmap.isBoolean) TRUE
           else {
             val ored = bitmap.applyToMask(thisRef, nme.OR)
             // NOTE: Unless the bitmap is a Long, we must convert explicitly to avoid widening
             // For example, bitwise OR (`|`) on two bytes yields and Int
             if (bitmap.isLong) ored else bitmap.convert(ored)
-          })
+          }
+        )
     }
 
-    class SynthLazyAccessorsIn(clazz: Symbol) extends SynthCheckedAccessorsTreesInClass(clazz) {
+    class SynthLazyAccessorsIn(clazz: Symbol)
+        extends SynthCheckedAccessorsTreesInClass(clazz) {
+
       /**
         * The compute method (slow path) looks like:
         *
@@ -288,45 +317,60 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
         *
         * This way the inliner should optimize the fast path because the method body is small enough.
         */
-      def expandLazyClassMember(lazyVar: global.Symbol, lazyAccessor: global.Symbol, transformedRhs: global.Tree): Tree = {
-        val slowPathSym  = slowPathFor(lazyAccessor)
+      def expandLazyClassMember(lazyVar: global.Symbol,
+                                lazyAccessor: global.Symbol,
+                                transformedRhs: global.Tree): Tree = {
+        val slowPathSym = slowPathFor(lazyAccessor)
         val rhsAtSlowDef = transformedRhs.changeOwner(lazyAccessor, slowPathSym)
 
-        val isUnit    = isUnitGetter(lazyAccessor)
-        val selectVar = if (isUnit) UNIT         else Select(thisRef, lazyVar)
-        val storeRes  = if (isUnit) rhsAtSlowDef else Assign(selectVar, fields.castHack(rhsAtSlowDef, lazyVar.info))
+        val isUnit = isUnitGetter(lazyAccessor)
+        val selectVar = if (isUnit) UNIT else Select(thisRef, lazyVar)
+        val storeRes =
+          if (isUnit) rhsAtSlowDef
+          else Assign(selectVar, fields.castHack(rhsAtSlowDef, lazyVar.info))
 
         val bitmap = bitmapFor(lazyVar)
         def needsInit = mkTest(bitmap)
         val doInit = Block(List(storeRes), mkSetFlag(bitmap))
         // the slow part of double-checked locking (TODO: is this the most efficient pattern? https://github.come/scala/scala-dev/issues/204)
-        val slowPathRhs = Block(gen.mkSynchronized(thisRef)(If(needsInit, doInit, EmptyTree)) :: Nil, selectVar)
+        val slowPathRhs = Block(
+          gen.mkSynchronized(thisRef)(If(needsInit, doInit, EmptyTree)) :: Nil,
+          selectVar)
 
         // The lazy accessor delegates to the compute method if needed, otherwise just accesses the var (it was initialized previously)
         // `if ((bitmap&n & MASK) == 0) this.l$compute() else l$`
-        val accessorRhs = fields.castHack(If(needsInit, Apply(Select(thisRef, slowPathSym), Nil), selectVar), lazyVar.info)
+        val accessorRhs = fields.castHack(
+          If(needsInit, Apply(Select(thisRef, slowPathSym), Nil), selectVar),
+          lazyVar.info)
 
         afterOwnPhase { // so that we can assign to vals
-          Thicket(List((DefDef(slowPathSym, slowPathRhs)), DefDef(lazyAccessor, accessorRhs)) map typedPos(lazyAccessor.pos.focus))
+          Thicket(
+            List((DefDef(slowPathSym, slowPathRhs)),
+                 DefDef(lazyAccessor, accessorRhs)) map typedPos(
+              lazyAccessor.pos.focus))
         }
       }
     }
 
-    class SynthInitCheckedAccessorsIn(clazz: Symbol) extends SynthCheckedAccessorsTreesInClass(clazz) {
+    class SynthInitCheckedAccessorsIn(clazz: Symbol)
+        extends SynthCheckedAccessorsTreesInClass(clazz) {
 
       // Add statements to the body of a constructor to set the 'init' bit for each field initialized in the constructor
       private object addInitBitsTransformer extends Transformer {
         override def transformStats(stats: List[Tree], exprOwner: Symbol) = {
           val checkedStats = stats flatMap {
             // Mark field as initialized after an assignment
-            case stat@Assign(lhs@Select(This(_), _), _) =>
-              stat :: bitmapOf(lhs.symbol).toList.map(bitmap => typedPos(stat.pos.focus)(mkSetFlag(bitmap)))
+            case stat @ Assign(lhs @ Select(This(_), _), _) =>
+              stat :: bitmapOf(lhs.symbol).toList.map(bitmap =>
+                typedPos(stat.pos.focus)(mkSetFlag(bitmap)))
 
             // remove initialization for default values
             // TODO is this case ever hit? constructors does not generate Assigns with EmptyTree for the rhs AFAICT
             // !!! Ident(self) is never referenced, is it supposed to be confirming
             // that self is anything in particular?
-            case Apply(lhs@Select(Ident(self), _), EmptyTree.asList) if lhs.symbol.isSetter => Nil
+            case Apply(lhs @ Select(Ident(self), _), EmptyTree.asList)
+                if lhs.symbol.isSetter =>
+              Nil
             case stat => List(stat)
           }
 
@@ -345,21 +389,29 @@ trait AccessorSynthesis extends Transform with ast.TreeDSL {
         else if ((sym hasFlag ACCESSOR) && !(sym hasFlag (LAZY | PARAMACCESSOR))) {
           val field = clazz.info.decl(sym.localName)
           if (field == NoSymbol) rhs
-          else bitmapOf(field) match {
-            case Some(bitmap) =>
-              if (sym.isGetter) mkCheckedAccessorRhs(if (isUnitGetter(sym)) UNIT else rhs, rhs.pos, bitmap) // TODO: why not always use rhs?
-              else Block(List(rhs, typedPos(rhs.pos.focus)(mkSetFlag(bitmap))), UNIT)
-            case _            => rhs
-          }
-        }
-        else rhs
+          else
+            bitmapOf(field) match {
+              case Some(bitmap) =>
+                if (sym.isGetter)
+                  mkCheckedAccessorRhs(if (isUnitGetter(sym)) UNIT else rhs,
+                                       rhs.pos,
+                                       bitmap) // TODO: why not always use rhs?
+                else
+                  Block(List(rhs, typedPos(rhs.pos.focus)(mkSetFlag(bitmap))),
+                        UNIT)
+              case _ => rhs
+            }
+        } else rhs
 
-      private def mkCheckedAccessorRhs(retVal: Tree, pos: Position, bitmap: BitmapInfo): Tree = {
+      private def mkCheckedAccessorRhs(retVal: Tree,
+                                       pos: Position,
+                                       bitmap: BitmapInfo): Tree = {
         val msg = s"Uninitialized field: ${clazz.sourceFile}: ${pos.line}"
         val result =
-          IF(mkTest(bitmap, equalToZero = false)).
-            THEN(retVal).
-            ELSE(Throw(NewFromConstructor(UninitializedFieldConstructor, LIT(msg))))
+          IF(mkTest(bitmap, equalToZero = false))
+            .THEN(retVal)
+            .ELSE(Throw(
+              NewFromConstructor(UninitializedFieldConstructor, LIT(msg))))
 
         typedPos(pos)(BLOCK(result, retVal))
       }

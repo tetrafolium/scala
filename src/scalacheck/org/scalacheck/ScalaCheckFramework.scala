@@ -30,8 +30,8 @@ private abstract class ScalaCheckRunner extends Runner {
   def deserializeTask(task: String, deserializer: String => TaskDef) = {
     val taskDef = deserializer(task)
     val countTestSelectors = taskDef.selectors.toSeq.count {
-      case _:TestSelector => true
-      case _ => false
+      case _: TestSelector => true
+      case _               => false
     }
     if (countTestSelectors == 0) rootTask(taskDef)
     else checkPropTask(taskDef)
@@ -45,79 +45,90 @@ private abstract class ScalaCheckRunner extends Runner {
   abstract class BaseTask(override val taskDef: TaskDef) extends Task {
     val tags: Array[String] = Array()
 
-    val props: collection.Seq[(String,Prop)] = {
+    val props: collection.Seq[(String, Prop)] = {
       val fp = taskDef.fingerprint.asInstanceOf[SubclassFingerprint]
-      val obj = if (fp.isModule) Platform.loadModule(taskDef.fullyQualifiedName,loader)
-                else Platform.newInstance(taskDef.fullyQualifiedName, loader, Seq())(Seq())
+      val obj =
+        if (fp.isModule) Platform.loadModule(taskDef.fullyQualifiedName, loader)
+        else
+          Platform.newInstance(taskDef.fullyQualifiedName, loader, Seq())(Seq())
       obj match {
         case props: Properties => props.properties
-        case prop: Prop => Seq("" -> prop)
+        case prop: Prop        => Seq("" -> prop)
       }
     }
 
     // TODO copypasted from props val
     val properties: Option[Properties] = {
       val fp = taskDef.fingerprint.asInstanceOf[SubclassFingerprint]
-      val obj = if (fp.isModule) Platform.loadModule(taskDef.fullyQualifiedName,loader)
-      else Platform.newInstance(taskDef.fullyQualifiedName, loader, Seq())(Seq())
+      val obj =
+        if (fp.isModule) Platform.loadModule(taskDef.fullyQualifiedName, loader)
+        else
+          Platform.newInstance(taskDef.fullyQualifiedName, loader, Seq())(Seq())
       obj match {
         case props: Properties => Some(props)
-        case prop: Prop => None
+        case prop: Prop        => None
       }
     }
 
     def log(loggers: Array[Logger], ok: Boolean, msg: String) =
       loggers foreach { l =>
         val logstr =
-          if(!l.ansiCodesSupported) msg
+          if (!l.ansiCodesSupported) msg
           else s"${if (ok) Console.GREEN else Console.RED}$msg${Console.RESET}"
         l.info(logstr)
       }
 
-    def execute(handler: EventHandler, loggers: Array[Logger],
-      continuation: Array[Task] => Unit
-    ): Unit  = continuation(execute(handler,loggers))
+    def execute(handler: EventHandler,
+                loggers: Array[Logger],
+                continuation: Array[Task] => Unit): Unit =
+      continuation(execute(handler, loggers))
   }
 
   def rootTask(td: TaskDef) = new BaseTask(td) {
     def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] =
       props.map(_._1).toSet.toArray map { name =>
-        checkPropTask(new TaskDef(td.fullyQualifiedName, td.fingerprint,
-          td.explicitlySpecified, Array(new TestSelector(name)))
-        )
+        checkPropTask(
+          new TaskDef(td.fullyQualifiedName,
+                      td.fingerprint,
+                      td.explicitlySpecified,
+                      Array(new TestSelector(name))))
       }
   }
 
   def checkPropTask(taskDef: TaskDef) = new BaseTask(taskDef) {
     val names = taskDef.selectors flatMap {
       case ts: TestSelector => Array(ts.testName)
-      case _ => Array.empty[String]
+      case _                => Array.empty[String]
     }
 
     def execute(handler: EventHandler, loggers: Array[Logger]): Array[Task] =
       names flatMap { name =>
         import util.Pretty.{pretty, Params}
 
-        val params = applyCmdParams(properties.foldLeft(Parameters.default)((params, props) => props.overrideParameters(params)))
+        val params = applyCmdParams(
+          properties.foldLeft(Parameters.default)((params, props) =>
+            props.overrideParameters(params)))
         val propertyFilter = params.propFilter.map(_.r)
 
         for ((`name`, prop) <- props) {
-          if (propertyFilter.isEmpty || propertyFilter.exists(matchPropFilter(name, _))) {
+          if (propertyFilter.isEmpty || propertyFilter.exists(
+                matchPropFilter(name, _))) {
             val result = Test.check(params, prop)
 
             val event = new Event {
               val status = result.status match {
-                case Test.Passed => Status.Success
-                case _:Test.Proved => Status.Success
-                case _:Test.Failed => Status.Failure
-                case Test.Exhausted => Status.Failure
-                case _:Test.PropException => Status.Error
+                case Test.Passed           => Status.Success
+                case _: Test.Proved        => Status.Success
+                case _: Test.Failed        => Status.Failure
+                case Test.Exhausted        => Status.Failure
+                case _: Test.PropException => Status.Error
               }
               val throwable = result.status match {
                 case Test.PropException(_, e, _) => new OptionalThrowable(e)
-                case _:Test.Failed => new OptionalThrowable(
-                  new Exception(pretty(result, Params(0)))
-                )
+                case _: Test.Failed =>
+                  new OptionalThrowable(
+                    new Exception(pretty(result, Params(0)))
+                  )
                 case _ => new OptionalThrowable()
               }
               val fullyQualifiedName = taskDef.fullyQualifiedName
@@ -130,18 +141,24 @@ private abstract class ScalaCheckRunner extends Runner {
 
             event.status match {
               case Status.Success => successCount.incrementAndGet()
-              case Status.Error => errorCount.incrementAndGet()
+              case Status.Error   => errorCount.incrementAndGet()
               case Status.Skipped => errorCount.incrementAndGet()
               case Status.Failure => failureCount.incrementAndGet()
-              case _ => failureCount.incrementAndGet()
+              case _              => failureCount.incrementAndGet()
             }
             testCount.incrementAndGet()
 
             // TODO Stack traces should be reported through event
             val verbosityOpts = Set("-verbosity", "-v")
             val verbosity =
-              args.grouped(2).filter(twos => verbosityOpts(twos.head))
-              .toSeq.headOption.map(_.last).map(_.toInt).getOrElse(0)
+              args
+                .grouped(2)
+                .filter(twos => verbosityOpts(twos.head))
+                .toSeq
+                .headOption
+                .map(_.last)
+                .map(_.toInt)
+                .getOrElse(0)
             val s = if (result.passed) "+" else "!"
             val n = if (name.isEmpty) taskDef.fullyQualifiedName else name
             val logMsg = s"$s $n: ${pretty(result, Params(verbosity))}"
@@ -173,22 +190,22 @@ final class ScalaCheckFramework extends Framework {
     mkFP(true, "org.scalacheck.Prop")
   )
 
-  def runner(_args: Array[String], _remoteArgs: Array[String],
-    _loader: ClassLoader
-  ): Runner = new ScalaCheckRunner {
+  def runner(_args: Array[String],
+             _remoteArgs: Array[String],
+             _loader: ClassLoader): Runner = new ScalaCheckRunner {
 
     val args = _args
     val remoteArgs = _remoteArgs
     val loader = _loader
-    val (prms,unknownArgs) = Test.cmdLineParser.parseParams(args)
-    val applyCmdParams = prms.andThen {
-      p => p.withTestCallback(new Test.TestCallback {})
-          .withCustomClassLoader(Some(loader))
+    val (prms, unknownArgs) = Test.cmdLineParser.parseParams(args)
+    val applyCmdParams = prms.andThen { p =>
+      p.withTestCallback(new Test.TestCallback {})
+        .withCustomClassLoader(Some(loader))
     }
 
     def receiveMessage(msg: String): Option[String] = msg(0) match {
       case 'd' =>
-        val Array(t,s,f,e) = msg.tail.split(',')
+        val Array(t, s, f, e) = msg.tail.split(',')
         testCount.addAndGet(t.toInt)
         successCount.addAndGet(s.toInt)
         failureCount.addAndGet(f.toInt)
@@ -196,25 +213,29 @@ final class ScalaCheckFramework extends Framework {
         None
     }
 
-    def done = if (testCount.get > 0) {
-      val heading = if (testCount.get == successCount.get) "Passed" else "Failed"
-      s"$heading: Total $testCount, " +
-      s"Failed $failureCount, Errors $errorCount, Passed $successCount" +
-      (if(unknownArgs.isEmpty) "" else
-      s"\nWarning: Unknown ScalaCheck args provided: ${unknownArgs.mkString(" ")}")
-    } else ""
+    def done =
+      if (testCount.get > 0) {
+        val heading =
+          if (testCount.get == successCount.get) "Passed" else "Failed"
+        s"$heading: Total $testCount, " +
+          s"Failed $failureCount, Errors $errorCount, Passed $successCount" +
+          (if (unknownArgs.isEmpty) ""
+           else
+             s"\nWarning: Unknown ScalaCheck args provided: ${unknownArgs.mkString(" ")}")
+      } else ""
 
   }
 
-  def slaveRunner(_args: Array[String], _remoteArgs: Array[String],
-    _loader: ClassLoader, send: String => Unit
-  ): Runner = new ScalaCheckRunner {
+  def slaveRunner(_args: Array[String],
+                  _remoteArgs: Array[String],
+                  _loader: ClassLoader,
+                  send: String => Unit): Runner = new ScalaCheckRunner {
     val args = _args
     val remoteArgs = _remoteArgs
     val loader = _loader
-    val applyCmdParams = Test.cmdLineParser.parseParams(args)._1.andThen {
-      p => p.withTestCallback(new Test.TestCallback {})
-          .withCustomClassLoader(Some(loader))
+    val applyCmdParams = Test.cmdLineParser.parseParams(args)._1.andThen { p =>
+      p.withTestCallback(new Test.TestCallback {})
+        .withCustomClassLoader(Some(loader))
     }
 
     def receiveMessage(msg: String) = None

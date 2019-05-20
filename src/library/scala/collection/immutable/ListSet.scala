@@ -42,7 +42,7 @@ import scala.collection.generic.DefaultSerializable
   * @define willNotTerminateInf
   */
 sealed class ListSet[A]
-  extends AbstractSet[A]
+    extends AbstractSet[A]
     with StrictOptimizedSetOps[A, ListSet, ListSet[A]]
     with DefaultSerializable {
 
@@ -68,7 +68,8 @@ sealed class ListSet[A]
   }
 
   protected def elem: A = throw new NoSuchElementException("elem of empty set")
-  protected def next: ListSet[A] = throw new NoSuchElementException("next of empty set")
+  protected def next: ListSet[A] =
+    throw new NoSuchElementException("next of empty set")
 
   override def iterableFactory: IterableFactory[ListSet] = ListSet
 
@@ -94,9 +95,13 @@ sealed class ListSet[A]
 
     override def excl(e: A): ListSet[A] = removeInternal(e, this, Nil)
 
-    @tailrec private[this] def removeInternal(k: A, cur: ListSet[A], acc: List[ListSet[A]]): ListSet[A] =
+    @tailrec private[this] def removeInternal(
+        k: A,
+        cur: ListSet[A],
+        acc: List[ListSet[A]]): ListSet[A] =
       if (cur.isEmpty) acc.last
-      else if (k == cur.elem) acc.foldLeft(cur.next)((t, h) => new t.Node(h.elem))
+      else if (k == cur.elem)
+        acc.foldLeft(cur.next)((t, h) => new t.Node(h.elem))
       else removeInternal(k, cur.next, cur :: acc)
 
     override protected def next: ListSet[A] = ListSet.this
@@ -123,9 +128,9 @@ object ListSet extends IterableFactory[ListSet] {
 
   def from[E](it: scala.collection.IterableOnce[E]): ListSet[E] =
     it match {
-      case ls: ListSet[E] => ls
+      case ls: ListSet[E]         => ls
       case _ if it.knownSize == 0 => empty[E]
-      case _ => (newBuilder[E] ++= it).result()
+      case _                      => (newBuilder[E] ++= it).result()
     }
 
   private object EmptyListSet extends ListSet[Any] {

@@ -18,7 +18,7 @@ trait HList {
 }
 
 object Test {
-  type ::[H, T <: HList] = HList { type Head = H; type Tail = T}
+  type ::[H, T <: HList] = HList { type Head = H; type Tail = T }
   type HNil <: HList
   type T = Int :: String :: HNil
 

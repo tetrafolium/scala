@@ -43,7 +43,8 @@ final class ChromeTrace(f: Path) extends Closeable {
   private val traceWriter = FileUtils.newAsyncBufferedWriter(f)
   private val context = mutable.Stack[JsonContext](TopContext)
   private val tidCache = new ThreadLocal[String]() {
-    override def initialValue(): String = Thread.currentThread().getId.formatted("%05d")
+    override def initialValue(): String =
+      Thread.currentThread().getId.formatted("%05d")
   }
   objStart()
   fld("traceEvents")
@@ -53,9 +54,12 @@ final class ChromeTrace(f: Path) extends Closeable {
 
   private val pid: String = try {
     // Using reflection to avoid a hard-dependency on non-compact1 profile parts of the Java library from scala-reflect
-    val getRuntimeMXBean = Class.forName("java.lang.management.ManagementFactory").getMethod("getRuntimeMXBean")
+    val getRuntimeMXBean = Class
+      .forName("java.lang.management.ManagementFactory")
+      .getMethod("getRuntimeMXBean")
     val runtimeMXBean = getRuntimeMXBean.invoke(null)
-    val getName = Class.forName("java.lang.management.RuntimeMXBean").getMethod("getName")
+    val getName =
+      Class.forName("java.lang.management.RuntimeMXBean").getMethod("getName")
     val name = getName.invoke(runtimeMXBean).asInstanceOf[String]
     name.replaceAll("@.*", "")
   } catch {
@@ -71,7 +75,11 @@ final class ChromeTrace(f: Path) extends Closeable {
     traceWriter.close()
   }
 
-  def traceDurationEvent(name: String, startNanos: Long, durationNanos: Long, tid: String = this.tid(), pidSuffix: String = ""): Unit = {
+  def traceDurationEvent(name: String,
+                         startNanos: Long,
+                         durationNanos: Long,
+                         tid: String = this.tid(),
+                         pidSuffix: String = ""): Unit = {
     val durationMicros = nanosToMicros(durationNanos)
     val startMicros = nanosToMicros(startNanos)
     objStart()
@@ -93,7 +101,10 @@ final class ChromeTrace(f: Path) extends Closeable {
       str2("pid", pid, "-", pidSuffix)
   }
 
-  def traceCounterEvent(name: String, counterName: String, count: Long, processWide: Boolean): Unit = {
+  def traceCounterEvent(name: String,
+                        counterName: String,
+                        count: Long,
+                        processWide: Boolean): Unit = {
     objStart()
     str("cat", "scalac")
     str("name", name)
@@ -109,10 +120,22 @@ final class ChromeTrace(f: Path) extends Closeable {
     traceWriter.newLine()
   }
 
-  def traceDurationEventStart(cat: String, name: String, colour: String = "", pidSuffix: String = tid()): Unit = traceDurationEventStartEnd(EventType.Start, cat, name, colour, pidSuffix)
-  def traceDurationEventEnd(cat: String, name: String, colour: String = "", pidSuffix: String = tid()): Unit = traceDurationEventStartEnd(EventType.End, cat, name, colour, pidSuffix)
+  def traceDurationEventStart(cat: String,
+                              name: String,
+                              colour: String = "",
+                              pidSuffix: String = tid()): Unit =
+    traceDurationEventStartEnd(EventType.Start, cat, name, colour, pidSuffix)
+  def traceDurationEventEnd(cat: String,
+                            name: String,
+                            colour: String = "",
+                            pidSuffix: String = tid()): Unit =
+    traceDurationEventStartEnd(EventType.End, cat, name, colour, pidSuffix)
 
-  private def traceDurationEventStartEnd(eventType: String, cat: String, name: String, colour: String, pidSuffix: String = ""): Unit = {
+  private def traceDurationEventStartEnd(eventType: String,
+                                         cat: String,
+                                         name: String,
+                                         colour: String,
+                                         pidSuffix: String = ""): Unit = {
     objStart()
     str("cat", cat)
     str("name", name)
@@ -145,7 +168,10 @@ final class ChromeTrace(f: Path) extends Closeable {
     traceWriter.write(value) // This assumes no escaping is needed
     traceWriter.write("\"")
   }
-  private def str2(name: String, value: String, valueContinued1: String, valueContinued2: String): Unit = {
+  private def str2(name: String,
+                   value: String,
+                   valueContinued1: String,
+                   valueContinued2: String): Unit = {
     fld(name)
     traceWriter.write("\"")
     traceWriter.write(value) // This assumes no escaping is needed

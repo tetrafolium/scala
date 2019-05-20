@@ -11,7 +11,9 @@ trait T2[A] { self: T1[A] =>
 class Bar extends T1[Int] with T2[Int]
 
 object Test extends App {
-   val sigs = classOf[Bar].getDeclaredMethods.map(m => s"${m.toString} / ${m.toGenericString}").sorted
-   println(sigs.mkString("\n"))
+  val sigs = classOf[Bar].getDeclaredMethods
+    .map(m => s"${m.toString} / ${m.toGenericString}")
+    .sorted
+  println(sigs.mkString("\n"))
 }
 // Was public java.lang.Object Bar.minBy(java.lang.Object) / public <B> int Bar.minBy(B)

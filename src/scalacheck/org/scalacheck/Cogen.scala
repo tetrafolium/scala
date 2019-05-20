@@ -87,23 +87,27 @@ object Cogen extends CogenArities with CogenLowPriority {
     }
 
     // If the unscaled value is zero then the scaling factor doesn't matter. Otherwise perturb based on both.
-    Cogen((seed: Seed, n: BigDecimal) =>
-      if (n.bigDecimal.unscaledValue == BigInteger.ZERO)
-        Cogen[Int].perturb(seed, 0)
-      else {
-        val (unscaled, scale) = normalize(n.bigDecimal.unscaledValue, n.scale)
-        Cogen[(Int, Array[Byte])].perturb(seed, (scale, unscaled.toByteArray))
-    })
+    Cogen(
+      (seed: Seed, n: BigDecimal) =>
+        if (n.bigDecimal.unscaledValue == BigInteger.ZERO)
+          Cogen[Int].perturb(seed, 0)
+        else {
+          val (unscaled, scale) = normalize(n.bigDecimal.unscaledValue, n.scale)
+          Cogen[(Int, Array[Byte])].perturb(seed, (scale, unscaled.toByteArray))
+      })
   }
 
   implicit lazy val bitSet: Cogen[BitSet] =
     Cogen.it(_.iterator)
 
   implicit def cogenOption[A](implicit A: Cogen[A]): Cogen[Option[A]] =
-    Cogen((seed: Seed, o: Option[A]) => o.fold(seed)(a => A.perturb(seed.next, a)))
+    Cogen(
+      (seed: Seed, o: Option[A]) => o.fold(seed)(a => A.perturb(seed.next, a)))
 
-  implicit def cogenEither[A, B](implicit A: Cogen[A], B: Cogen[B]): Cogen[Either[A, B]] =
-    Cogen((seed: Seed, e: Either[A,B]) => e.fold(a => A.perturb(seed, a), b => B.perturb(seed.next, b)))
+  implicit def cogenEither[A, B](implicit A: Cogen[A],
+                                 B: Cogen[B]): Cogen[Either[A, B]] =
+    Cogen((seed: Seed, e: Either[A, B]) =>
+      e.fold(a => A.perturb(seed, a), b => B.perturb(seed.next, b)))
 
   implicit def cogenArray[A](implicit A: Cogen[A]): Cogen[Array[A]] =
     Cogen((seed: Seed, as: Array[A]) => perturbArray(seed, as))
@@ -139,27 +143,33 @@ object Cogen extends CogenArities with CogenLowPriority {
     Cogen[String].contramap(_.toString)
 
   implicit def cogenTry[A: Cogen]: Cogen[Try[A]] =
-    Cogen((seed: Seed, x: Try[A]) => x match {
-      case Success(a) => Cogen[A].perturb(seed.next, a)
-      case Failure(e) => Cogen[Throwable].perturb(seed, e)
+    Cogen((seed: Seed, x: Try[A]) =>
+      x match {
+        case Success(a) => Cogen[A].perturb(seed.next, a)
+        case Failure(e) => Cogen[Throwable].perturb(seed, e)
     })
 
   implicit val cogenFiniteDuration: Cogen[FiniteDuration] =
     Cogen[Long].contramap(_.toNanos)
 
   implicit val cogenDuration: Cogen[Duration] =
-    Cogen((seed: Seed, x: Duration) => x match {
-      case d: FiniteDuration => Cogen[FiniteDuration].perturb(seed, d)
-      // Undefined -> NaN, Inf -> PositiveInfinity, MinusInf -> NegativeInf
-      // We could just use `toUnit` for finite durations too, but the Long => Double
-      // conversion is lossy, so this approach may be better.
-      case d => Cogen[Double].perturb(seed, d.toUnit(java.util.concurrent.TimeUnit.NANOSECONDS))
+    Cogen((seed: Seed, x: Duration) =>
+      x match {
+        case d: FiniteDuration => Cogen[FiniteDuration].perturb(seed, d)
+        // Undefined -> NaN, Inf -> PositiveInfinity, MinusInf -> NegativeInf
+        // We could just use `toUnit` for finite durations too, but the Long => Double
+        // conversion is lossy, so this approach may be better.
+        case d =>
+          Cogen[Double]
+            .perturb(seed, d.toUnit(java.util.concurrent.TimeUnit.NANOSECONDS))
     })
 
-  implicit def cogenPartialFunction[A: Arbitrary, B: Cogen]: Cogen[PartialFunction[A, B]] =
+  implicit def cogenPartialFunction[A: Arbitrary, B: Cogen]
+    : Cogen[PartialFunction[A, B]] =
     Cogen[A => Option[B]].contramap(_.lift)
 
-  def perturbPair[A, B](seed: Seed, ab: (A, B))(implicit A: Cogen[A], B: Cogen[B]): Seed =
+  def perturbPair[A, B](seed: Seed, ab: (A, B))(implicit A: Cogen[A],
+                                                B: Cogen[B]): Seed =
     B.perturb(A.perturb(seed, ab._1), ab._2)
 
   def perturbArray[A](seed: Seed, as: Array[A])(implicit A: Cogen[A]): Seed = {

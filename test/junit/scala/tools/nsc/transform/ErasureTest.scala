@@ -15,10 +15,20 @@ class ErasureTest extends BytecodeTesting {
     import definitions._
     val T = NoSymbol.newTypeParameter(TypeName("T")).setInfo(TypeBounds.empty)
     val U = NoSymbol.newTypeParameter(TypeName("U")).setInfo(TypeBounds.empty)
-    val arrayTWithArrayString: Type = refinedType(appliedType(ArrayClass, T.tpeHK) :: appliedType(ArrayClass, StringTpe) :: Nil, NoSymbol)
-    val arrayTWithArrayU: Type = refinedType(appliedType(ArrayClass, T.tpeHK) :: appliedType(ArrayClass, U.tpeHK) :: Nil, NoSymbol)
+    val arrayTWithArrayString: Type =
+      refinedType(appliedType(ArrayClass, T.tpeHK) :: appliedType(
+                    ArrayClass,
+                    StringTpe) :: Nil,
+                  NoSymbol)
+    val arrayTWithArrayU: Type =
+      refinedType(appliedType(ArrayClass, T.tpeHK) :: appliedType(
+                    ArrayClass,
+                    U.tpeHK) :: Nil,
+                  NoSymbol)
 
-    assertEquals(1, erasure.unboundedGenericArrayLevel(appliedType(ArrayClass, T.tpeHK)))
+    assertEquals(
+      1,
+      erasure.unboundedGenericArrayLevel(appliedType(ArrayClass, T.tpeHK)))
     assertEquals(0, erasure.unboundedGenericArrayLevel(arrayTWithArrayString))
     assertEquals(1, erasure.unboundedGenericArrayLevel(arrayTWithArrayU))
   }

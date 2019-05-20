@@ -1,4 +1,3 @@
-
 class Deprecation extends Deprecated {
   final val annotationType = classOf[Deprecated]
 

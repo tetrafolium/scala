@@ -21,11 +21,13 @@ import FileUtils.AbstractFileOps
 import scala.tools.nsc.util.{ClassPath, ClassRepresentation}
 
 /**
- * A trait allowing to look for classpath entries of given type in zip and jar files.
- * It provides common logic for classes handling class and source files.
- * It's aware of things like e.g. META-INF directory which is correctly skipped.
- */
-trait ZipArchiveFileLookup[FileEntryType <: ClassRepresentation] extends ClassPath with Closeable {
+  * A trait allowing to look for classpath entries of given type in zip and jar files.
+  * It provides common logic for classes handling class and source files.
+  * It's aware of things like e.g. META-INF directory which is correctly skipped.
+  */
+trait ZipArchiveFileLookup[FileEntryType <: ClassRepresentation]
+    extends ClassPath
+    with Closeable {
   val zipFile: File
   def release: Option[String]
 
@@ -57,7 +59,8 @@ trait ZipArchiveFileLookup[FileEntryType <: ClassRepresentation] extends ClassPa
       if isRequiredFileType(entry)
     } yield createFileEntry(entry)
 
-  override private[nsc] def hasPackage(pkg: String) = findDirEntry(pkg).isDefined
+  override private[nsc] def hasPackage(pkg: String) =
+    findDirEntry(pkg).isDefined
   override private[nsc] def list(inPackage: String): ClassPathEntries = {
     val foundDirEntry = findDirEntry(inPackage)
 

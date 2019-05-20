@@ -14,9 +14,7 @@ import org.openjdk.jmh.infra._
 @State(Scope.Benchmark)
 class SeqMapBenchmark {
 
-  var base: SeqMap[String,String] = _
-
-
+  var base: SeqMap[String, String] = _
   @Setup(Level.Trial) def initKeys(): Unit = {
     base = SeqMap("a" -> "a", "b" -> "b", "c" -> "c", "d" -> "d")
   }

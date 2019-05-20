@@ -25,49 +25,53 @@ import scala.reflect.internal.settings.MutableSettings
 import scala.reflect.internal.{TreeGen => InternalTreeGen}
 import scala.reflect.io.AbstractFile
 
-abstract class SymbolTable extends macros.Universe
-                              with Collections
-                              with Names
-                              with Symbols
-                              with Types
-                              with Variances
-                              with Kinds
-                              with ExistentialsAndSkolems
-                              with FlagSets
-                              with Scopes
-                              with Mirrors
-                              with Definitions
-                              with Constants
-                              with BaseTypeSeqs
-                              with InfoTransformers
-                              with transform.Transforms
-                              with StdNames
-                              with AnnotationInfos
-                              with AnnotationCheckers
-                              with Trees
-                              with Printers
-                              with Positions
-                              with TypeDebugging
-                              with Importers
-                              with CapturedVariables
-                              with StdAttachments
-                              with StdCreators
-                              with ReificationSupport
-                              with PrivateWithin
-                              with pickling.Translations
-                              with FreshNames
-                              with Internals
-                              with Reporting
-{
+abstract class SymbolTable
+    extends macros.Universe
+    with Collections
+    with Names
+    with Symbols
+    with Types
+    with Variances
+    with Kinds
+    with ExistentialsAndSkolems
+    with FlagSets
+    with Scopes
+    with Mirrors
+    with Definitions
+    with Constants
+    with BaseTypeSeqs
+    with InfoTransformers
+    with transform.Transforms
+    with StdNames
+    with AnnotationInfos
+    with AnnotationCheckers
+    with Trees
+    with Printers
+    with Positions
+    with TypeDebugging
+    with Importers
+    with CapturedVariables
+    with StdAttachments
+    with StdCreators
+    with ReificationSupport
+    with PrivateWithin
+    with pickling.Translations
+    with FreshNames
+    with Internals
+    with Reporting {
 
-  val gen = new InternalTreeGen { val global: SymbolTable.this.type = SymbolTable.this }
+  val gen = new InternalTreeGen {
+    val global: SymbolTable.this.type = SymbolTable.this
+  }
 
-  trait ReflectStats extends BaseTypeSeqsStats
-                        with TypesStats
-                        with SymbolTableStats
-                        with TreesStats
-                        with SymbolsStats
-                        with ScopeStats { self: Statistics => }
+  trait ReflectStats
+      extends BaseTypeSeqsStats
+      with TypesStats
+      with SymbolTableStats
+      with TreesStats
+      with SymbolsStats
+      with ScopeStats { self: Statistics =>
+  }
 
   /** Some statistics (normally disabled) set with -Ystatistics */
   val statistics: Statistics with ReflectStats
@@ -75,19 +79,24 @@ abstract class SymbolTable extends macros.Universe
   def log(msg: => AnyRef): Unit
 
   protected def elapsedMessage(msg: String, startNs: Long) =
-    msg + " in " + (TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)) + "ms"
+    msg + " in " + (TimeUnit.NANOSECONDS
+      .toMillis(System.nanoTime() - startNs)) + "ms"
 
-  def informProgress(msg: String)            = if (settings.verbose) inform("[" + msg + "]")
-  def informTime(msg: String, startNs: Long) = informProgress(elapsedMessage(msg, startNs))
-  @inline final def informingProgress[T](msg: => String)(fn: => T) : T = {
-    val verbose:Boolean = settings.verbose
-    val start = if(verbose) System.nanoTime() else 0L
-    try fn finally if (verbose) informTime(msg, start)
+  def informProgress(msg: String) =
+    if (settings.verbose) inform("[" + msg + "]")
+  def informTime(msg: String, startNs: Long) =
+    informProgress(elapsedMessage(msg, startNs))
+  @inline final def informingProgress[T](msg: => String)(fn: => T): T = {
+    val verbose: Boolean = settings.verbose
+    val start = if (verbose) System.nanoTime() else 0L
+    try fn
+    finally if (verbose) informTime(msg, start)
   }
 
   def shouldLogAtThisPhase = false
   def isPastTyper = false
-  final def isDeveloper: Boolean = settings.debug.value || settings.developer.value
+  final def isDeveloper: Boolean =
+    settings.debug.value || settings.developer.value
   def picklerPhase: Phase
 
   def erasurePhase: Phase
@@ -95,24 +104,29 @@ abstract class SymbolTable extends macros.Universe
   def settings: MutableSettings
 
   /** Override with final implementation for inlining. */
-  def debuglog(msg:  => String): Unit = if (settings.debug) log(msg)
+  def debuglog(msg: => String): Unit = if (settings.debug) log(msg)
 
   /** dev-warns if dev-warning is enabled and `cond` is true; no-op otherwise */
   @inline final def devWarningIf(cond: => Boolean)(msg: => String): Unit =
     if (isDeveloper && cond) devWarning(msg)
-  def devWarning(msg: => String): Unit = if (isDeveloper) Console.err.println(msg)
+  def devWarning(msg: => String): Unit =
+    if (isDeveloper) Console.err.println(msg)
   def throwableAsString(t: Throwable): String = "" + t
-  def throwableAsString(t: Throwable, maxFrames: Int): String = t.getStackTrace take maxFrames mkString "\n  at "
+  def throwableAsString(t: Throwable, maxFrames: Int): String =
+    t.getStackTrace take maxFrames mkString "\n  at "
 
   @inline final def devWarningDumpStack(msg: => String, maxFrames: Int): Unit =
     devWarning(msg + "\n" + throwableAsString(new Throwable, maxFrames))
 
   /** Prints a stack trace if -Ydebug or equivalent was given, otherwise does nothing. */
-  def debugStack(t: Throwable): Unit  = devWarning(throwableAsString(t))
+  def debugStack(t: Throwable): Unit = devWarning(throwableAsString(t))
 
   private[scala] def printCaller[T](msg: String)(result: T) = {
-    Console.err.println("%s: %s\nCalled from: %s".format(msg, result,
-      (new Throwable).getStackTrace.drop(2).take(50).mkString("\n")))
+    Console.err.println(
+      "%s: %s\nCalled from: %s".format(
+        msg,
+        result,
+        (new Throwable).getStackTrace.drop(2).take(50).mkString("\n")))
 
     result
   }
@@ -137,14 +151,17 @@ abstract class SymbolTable extends macros.Universe
     result
   }
   @inline
-  final private[scala] def logResultIf[T](msg: => String, cond: T => Boolean)(result: T): T = {
+  final private[scala] def logResultIf[T](msg: => String, cond: T => Boolean)(
+      result: T): T = {
     if (cond(result))
       log(msg + ": " + result)
 
     result
   }
   @inline
-  final private[scala] def debuglogResultIf[T](msg: => String, cond: T => Boolean)(result: T): T = {
+  final private[scala] def debuglogResultIf[T](
+      msg: => String,
+      cond: T => Boolean)(result: T): T = {
     if (cond(result))
       debuglog(msg + ": " + result)
 
@@ -167,11 +184,14 @@ abstract class SymbolTable extends macros.Universe
 
   // extracted from `assert`/`require` to make them as small (and inlineable) as possible
   private[internal] def throwAssertionError(msg: Any): Nothing =
-    throw new java.lang.AssertionError(s"assertion failed: ${supplementErrorMessage(String valueOf msg)}")
+    throw new java.lang.AssertionError(
+      s"assertion failed: ${supplementErrorMessage(String valueOf msg)}")
   private[internal] def throwRequirementError(msg: Any): Nothing =
-    throw new java.lang.IllegalArgumentException(s"requirement failed: ${supplementErrorMessage(String valueOf msg)}")
+    throw new java.lang.IllegalArgumentException(
+      s"requirement failed: ${supplementErrorMessage(String valueOf msg)}")
 
-  @inline final def findSymbol(xs: IterableOnce[Symbol])(p: Symbol => Boolean): Symbol = {
+  @inline final def findSymbol(xs: IterableOnce[Symbol])(
+      p: Symbol => Boolean): Symbol = {
     xs.iterator find p getOrElse NoSymbol
   }
 
@@ -189,7 +209,7 @@ abstract class SymbolTable extends macros.Universe
   }
 
   /** Dump each symbol to stdout after shutdown.
-   */
+    */
   final val traceSymbolActivity = System.getProperty("scalac.debug.syms") != null
   object traceSymbols extends {
     val global: SymbolTable.this.type = SymbolTable.this
@@ -198,23 +218,23 @@ abstract class SymbolTable extends macros.Universe
   val treeInfo: TreeInfo { val global: SymbolTable.this.type }
 
   /** Check that the executing thread is the compiler thread. No-op here,
-   *  overridden in interactive.Global. */
+    *  overridden in interactive.Global. */
   @elidable(elidable.WARNING)
   def assertCorrectThread(): Unit = {}
 
   /** A last effort if symbol in a select <owner>.<name> is not found.
-   *  This is overridden by the reflection compiler to make up a package
-   *  when it makes sense (i.e. <owner> is a package and <name> is a term name).
-   */
+    *  This is overridden by the reflection compiler to make up a package
+    *  when it makes sense (i.e. <owner> is a package and <name> is a term name).
+    */
   def missingHook(owner: Symbol, name: Name): Symbol = NoSymbol
 
   /** Returns the mirror that loaded given symbol */
   def mirrorThatLoaded(sym: Symbol): Mirror
 
   /** A period is an ordinal number for a phase in a run.
-   *  Phases in later runs have higher periods than phases in earlier runs.
-   *  Later phases have higher periods than earlier phases in the same run.
-   */
+    *  Phases in later runs have higher periods than phases in earlier runs.
+    *  Later phases have higher periods than earlier phases in the same run.
+    */
   type Period = Int
   final val NoPeriod = 0
 
@@ -222,7 +242,8 @@ abstract class SymbolTable extends macros.Universe
   type RunId = Int
   final val NoRunId = 0
 
-  private[this] val phStack: collection.mutable.Stack[Phase] = new collection.mutable.Stack()
+  private[this] val phStack: collection.mutable.Stack[Phase] =
+    new collection.mutable.Stack()
   private[this] var ph: Phase = NoPhase
   private[this] var per = NoPeriod
 
@@ -232,8 +253,8 @@ abstract class SymbolTable extends macros.Universe
   }
 
   def atPhaseStackMessage = atPhaseStack match {
-    case Nil    => ""
-    case ps     => ps.reverseIterator.map("->" + _).mkString("(", " ", ")")
+    case Nil => ""
+    case ps  => ps.reverseIterator.map("->" + _).mkString("(", " ", ")")
   }
 
   final def phase_=(p: Phase): Unit = {
@@ -308,8 +329,10 @@ abstract class SymbolTable extends macros.Universe
     else op
   }
 
-  @inline final def exitingPhase[T](ph: Phase)(op: => T): T = enteringPhase(ph.next)(op)
-  @inline final def enteringPrevPhase[T](op: => T): T       = enteringPhase(phase.prev)(op)
+  @inline final def exitingPhase[T](ph: Phase)(op: => T): T =
+    enteringPhase(ph.next)(op)
+  @inline final def enteringPrevPhase[T](op: => T): T =
+    enteringPhase(phase.prev)(op)
 
   @inline final def enteringPhaseNotLaterThan[T](target: Phase)(op: => T): T =
     if (isAtPhaseAfter(target)) enteringPhase(target)(op) else op
@@ -327,7 +350,7 @@ abstract class SymbolTable extends macros.Universe
   final def isValidForBaseClasses(period: Period): Boolean = {
     def noChangeInBaseClasses(it: InfoTransformer, limit: Phase#Id): Boolean = (
       it.pid >= limit ||
-      !it.changesBaseClasses && noChangeInBaseClasses(it.next, limit)
+        !it.changesBaseClasses && noChangeInBaseClasses(it.next, limit)
     )
     period != 0 && runId(period) == currentRunId && {
       val pid = phaseId(period)
@@ -361,20 +384,22 @@ abstract class SymbolTable extends macros.Universe
   }
 
   /** Convert array parameters denoting a repeated parameter of a Java method
-   *  to `JavaRepeatedParamClass` types.
-   */
+    *  to `JavaRepeatedParamClass` types.
+    */
   def arrayToRepeated(tp: Type): Type = tp match {
     case MethodType(params, rtpe) =>
       val formals = tp.paramTypes
       assert(formals.last.typeSymbol == definitions.ArrayClass, formals)
       val method = params.last.owner
       val elemtp = formals.last.typeArgs.head match {
-        case RefinedType(List(t1, t2), _) if (t1.typeSymbol.isAbstractType && t2.typeSymbol == definitions.ObjectClass) =>
+        case RefinedType(List(t1, t2), _)
+            if (t1.typeSymbol.isAbstractType && t2.typeSymbol == definitions.ObjectClass) =>
           t1 // drop intersection with Object for abstract types in varargs. UnCurry can handle them.
         case t =>
           t
       }
-      val newParams = method.newSyntheticValueParams(formals.init :+ definitions.javaRepeatedType(elemtp))
+      val newParams = method.newSyntheticValueParams(
+        formals.init :+ definitions.javaRepeatedType(elemtp))
       MethodType(newParams, rtpe)
     case PolyType(tparams, rtpe) =>
       PolyType(tparams, arrayToRepeated(rtpe))
@@ -390,7 +415,7 @@ abstract class SymbolTable extends macros.Universe
     val pkgModule = pkgClass.packageObject
     def fromSource = pkgModule.rawInfo match {
       case ltp: SymLoader => ltp.fromSource
-      case _ => false
+      case _              => false
     }
     if (pkgModule.isModule && !fromSource) {
       openPackageModule(pkgModule, pkgClass)
@@ -420,7 +445,8 @@ abstract class SymbolTable extends macros.Universe
     final def recordClassloader(loader: ClassLoader): ClassLoader = {
       def attemptClose(loader: ClassLoader): Unit = {
         loader match {
-          case u: URLClassLoader => debuglog("Closing classloader " + u); u.close()
+          case u: URLClassLoader =>
+            debuglog("Closing classloader " + u); u.close()
           case _ =>
         }
       }
@@ -433,9 +459,9 @@ abstract class SymbolTable extends macros.Universe
     }
 
     /**
-     * Removes a cache from the per-run caches. This is useful for testing: it allows running the
-     * compiler and then inspect the state of a cache.
-     */
+      * Removes a cache from the per-run caches. This is useful for testing: it allows running the
+      * compiler and then inspect the state of a cache.
+      */
     def unrecordCache[T <: Clearable](cache: T): Unit = {
       cache match {
         case jc: JavaClearable[_] =>
@@ -454,12 +480,13 @@ abstract class SymbolTable extends macros.Universe
       javaCaches = javaCaches.filter(_.isValid)
     }
 
-    def newWeakMap[K, V]()        = recordCache(mutable.WeakHashMap[K, V]())
-    def newMap[K, V]()            = recordCache(mutable.HashMap[K, V]())
-    def newSet[K]()               = recordCache(mutable.HashSet[K]())
+    def newWeakMap[K, V]() = recordCache(mutable.WeakHashMap[K, V]())
+    def newMap[K, V]() = recordCache(mutable.HashMap[K, V]())
+    def newSet[K]() = recordCache(mutable.HashSet[K]())
     def newWeakSet[K <: AnyRef]() = recordCache(new WeakHashSet[K]())
 
     def newAnyRefMap[K <: AnyRef, V]() = recordCache(mutable.AnyRefMap[K, V]())
+
     /**
       * Register a cache specified by a factory function and (optionally) a cleanup function.
       *
@@ -469,7 +496,7 @@ abstract class SymbolTable extends macros.Universe
       val NoCached: T = null.asInstanceOf[T]
       var cached: T = NoCached
       var cachedRunId = NoRunId
-      val clearable = new Clearable with (() => T)  {
+      val clearable = new Clearable with (() => T) {
         def clear(): Unit = {
           if (cached != NoCached)
             cleanup(cached)
@@ -499,20 +526,25 @@ abstract class SymbolTable extends macros.Universe
   val phaseWithId: Array[Phase]
 
   /** Is this symbol table a part of a compiler universe?
-   */
+    */
   def isCompilerUniverse = false
 
   @deprecated("use enteringPhase", "2.10.0") // Used in sbt 0.12.4
   @inline final def atPhase[T](ph: Phase)(op: => T): T = enteringPhase(ph)(op)
 
-
   /**
-   * Adds the `sm` String interpolator to a [[scala.StringContext]].
-   */
-  implicit val StringContextStripMarginOps: StringContext => StringContextStripMarginOps = util.StringContextStripMarginOps
+    * Adds the `sm` String interpolator to a [[scala.StringContext]].
+    */
+  implicit val StringContextStripMarginOps
+    : StringContext => StringContextStripMarginOps =
+    util.StringContextStripMarginOps
 
-  protected[scala] def currentRunProfilerBeforeCompletion(root: Symbol, associatedFile: AbstractFile): Unit = ()
-  protected[scala] def currentRunProfilerAfterCompletion(root: Symbol, associatedFile: AbstractFile): Unit = ()
+  protected[scala] def currentRunProfilerBeforeCompletion(
+      root: Symbol,
+      associatedFile: AbstractFile): Unit = ()
+  protected[scala] def currentRunProfilerAfterCompletion(
+      root: Symbol,
+      associatedFile: AbstractFile): Unit = ()
 }
 
 trait SymbolTableStats {

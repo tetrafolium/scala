@@ -1,6 +1,6 @@
 object Test {
   def multinest = {
-    def baz = {bar()}
+    def baz = { bar() }
     def bar(x: String = "a"): Any = {
       def bar(x: String = "b") = x
       bar() + x

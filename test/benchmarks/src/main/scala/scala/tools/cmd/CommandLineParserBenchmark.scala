@@ -1,4 +1,3 @@
-
 package scala.tools.cmd
 
 import java.util.concurrent.TimeUnit
@@ -27,9 +26,10 @@ class CommandLineParserBenchmark {
     line = List.tabulate(argCount)(n => s"arg$n").mkString(" ")
     val q = "\""
     quotyline = List.tabulate(argCount)(n => s"${q}arg${n}${q}").mkString(" ")
-    embedded  = List.tabulate(argCount)(n => s"${n}${q}arg${q}${n}").mkString(" ")
+    embedded =
+      List.tabulate(argCount)(n => s"${n}${q}arg${q}${n}").mkString(" ")
   }
-  @Benchmark def parsingBenchmark              = tokenize(line)
-  @Benchmark def quoteUnquoteParsingBenchmark  = tokenize(quotyline)
+  @Benchmark def parsingBenchmark = tokenize(line)
+  @Benchmark def quoteUnquoteParsingBenchmark = tokenize(quotyline)
   @Benchmark def embeddedQuoteParsingBenchmark = tokenize(embedded)
 }

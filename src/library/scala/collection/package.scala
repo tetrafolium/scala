@@ -25,7 +25,9 @@ package object collection {
   val TraversableOnce = IterableOnce
   @deprecated("Use SeqOps instead of SeqLike", "2.13.0")
   type SeqLike[A, T] = SeqOps[A, Seq, T]
-  @deprecated("Use SeqOps (for the methods) or IndexedSeqOps (for fast indexed access) instead of ArrayLike", "2.13.0")
+  @deprecated(
+    "Use SeqOps (for the methods) or IndexedSeqOps (for fast indexed access) instead of ArrayLike",
+    "2.13.0")
   type ArrayLike[A] = SeqOps[A, Seq, Seq[A]]
 
   @deprecated("Gen* collection types have been removed", "2.13.0")
@@ -54,29 +56,33 @@ package object collection {
   val GenMap = Map
 
   /** Needed to circumvent a difficulty between dotty and scalac concerning
-   *  the right top type for a type parameter of kind * -> *.
-   *  In Scalac, we can provide `Any`, as `Any` is kind-polymorphic. In dotty this is not allowed.
-   *  In dotty, we can provide `[X] => Any`. But Scalac does not know lambda syntax.
-   */
+    *  the right top type for a type parameter of kind * -> *.
+    *  In Scalac, we can provide `Any`, as `Any` is kind-polymorphic. In dotty this is not allowed.
+    *  In dotty, we can provide `[X] => Any`. But Scalac does not know lambda syntax.
+    */
   private[scala] type AnyConstr[X] = Any
 
   /** An extractor used to head/tail deconstruct sequences. */
   object +: {
+
     /** Splits a sequence into head :+ tail.
       * @return Some((head, tail)) if sequence is non-empty. None otherwise.
       */
-    def unapply[A, CC[_] <: Seq[_], C <: SeqOps[A, CC, C]](t: C with SeqOps[A, CC, C]): Option[(A, C)] =
-      if(t.isEmpty) None
+    def unapply[A, CC[_] <: Seq[_], C <: SeqOps[A, CC, C]](
+        t: C with SeqOps[A, CC, C]): Option[(A, C)] =
+      if (t.isEmpty) None
       else Some(t.head -> t.tail)
   }
 
   /** An extractor used to init/last deconstruct sequences. */
   object :+ {
+
     /** Splits a sequence into init :+ last.
       * @return Some((init, last)) if sequence is non-empty. None otherwise.
       */
-    def unapply[A, CC[_] <: Seq[_], C <: SeqOps[A, CC, C]](t: C with SeqOps[A, CC, C]): Option[(C, A)] =
-      if(t.isEmpty) None
+    def unapply[A, CC[_] <: Seq[_], C <: SeqOps[A, CC, C]](
+        t: C with SeqOps[A, CC, C]): Option[(C, A)] =
+      if (t.isEmpty) None
       else Some(t.init -> t.last)
   }
 }

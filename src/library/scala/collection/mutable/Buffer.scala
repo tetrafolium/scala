@@ -13,10 +13,9 @@
 package scala.collection
 package mutable
 
-
 /** A `Buffer` is a growable and shrinkable `Seq`. */
 trait Buffer[A]
-  extends Seq[A]
+    extends Seq[A]
     with SeqOps[A, Buffer, Buffer[A]]
     with Growable[A]
     with Shrinkable[A] {
@@ -47,11 +46,12 @@ trait Buffer[A]
     */
   @`inline` final def appendAll(xs: IterableOnce[A]): this.type = addAll(xs)
 
-
   /** Alias for `prepend` */
-  @`inline` final def +=: (elem: A): this.type = prepend(elem)
+  @`inline` final def +=:(elem: A): this.type = prepend(elem)
 
-  def prependAll(elems: IterableOnce[A]): this.type = { insertAll(0, elems); this }
+  def prependAll(elems: IterableOnce[A]): this.type = {
+    insertAll(0, elems); this
+  }
 
   @deprecated("Use prependAll instead", "2.13.0")
   @`inline` final def prepend(elems: A*): this.type = prependAll(elems)
@@ -100,14 +100,14 @@ trait Buffer[A]
   @throws[IndexOutOfBoundsException]
   @throws[IllegalArgumentException]
   def remove(idx: Int, count: Int): Unit
-  
+
   /** Removes a single element from this buffer, at its first occurrence.
     *  If the buffer does not contain that element, it is unchanged.
     *
     *  @param x  the element to remove.
     *  @return   the buffer itself
     */
-  def subtractOne (x: A): this.type = {
+  def subtractOne(x: A): this.type = {
     val i = indexOf(x)
     if (i != -1) remove(i)
     this
@@ -130,7 +130,9 @@ trait Buffer[A]
     remove(length - norm, norm)
   }
 
-  def patchInPlace(from: Int, patch: scala.collection.IterableOnce[A], replaced: Int): this.type
+  def patchInPlace(from: Int,
+                   patch: scala.collection.IterableOnce[A],
+                   replaced: Int): this.type
 
   // +=, ++=, clear inherited from Growable
   // Per remark of @ichoran, we should preferably not have these:
@@ -150,8 +152,11 @@ trait Buffer[A]
     remove(norm, length - norm)
     this
   }
-  def takeRightInPlace(n: Int): this.type = { remove(0, length - normalized(n)); this }
-  def sliceInPlace(start: Int, end: Int): this.type = takeInPlace(end).dropInPlace(start)
+  def takeRightInPlace(n: Int): this.type = {
+    remove(0, length - normalized(n)); this
+  }
+  def sliceInPlace(start: Int, end: Int): this.type =
+    takeInPlace(end).dropInPlace(start)
   private def normalized(n: Int): Int = math.min(math.max(n, 0), length)
 
   def dropWhileInPlace(p: A => Boolean): this.type = {
@@ -167,13 +172,14 @@ trait Buffer[A]
     this
   }
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "Buffer"
 }
 
-trait IndexedBuffer[A] extends IndexedSeq[A]
-  with IndexedSeqOps[A, IndexedBuffer, IndexedBuffer[A]]
-  with Buffer[A] {
+trait IndexedBuffer[A]
+    extends IndexedSeq[A]
+    with IndexedSeqOps[A, IndexedBuffer, IndexedBuffer[A]]
+    with Buffer[A] {
 
   override def iterableFactory: SeqFactory[IndexedBuffer] = IndexedBuffer
 
@@ -204,7 +210,9 @@ trait IndexedBuffer[A] extends IndexedSeq[A]
     if (i == j) this else takeInPlace(j)
   }
 
-  def patchInPlace(from: Int, patch: scala.collection.IterableOnce[A], replaced: Int): this.type = {
+  def patchInPlace(from: Int,
+                   patch: scala.collection.IterableOnce[A],
+                   replaced: Int): this.type = {
     val replaced0 = math.min(math.max(replaced, 0), length)
     val i = math.min(math.max(from, 0), length)
     var j = 0
@@ -214,7 +222,8 @@ trait IndexedBuffer[A] extends IndexedSeq[A]
       j += 1
     }
     if (iter.hasNext) insertAll(i + j, iter)
-    else if (j < replaced0) remove(i + j, math.min(replaced0 - j, length - i - j))
+    else if (j < replaced0)
+      remove(i + j, math.min(replaced0 - j, length - i - j))
     this
   }
 }

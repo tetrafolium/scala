@@ -18,6 +18,6 @@ trait WorksFine[@specialized(Boolean) A] {
 trait Bounds[@specialized(Boolean) A] {
   // okay without `>: A`
   def x[B >: A]: Unit = new Bounds[B] {
-    lazy val it = ???  // def or val okay
+    lazy val it = ??? // def or val okay
   }
 }

@@ -13,7 +13,8 @@ trait Low {
 import SSImplicits.{IntValue, anyStreamShape}
 
 class Test {
-  implicit def f[A, S <: BaseStream[_, S], CC](a: A)(implicit ss: SS[A, S]): S = ???
+  implicit def f[A, S <: BaseStream[_, S], CC](a: A)(implicit ss: SS[A, S]): S =
+    ???
 
   y
   x

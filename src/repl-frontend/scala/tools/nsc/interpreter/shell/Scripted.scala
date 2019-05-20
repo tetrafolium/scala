@@ -22,12 +22,19 @@ import scala.reflect.internal.util.Position
 import scala.util.Properties.versionString
 import scala.tools.nsc.Settings
 import scala.tools.nsc.util.stringFromReader
-import scala.tools.nsc.interpreter.{ImportContextPreamble, ScriptedInterpreter, ScriptedRepl}
+import scala.tools.nsc.interpreter.{
+  ImportContextPreamble,
+  ScriptedInterpreter,
+  ScriptedRepl
+}
 import scala.tools.nsc.interpreter.Results.Incomplete
 
 /* A REPL adaptor for the javax.script API. */
-class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Settings, out: PrintWriter)
-  extends AbstractScriptEngine with Compilable {
+class Scripted(@BeanProperty val factory: ScriptEngineFactory,
+               settings: Settings,
+               out: PrintWriter)
+    extends AbstractScriptEngine
+    with Compilable {
 
   def createBindings: Bindings = new SimpleBindings
 
@@ -35,11 +42,13 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
   final val ctx = s"$$ctx"
 
   // the underlying interpreter, tweaked to handle dynamic bindings
-  val intp: ScriptedRepl = new ScriptedInterpreter(settings, new SaveFirstErrorReporter(settings, out), importContextPreamble)
+  val intp: ScriptedRepl = new ScriptedInterpreter(
+    settings,
+    new SaveFirstErrorReporter(settings, out),
+    importContextPreamble)
   intp.initializeCompiler()
 
   var compileContext: ScriptContext = getContext
-
 
   def importContextPreamble(wanted: Set[String]): ImportContextPreamble = {
     // cull references that can be satisfied from the current dynamic context
@@ -47,10 +56,12 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
 
     if (contextual.isEmpty) ImportContextPreamble.empty
     else {
-      val adjusted = contextual.map { valname =>
-        s"""def `$valname` = $ctx.`$valname`; """ +
-        s"""def `${valname}_=`(x: _root_.java.lang.Object) = $ctx.`$valname` = x;"""
-      }.mkString("", "\n", "\n")
+      val adjusted = contextual
+        .map { valname =>
+          s"""def `$valname` = $ctx.`$valname`; """ +
+            s"""def `${valname}_=`(x: _root_.java.lang.Object) = $ctx.`$valname` = x;"""
+        }
+        .mkString("", "\n", "\n")
       ImportContextPreamble(contextual, Set(ctx), adjusted)
     }
   }
@@ -66,13 +77,13 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
     Set.from(terms)
   }
 
-
   def dynamicContext_=(ctx: ScriptContext): Unit = intp.call("set", ctx)
 
   def dynamicContext: ScriptContext = intp.call("value") match {
     case Right(ctx: ScriptContext) => ctx
-    case Left(e) => throw e
-    case Right(other) => throw new ScriptException(s"Unexpected value for context: $other")
+    case Left(e)                   => throw e
+    case Right(other) =>
+      throw new ScriptException(s"Unexpected value for context: $other")
   }
 
   // TODO: this wrapping probably belongs in ScriptedInterpreter
@@ -94,7 +105,7 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
      |import _root_.scala.language.dynamics
      |import _root_.javax.script._, ScriptContext.ENGINE_SCOPE
      |object dynamicBindings extends _root_.scala.Dynamic {
-     |  def context: ScriptContext = ${ intp.evalPath }.value
+     |  def context: ScriptContext = ${intp.evalPath}.value
      |  // $ctx.x retrieves the attribute x
      |  def selectDynamic(field: _root_.java.lang.String): _root_.java.lang.Object = context.getAttribute(field)
      |  // $ctx.x = v
@@ -112,7 +123,8 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
   // Defines attributes available for evaluation.
   // Avoid reflective access if using default context.
   def withScriptContext[A](context: ScriptContext)(body: => A): A =
-    if (context eq getContext) body else {
+    if (context eq getContext) body
+    else {
       val saved = dynamicContext
       dynamicContext = context
       try body
@@ -137,7 +149,7 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
     withCompileContext(context) {
       val cat = code + script
       intp.compile(cat, synthetic = false) match {
-        case Right(req)       =>
+        case Right(req) =>
           code = ""
           new WrappedRequest(req)
         case Left(Incomplete) =>
@@ -146,10 +158,13 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
             def eval(context: ScriptContext): Object = null
             def getEngine: ScriptEngine = Scripted.this
           }
-        case Left(_)          =>
+        case Left(_) =>
           code = ""
-          throw intp.reporter.asInstanceOf[SaveFirstErrorReporter].firstError map {
-            case (pos, msg) => new ScriptException(msg, script, pos.line, pos.column)
+          throw intp.reporter
+            .asInstanceOf[SaveFirstErrorReporter]
+            .firstError map {
+            case (pos, msg) =>
+              new ScriptException(msg, script, pos.line, pos.column)
           } getOrElse new ScriptException("compile-time error")
       }
     }
@@ -163,32 +178,40 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
   def compile(script: String): CompiledScript = compile(script, context)
 
   @throws[ScriptException]
-  def compile(reader: Reader): CompiledScript = compile(stringFromReader(reader), context)
+  def compile(reader: Reader): CompiledScript =
+    compile(stringFromReader(reader), context)
 
   /* Compile and evaluate with the given context. */
   @throws[ScriptException]
-  def eval(script: String, context: ScriptContext): Object = compile(script, context).eval(context)
+  def eval(script: String, context: ScriptContext): Object =
+    compile(script, context).eval(context)
 
   @throws[ScriptException]
-  def eval(reader: Reader, context: ScriptContext): Object = compile(stringFromReader(reader), context).eval(context)
+  def eval(reader: Reader, context: ScriptContext): Object =
+    compile(stringFromReader(reader), context).eval(context)
 
   private class WrappedRequest(val req: intp.Request) extends CompiledScript {
     var first = true
 
     private def evalEither(r: intp.Request, ctx: ScriptContext) = {
-      if (ctx.getWriter == null && ctx.getErrorWriter == null && ctx.getReader == null) r.eval
+      if (ctx.getWriter == null && ctx.getErrorWriter == null && ctx.getReader == null)
+        r.eval
       else {
         val closeables = Array.ofDim[Closeable](2)
-        val w = if (ctx.getWriter == null) Console.out else {
-          val v = new WriterOutputStream(ctx.getWriter)
-          closeables(0) = v
-          v
-        }
-        val e = if (ctx.getErrorWriter == null) Console.err else {
-          val v = new WriterOutputStream(ctx.getErrorWriter)
-          closeables(1) = v
-          v
-        }
+        val w =
+          if (ctx.getWriter == null) Console.out
+          else {
+            val v = new WriterOutputStream(ctx.getWriter)
+            closeables(0) = v
+            v
+          }
+        val e =
+          if (ctx.getErrorWriter == null) Console.err
+          else {
+            val v = new WriterOutputStream(ctx.getErrorWriter)
+            closeables(1) = v
+            v
+          }
         val in = if (ctx.getReader == null) Console.in else ctx.getReader
         try {
           Console.withOut(w) {
@@ -213,20 +236,23 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
     override def eval(context: ScriptContext) =
       withScriptContext(context) {
         if (!first)
-          intp.addBackReferences(req) fold (
-            { line => Scripted.this.eval(line); null }, // we're evaluating after recording the request instead of other way around, but that should be ok, right?
-            evalAndRecord(context, _))
-        else try evalAndRecord(context, req) finally first = false
+          intp.addBackReferences(req) fold ({ line =>
+            Scripted.this.eval(line); null
+          }, // we're evaluating after recording the request instead of other way around, but that should be ok, right?
+          evalAndRecord(context, _))
+        else
+          try evalAndRecord(context, req)
+          finally first = false
       }
 
     private def evalAndRecord(context: ScriptContext, req: intp.Request) =
       evalEither(req, context) match {
         case Left(e: RuntimeException) => throw e
-        case Left(e: Exception) => throw new ScriptException(e)
-        case Left(e) => throw e
-        case Right(result) => intp recordRequest req; result.asInstanceOf[Object]
+        case Left(e: Exception)        => throw new ScriptException(e)
+        case Left(e)                   => throw e
+        case Right(result) =>
+          intp recordRequest req; result.asInstanceOf[Object]
       }
-
 
     def getEngine: ScriptEngine = Scripted.this
   }
@@ -235,23 +261,25 @@ class Scripted(@BeanProperty val factory: ScriptEngineFactory, settings: Setting
 object Scripted {
 
   class Factory extends ScriptEngineFactory {
-    @BeanProperty val engineName      = "Scala REPL"
+    @BeanProperty val engineName = "Scala REPL"
 
-    @BeanProperty val engineVersion   = "2.0"
+    @BeanProperty val engineVersion = "2.0"
 
-    @BeanProperty val extensions      = asList("scala")
+    @BeanProperty val extensions = asList("scala")
 
-    @BeanProperty val languageName    = "Scala"
+    @BeanProperty val languageName = "Scala"
 
     @BeanProperty val languageVersion = versionString
 
-    @BeanProperty val mimeTypes       = asList("application/x-scala")
+    @BeanProperty val mimeTypes = asList("application/x-scala")
 
-    @BeanProperty val names           = asList("scala")
+    @BeanProperty val names = asList("scala")
 
-    def getMethodCallSyntax(obj: String, m: String, args: String*): String = args.mkString(s"$obj.$m(", ", ", ")")
+    def getMethodCallSyntax(obj: String, m: String, args: String*): String =
+      args.mkString(s"$obj.$m(", ", ", ")")
 
-    def getOutputStatement(toDisplay: String): String = s"Console.println($toDisplay)"
+    def getOutputStatement(toDisplay: String): String =
+      s"Console.println($toDisplay)"
 
     def getParameter(key: String): Object = key match {
       case ScriptEngine.ENGINE           => engineName
@@ -259,10 +287,13 @@ object Scripted {
       case ScriptEngine.LANGUAGE         => languageName
       case ScriptEngine.LANGUAGE_VERSION => languageVersion
       case ScriptEngine.NAME             => names.get(0)
-      case _ => null
+      case _                             => null
     }
 
-    def getProgram(statements: String*): String = statements.mkString("object Main extends _root_.scala.App {\n\t", "\n\t", "\n}")
+    def getProgram(statements: String*): String =
+      statements.mkString("object Main extends _root_.scala.App {\n\t",
+                          "\n\t",
+                          "\n}")
 
     def getScriptEngine: ScriptEngine = {
       val settings = new Settings()
@@ -271,9 +302,11 @@ object Scripted {
     }
   }
 
-  def apply(factory: ScriptEngineFactory = new Factory, settings: Settings = new Settings, out: PrintWriter = ReplReporterImpl.defaultOut) = {
+  def apply(factory: ScriptEngineFactory = new Factory,
+            settings: Settings = new Settings,
+            out: PrintWriter = ReplReporterImpl.defaultOut) = {
     settings.Yreplclassbased.value = true
-    settings.usejavacp.value       = true
+    settings.usejavacp.value = true
     val s = new Scripted(factory, settings, out)
     s.setBindings(s.createBindings, ScriptContext.ENGINE_SCOPE)
     s
@@ -281,9 +314,9 @@ object Scripted {
 }
 
 import java.io.Writer
-import java.nio.{ ByteBuffer, CharBuffer }
-import java.nio.charset.{ Charset, CodingErrorAction }
-import CodingErrorAction.{ REPLACE => Replace }
+import java.nio.{ByteBuffer, CharBuffer}
+import java.nio.charset.{Charset, CodingErrorAction}
+import CodingErrorAction.{REPLACE => Replace}
 
 /* An OutputStream that decodes bytes and flushes to the writer. */
 class WriterOutputStream(writer: Writer) extends OutputStream {
@@ -312,8 +345,8 @@ class WriterOutputStream(writer: Writer) extends OutputStream {
   override def toString = charBuffer.toString
 }
 
-
-private class SaveFirstErrorReporter(settings: Settings, out: PrintWriter) extends ReplReporterImpl(settings, out) {
+private class SaveFirstErrorReporter(settings: Settings, out: PrintWriter)
+    extends ReplReporterImpl(settings, out) {
   override def display(pos: Position, msg: String, severity: Severity): Unit = {}
 
   private var _firstError: Option[(Position, String)] = None

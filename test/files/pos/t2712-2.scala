@@ -2,8 +2,8 @@ package test
 
 // See: https://github.com/milessabin/si2712fix-demo/issues/3
 object Test {
-  trait A[T1, T2] { }
-  trait B[T1, T2] { }
+  trait A[T1, T2] {}
+  trait B[T1, T2] {}
   class C[T] extends A[T, Long] with B[T, Double]
   class CB extends A[Boolean, Long] with B[Boolean, Double]
 

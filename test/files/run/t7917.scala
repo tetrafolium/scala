@@ -3,7 +3,7 @@ trait B[+T] {
 }
 
 trait W
-trait WB extends B[W]  {
+trait WB extends B[W] {
   final def f = g
   def g: this.type
 }

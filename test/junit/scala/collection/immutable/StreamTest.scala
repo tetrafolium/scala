@@ -14,36 +14,38 @@ class StreamTest {
   @Test
   def t6727_and_t6440_and_8627(): Unit = {
     assertTrue(Stream.continually(()).filter(_ => true).take(2) == Seq((), ()))
-    assertTrue(Stream.continually(()).filterNot(_ => false).take(2) == Seq((), ()))
-    assertTrue(Stream(1,2,3,4,5).filter(_ < 4) == Seq(1,2,3))
-    assertTrue(Stream(1,2,3,4,5).filterNot(_ > 4) == Seq(1,2,3,4))
-    assertTrue(Stream.from(1).filter(_ > 4).take(3) == Seq(5,6,7))
-    assertTrue(Stream.from(1).filterNot(_ <= 4).take(3) == Seq(5,6,7))
+    assertTrue(
+      Stream.continually(()).filterNot(_ => false).take(2) == Seq((), ()))
+    assertTrue(Stream(1, 2, 3, 4, 5).filter(_ < 4) == Seq(1, 2, 3))
+    assertTrue(Stream(1, 2, 3, 4, 5).filterNot(_ > 4) == Seq(1, 2, 3, 4))
+    assertTrue(Stream.from(1).filter(_ > 4).take(3) == Seq(5, 6, 7))
+    assertTrue(Stream.from(1).filterNot(_ <= 4).take(3) == Seq(5, 6, 7))
   }
 
   /** Test helper to verify that the given Stream operation allows
     * GC of the head during processing of the tail.
     */
-  def assertStreamOpAllowsGC(op: (=> Stream[Int], Int => Unit) => Any, f: Int => Unit): Unit = {
+  def assertStreamOpAllowsGC(op: (=> Stream[Int], Int => Unit) => Any,
+                             f: Int => Unit): Unit = {
     val msgSuccessGC = "GC success"
     val msgFailureGC = "GC failure"
 
     // A stream of 500 elements at most. We will test that the head can be collected
     // while processing the tail. After each element we will GC and wait 10 ms, so a
     // failure to collect will take roughly 5 seconds.
-    val ref = WeakReference( Stream.from(1).take(500) )
+    val ref = WeakReference(Stream.from(1).take(500))
 
     def gcAndThrowIfCollected(n: Int): Unit = {
-      System.gc()                                                   // try to GC
-      Thread.sleep(10)                                              // give it 10 ms
+      System.gc() // try to GC
+      Thread.sleep(10) // give it 10 ms
       if (ref.get.isEmpty) throw new RuntimeException(msgSuccessGC) // we're done if head collected
       f(n)
     }
 
-    val res = Try { op(ref(), gcAndThrowIfCollected) }.failed       // success is indicated by an
-    val msg = res.map(_.getMessage).getOrElse(msgFailureGC)         // exception with expected message 
-                                                                    // failure is indicated by no
-    assertTrue(msg == msgSuccessGC)                                 // exception, or one with different message
+    val res = Try { op(ref(), gcAndThrowIfCollected) }.failed // success is indicated by an
+    val msg = res.map(_.getMessage).getOrElse(msgFailureGC) // exception with expected message
+    // failure is indicated by no
+    assertTrue(msg == msgSuccessGC) // exception, or one with different message
   }
 
   @Test
@@ -63,7 +65,8 @@ class StreamTest {
 
   @Test // scala/bug#8990
   def withFilter_after_first_withFilter_foreach_allows_GC: Unit = {
-    assertStreamOpAllowsGC(_.withFilter(_ > 1).withFilter(_ < 100).foreach(_), _ => ())
+    assertStreamOpAllowsGC(_.withFilter(_ > 1).withFilter(_ < 100).foreach(_),
+                           _ => ())
   }
 
   @Test // scala/bug#8990
@@ -75,27 +78,30 @@ class StreamTest {
       if (shouldThrow && n == 5) throw new RuntimeException("n == 5") else n > 5
     }
 
-    assertTrue( Try { wf.map(identity) }.isFailure ) // throws on n == 5
+    assertTrue(Try { wf.map(identity) }.isFailure) // throws on n == 5
 
-    shouldThrow = false                              // won't throw next time
+    shouldThrow = false // won't throw next time
 
-    assertTrue( wf.map(identity).length == 5 )       // success instead of NPE
+    assertTrue(wf.map(identity).length == 5) // success instead of NPE
   }
 
   /** Test helper to verify that the given Stream operation is properly lazy in the tail */
-  def assertStreamOpLazyInTail(op: (=> Stream[Int]) => Stream[Int], expectedEvaluated: List[Int]): Unit = {
+  def assertStreamOpLazyInTail(op: (=> Stream[Int]) => Stream[Int],
+                               expectedEvaluated: List[Int]): Unit = {
     // mutable state to record every strict evaluation
     var evaluated: List[Int] = Nil
 
     def trackEffectsOnNaturals: Stream[Int] = {
-      def loop(i: Int): Stream[Int] = { evaluated ++= List(i); i #:: loop(i + 1) }
+      def loop(i: Int): Stream[Int] = {
+        evaluated ++= List(i); i #:: loop(i + 1)
+      }
       loop(1)
     }
 
     // call op on a stream which records every strict evaluation
     val result = op(trackEffectsOnNaturals)
 
-    assertTrue( evaluated == expectedEvaluated )
+    assertTrue(evaluated == expectedEvaluated)
   }
 
   @Test // scala/bug#9134
@@ -113,9 +119,12 @@ class StreamTest {
     // Make sure we're tested with reference equality
     val s = Stream.from(0)
     assert(s == s, "Referentially identical streams should be equal (==)")
-    assert(s equals s, "Referentially identical streams should be equal (equals)")
-    assert((0 #:: 1 #:: s) == (0 #:: 1 #:: s), "Cons of referentially identical streams should be equal (==)")
-    assert((0 #:: 1 #:: s) equals (0 #:: 1 #:: s), "Cons of referentially identical streams should be equal (equals)")
+    assert(s equals s,
+           "Referentially identical streams should be equal (equals)")
+    assert((0 #:: 1 #:: s) == (0 #:: 1 #:: s),
+           "Cons of referentially identical streams should be equal (==)")
+    assert((0 #:: 1 #:: s) equals (0 #:: 1 #:: s),
+           "Cons of referentially identical streams should be equal (equals)")
   }
 
   @Test
@@ -125,7 +134,7 @@ class StreamTest {
   }
 
   @Test
-  def testForceReturnsEvaluatedStream() : Unit = {
+  def testForceReturnsEvaluatedStream(): Unit = {
     var i = 0
     def f: Int = { i += 1; i }
     val xs = f #:: f #:: f #:: Stream.empty
@@ -134,18 +143,18 @@ class StreamTest {
     assertEquals(3, i)
     // it's possible to implement `force` with incorrect string representation
     // (to forget about `tlEvaluated` update)
-    assertEquals( "Stream(1, 2, 3)", xs.toString())
+    assertEquals("Stream(1, 2, 3)", xs.toString())
   }
 
   val cycle1: Stream[Int] = 1 #:: 2 #:: cycle1
   val cycle2: Stream[Int] = 1 #:: 2 #:: 3 #:: cycle2
-  @Test(timeout=10000)
+  @Test(timeout = 10000)
   def testSameElements(): Unit = {
     assert(Stream().sameElements(Stream()))
     assert(!Stream().sameElements(Stream(1)))
-    assert(Stream(1,2).sameElements(Stream(1,2)))
-    assert(!Stream(1,2).sameElements(Stream(1)))
-    assert(!Stream(1).sameElements(Stream(1,2)))
+    assert(Stream(1, 2).sameElements(Stream(1, 2)))
+    assert(!Stream(1, 2).sameElements(Stream(1)))
+    assert(!Stream(1).sameElements(Stream(1, 2)))
     assert(!Stream(1).sameElements(Stream(2)))
     assert(!cycle1.sameElements(cycle2))
     assert(!cycle1.sameElements(cycle2))
@@ -222,8 +231,10 @@ class StreamTest {
 
   class CountingIt extends Iterator[Int] {
     var current = 0
-    def hasNext = current+1 < 10
-    def next(): Int = if(hasNext) { current+= 1; current } else throw new NoSuchElementException
+    def hasNext = current + 1 < 10
+    def next(): Int =
+      if (hasNext) { current += 1; current } else
+        throw new NoSuchElementException
   }
 
   @Test
@@ -232,27 +243,40 @@ class StreamTest {
     val s2 = it1.toStream
     s2.iterator.next()
     assertEquals(1, it1.current)
-    s2.flatMap { i => (if(i < 3) None else Some(i)): Option[Int] }.iterator.next
+    s2.flatMap { i =>
+        (if (i < 3) None else Some(i)): Option[Int]
+      }
+      .iterator
+      .next
     assertEquals(3, it1.current)
-    s2.flatMap { i => (if(i < 5) None else Some(i)): Option[Int] }.headOption
+    s2.flatMap { i =>
+      (if (i < 5) None else Some(i)): Option[Int]
+    }.headOption
     assertEquals(5, it1.current)
   }
 
   @Test
   def t10883: Unit = {
     var value: Int = -1
-    Stream.iterate(0){ a =>
-      val next = a + 1
-      value = next
-      next
-    }.take(3).toList
+    Stream
+      .iterate(0) { a =>
+        val next = a + 1
+        value = next
+        next
+      }
+      .take(3)
+      .toList
     assertEquals(2, value)
     value = -1
-    Stream.iterate(0){ a =>
-      val next = a + 1
-      value = next
-      next
-    }.iterator.take(3).toList
+    Stream
+      .iterate(0) { a =>
+        val next = a + 1
+        value = next
+        next
+      }
+      .iterator
+      .take(3)
+      .toList
     assertEquals(2, value)
   }
 
@@ -260,28 +284,46 @@ class StreamTest {
   def t09791: Unit = {
     // updated tests
     val x = Stream.continually("*").updated(0, "new value")
-    assertEquals(List("new value", "*", "*", "*", "*", "*", "*", "*", "*", "*"), x.take(10).toList)
+    assertEquals(List("new value", "*", "*", "*", "*", "*", "*", "*", "*", "*"),
+                 x.take(10).toList)
 
     val y = Stream.continually("*").updated(4, "new value")
-    assertEquals(List("*", "*", "*", "*", "new value", "*", "*", "*", "*", "*"), y.take(10).toList)
+    assertEquals(List("*", "*", "*", "*", "new value", "*", "*", "*", "*", "*"),
+                 y.take(10).toList)
 
     // patch tests
 
     // doesn't matter what we put for 'replaced' arg, since the stream is infinite
     assertEquals(List("new", "value", "!", "*", "*", "*", "*", "*", "*", "*"),
-      Stream.continually("*").patch(0, List("new", "value", "!"), 0).take(10).toList)
+                 Stream
+                   .continually("*")
+                   .patch(0, List("new", "value", "!"), 0)
+                   .take(10)
+                   .toList)
 
     assertEquals(List("new", "value", "!", "*", "*", "*", "*", "*", "*", "*"),
-      Stream.continually("*").patch(0, List("new", "value", "!"), 2).take(10).toList)
+                 Stream
+                   .continually("*")
+                   .patch(0, List("new", "value", "!"), 2)
+                   .take(10)
+                   .toList)
 
     assertEquals(List("*", "new", "value", "!", "*", "*", "*", "*", "*", "*"),
-      Stream.continually("*").patch(1, List("new", "value", "!"), 2).take(10).toList)
+                 Stream
+                   .continually("*")
+                   .patch(1, List("new", "value", "!"), 2)
+                   .take(10)
+                   .toList)
 
     // actually test 'replaced'
-    assertEquals(List("*", "new", "_", "_", "_", "!", "*", "*", "*", "*"),
-      Stream.continually("*")
+    assertEquals(
+      List("*", "new", "_", "_", "_", "!", "*", "*", "*", "*"),
+      Stream
+        .continually("*")
         .patch(1, List("new", "value", "!"), 2)
         .patch(2, List("_", "_", "_"), 1)
-        .take(10).toList)
+        .take(10)
+        .toList
+    )
   }
 }

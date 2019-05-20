@@ -11,8 +11,8 @@ package org.scalacheck.util
 
 import scala.collection.{mutable, Map => _, _}
 
-trait Buildable[T,C] extends Serializable {
-  def builder: mutable.Builder[T,C]
+trait Buildable[T, C] extends Serializable {
+  def builder: mutable.Builder[T, C]
   def fromIterable(it: Iterable[T]): C = {
     val b = builder
     b ++= it
@@ -48,13 +48,13 @@ object SerializableCanBuildFroms {
 
 object Buildable {
 
-  implicit def buildableFactory[T,C](implicit f: Factory[T,C]) =
-    new Buildable[T,C] {
+  implicit def buildableFactory[T, C](implicit f: Factory[T, C]) =
+    new Buildable[T, C] {
       def builder = f.newBuilder
     }
 
   import java.util.ArrayList
-  implicit def buildableArrayList[T] = new Buildable[T,ArrayList[T]] {
+  implicit def buildableArrayList[T] = new Buildable[T, ArrayList[T]] {
     def builder = new ArrayListBuilder[T]
   }
 
@@ -83,4 +83,4 @@ object Buildable2 {
   }
 
 }
-*/
+ */

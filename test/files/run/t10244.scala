@@ -34,6 +34,8 @@ object Test {
 
     // check that transient lazy val uses a transient bitmap,
     // so that it doesn't care whether the lazy val was initialized before serialization or not
-    assert(deserialize[Serializes](serialize { val i = new Serializes ; i.check ; i }).check)
+    assert(deserialize[Serializes](serialize {
+      val i = new Serializes; i.check; i
+    }).check)
   }
 }

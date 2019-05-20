@@ -22,18 +22,22 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
 
   def prodToString(producer: AbstractInsnNode) = producer match {
     case p: InitialProducer => p.toString
-    case p => textify(p)
+    case p                  => textify(p)
   }
 
-  def testSingleInsn(singletonInsns: Traversable[AbstractInsnNode], expected: String): Unit = {
+  def testSingleInsn(singletonInsns: Traversable[AbstractInsnNode],
+                     expected: String): Unit = {
     testInsn(single(singletonInsns), expected)
   }
 
-  def testMultiInsns(insns: Traversable[AbstractInsnNode], expected: Traversable[String]): Unit = {
-    assertTrue(s"Sizes don't match: ${insns.size} vs ${expected.size}", insns.size == expected.size)
+  def testMultiInsns(insns: Traversable[AbstractInsnNode],
+                     expected: Traversable[String]): Unit = {
+    assertTrue(s"Sizes don't match: ${insns.size} vs ${expected.size}",
+               insns.size == expected.size)
     for (insn <- insns) {
       val txt = prodToString(insn)
-      assertTrue(s"Instruction $txt not found in ${expected mkString ", "}", expected.exists(txt.contains))
+      assertTrue(s"Instruction $txt not found in ${expected mkString ", "}",
+                 expected.exists(txt.contains))
     }
   }
 
@@ -56,7 +60,7 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     testSingleInsn(a.producersForValueAt(call, 1), "ALOAD 0") // producer of stack value
     testSingleInsn(a.producersForInputsOf(call), "ALOAD 0")
 
-    testSingleInsn(a.consumersOfValueAt(call.getNext, 1), "ARETURN")  // consumer of `toString` result
+    testSingleInsn(a.consumersOfValueAt(call.getNext, 1), "ARETURN") // consumer of `toString` result
     testSingleInsn(a.consumersOfOutputsFrom(call), "ARETURN")
 
     testSingleInsn(a.ultimateConsumersOfValueAt(call.getNext, 1), "ARETURN")
@@ -88,17 +92,20 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     testSingleInsn(a.producersForValueAt(ifne, 1), "ParameterProducer")
 
     val ret = findInstr(m, "IRETURN")
-    testMultiInsns(a.producersForValueAt(ret, 1), List("ParameterProducer", "ISTORE 1"))
+    testMultiInsns(a.producersForValueAt(ret, 1),
+                   List("ParameterProducer", "ISTORE 1"))
   }
 
   @Test
   def branching(): Unit = {
-    val m = compileAsmMethod("def f(x: Int) = { var a = x; if (a == 0) a = 12; a }")
+    val m = compileAsmMethod(
+      "def f(x: Int) = { var a = x; if (a == 0) a = 12; a }")
     val a = new ProdConsAnalyzer(m, "C")
 
     val ret = findInstr(m, "IRETURN")
     testMultiInsns(a.producersForValueAt(ret, 2), List("ISTORE 2", "ISTORE 2"))
-    testMultiInsns(a.initialProducersForValueAt(ret, 2), List("BIPUSH 12", "ParameterProducer"))
+    testMultiInsns(a.initialProducersForValueAt(ret, 2),
+                   List("BIPUSH 12", "ParameterProducer"))
 
     val bipush = findInstr(m, "BIPUSH 12")
     testSingleInsn(a.consumersOfOutputsFrom(bipush), "ISTORE 2")
@@ -127,16 +134,19 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
 
   @Test
   def unInitLocal(): Unit = {
-    val m = compileAsmMethod("def f(b: Boolean) = { if (b) { var a = 0; println(a) }; 1 }")
+    val m = compileAsmMethod(
+      "def f(b: Boolean) = { if (b) { var a = 0; println(a) }; 1 }")
     val a = new ProdConsAnalyzer(m, "C")
 
     val store = findInstr(m, "ISTORE")
-    val call  = findInstr(m, "INVOKEVIRTUAL")
-    val ret   = findInstr(m, "IRETURN")
+    val call = findInstr(m, "INVOKEVIRTUAL")
+    val ret = findInstr(m, "IRETURN")
 
-    testSingleInsn(a.producersForValueAt(store, 2), "UninitializedLocalProducer(2)")
+    testSingleInsn(a.producersForValueAt(store, 2),
+                   "UninitializedLocalProducer(2)")
     testSingleInsn(a.producersForValueAt(call, 2), "ISTORE")
-    testMultiInsns(a.producersForValueAt(ret, 2), List("UninitializedLocalProducer", "ISTORE"))
+    testMultiInsns(a.producersForValueAt(ret, 2),
+                   List("UninitializedLocalProducer", "ISTORE"))
   }
 
   @Test
@@ -144,14 +154,15 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     val m = compileAsmMethod("def f = new Object")
     val a = new ProdConsAnalyzer(m, "C")
 
-    val newO   = findInstr(m, "NEW")
+    val newO = findInstr(m, "NEW")
     val constr = findInstr(m, "INVOKESPECIAL")
 
     testSingleInsn(a.producersForInputsOf(constr), "DUP")
     testSingleInsn(a.initialProducersForInputsOf(constr), "NEW")
 
     testSingleInsn(a.consumersOfOutputsFrom(newO), "DUP")
-    testMultiInsns(a.ultimateConsumersOfOutputsFrom(newO), List("INVOKESPECIAL", "ARETURN"))
+    testMultiInsns(a.ultimateConsumersOfOutputsFrom(newO),
+                   List("INVOKESPECIAL", "ARETURN"))
   }
 
   @Test
@@ -170,11 +181,11 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     m.maxStack = 4
     val a = new ProdConsAnalyzer(m, "C")
 
-    val dup2  = findInstr(m, "DUP2")
-    val add   = findInstr(m, "IADD")
-    val swap  = findInstr(m, "SWAP")
+    val dup2 = findInstr(m, "DUP2")
+    val add = findInstr(m, "IADD")
+    val swap = findInstr(m, "SWAP")
     val store = findInstr(m, "ISTORE")
-    val ret   = findInstr(m, "IRETURN")
+    val ret = findInstr(m, "IRETURN")
 
     testMultiInsns(a.producersForInputsOf(dup2), List("ILOAD", "ILOAD"))
     testSingleInsn(a.consumersOfValueAt(dup2.getNext, 4), "IADD")
@@ -227,8 +238,8 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     val a = new ProdConsAnalyzer(m, "C")
 
     val cnst = findInstr(m, "LCONST_0")
-    val l2i  = findInstr(m, "L2I") // l2i is not a copying instruction
-    val ret  = findInstr(m, "IRETURN")
+    val l2i = findInstr(m, "L2I") // l2i is not a copying instruction
+    val ret = findInstr(m, "IRETURN")
 
     testSingleInsn(a.consumersOfOutputsFrom(cnst), "L2I")
     testSingleInsn(a.ultimateConsumersOfOutputsFrom(cnst), "L2I")
@@ -247,15 +258,12 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
       Label(1),
       VarOp(ILOAD, 1),
       IntOp(BIPUSH, 10),
-      Op(IADD),          // consumer of the above ILOAD
-
+      Op(IADD), // consumer of the above ILOAD
       Op(ICONST_0),
       Jump(IF_ICMPNE, Label(2)),
-
       VarOp(ILOAD, 1),
       VarOp(ISTORE, 1),
       Jump(GOTO, Label(1)),
-
       Label(2),
       IntOp(BIPUSH, 9),
       Op(IRETURN)
@@ -271,9 +279,12 @@ class ProdConsAnalyzerTest extends BytecodeTesting {
     assert(secondLoad.getOpcode == ILOAD)
 
     testSingleInsn(a.producersForValueAt(iadd, 2), "ILOAD")
-    testSingleInsn(a.initialProducersForValueAt(iadd, 2), "ParameterProducer(1)")
-    testMultiInsns(a.producersForInputsOf(firstLoad), List("ParameterProducer", "ISTORE"))
-    testMultiInsns(a.producersForInputsOf(secondLoad), List("ParameterProducer", "ISTORE"))
+    testSingleInsn(a.initialProducersForValueAt(iadd, 2),
+                   "ParameterProducer(1)")
+    testMultiInsns(a.producersForInputsOf(firstLoad),
+                   List("ParameterProducer", "ISTORE"))
+    testMultiInsns(a.producersForInputsOf(secondLoad),
+                   List("ParameterProducer", "ISTORE"))
 
     testSingleInsn(a.ultimateConsumersOfOutputsFrom(firstLoad), "IADD")
     testSingleInsn(a.ultimateConsumersOfOutputsFrom(secondLoad), "IADD")

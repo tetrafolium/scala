@@ -3,7 +3,8 @@ import java.io._
 
 object Test extends DirectTest {
 
-  override def extraSettings: String = "-usejavacp -d " + testOutput.path + " -cp " + testOutput.path
+  override def extraSettings: String =
+    "-usejavacp -d " + testOutput.path + " -cp " + testOutput.path
 
   override def code = """
     // scala/bug#5545

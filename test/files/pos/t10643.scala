@@ -1,4 +1,3 @@
-
 // scalac: -Yrangepos
 
 trait AA
@@ -23,4 +22,3 @@ class Test {
 object BBFactory {
   def create(id: Long)(implicit i: DummyImplicit): BB = ???
 }
-

@@ -25,8 +25,10 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
   val reporter = new StoreReporter
   val compiler = new Global(settings, reporter)
 
-  def askAndListen[T, U](msg: String,  arg: T, op: (T, Response[U]) => Unit): Unit = {
-    if (settings.verbose) print(msg+" "+arg+": ")
+  def askAndListen[T, U](msg: String,
+                         arg: T,
+                         op: (T, Response[U]) => Unit): Unit = {
+    if (settings.verbose) print(msg + " " + arg + ": ")
     val TIMEOUT = 10 // ms
     val limit = System.currentTimeMillis() + randomDelayMillis
     val res = new Response[U]
@@ -34,22 +36,27 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
     while (!res.isComplete && !res.isCancelled) {
       if (System.currentTimeMillis() > limit) {
         print("c"); res.cancel()
-      } else res.get(TIMEOUT.toLong) match {
-        case Some(Left(t)) =>
-          /**/
-          if (settings.verbose) println(t)
-        case Some(Right(ex)) =>
-          ex.printStackTrace()
-          println(ex)
-        case None =>
-      }
+      } else
+        res.get(TIMEOUT.toLong) match {
+          case Some(Left(t)) =>
+            /**/
+            if (settings.verbose) println(t)
+          case Some(Right(ex)) =>
+            ex.printStackTrace()
+            println(ex)
+          case None =>
+        }
     }
   }
 
-  def askReload(sfs: SourceFile*) = askAndListen("reload", sfs.toList, compiler.askReload)
-  def askTypeAt(pos: Position) = askAndListen("type at", pos, compiler.askTypeAt)
-  def askTypeCompletion(pos: Position) = askAndListen("type at", pos, compiler.askTypeCompletion)
-  def askScopeCompletion(pos: Position) = askAndListen("type at", pos, compiler.askScopeCompletion)
+  def askReload(sfs: SourceFile*) =
+    askAndListen("reload", sfs.toList, compiler.askReload)
+  def askTypeAt(pos: Position) =
+    askAndListen("type at", pos, compiler.askTypeAt)
+  def askTypeCompletion(pos: Position) =
+    askAndListen("type at", pos, compiler.askTypeCompletion)
+  def askScopeCompletion(pos: Position) =
+    askAndListen("type at", pos, compiler.askScopeCompletion)
 
   val rand = new java.util.Random()
 
@@ -85,19 +92,21 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
     private var deleted: List[Char] = List()
 
     override def toString =
-      "In "+inputs(sfidx)+" at "+start+" take "+nchars+" to "+
-      (if (toLeft) "left" else "right")
+      "In " + inputs(sfidx) + " at " + start + " take " + nchars + " to " +
+        (if (toLeft) "left" else "right")
 
     def deleteOne(): Unit = {
       val sf = inputs(sfidx)
       deleted = sf.content(pos) :: deleted
-      val sf1 = new BatchSourceFile(sf.file, sf.content.take(pos) ++ sf.content.drop(pos + 1))
+      val sf1 = new BatchSourceFile(
+        sf.file,
+        sf.content.take(pos) ++ sf.content.drop(pos + 1))
       inputs(sfidx) = sf1
       askReload(sf1)
     }
 
     def deleteAll(): Unit = {
-      print("/"+nchars)
+      print("/" + nchars)
       for (i <- 0 until nchars) {
         if (toLeft) {
           if (pos > 0 && pos <= inputs(sfidx).length) {
@@ -105,7 +114,7 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
             deleteOne()
           }
         } else {
-          if (pos  < inputs(sfidx).length) {
+          if (pos < inputs(sfidx).length) {
             deleteOne()
           }
         }
@@ -115,7 +124,7 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
     def insertAll(): Unit = {
       for (chr <- if (toLeft) deleted else deleted.reverse) {
         val sf = inputs(sfidx)
-        val (pre, post) = sf./**/content splitAt pos
+        val (pre, post) = sf. /**/ content splitAt pos
         pos += 1
         val sf1 = new BatchSourceFile(sf.file, pre ++ (chr +: post))
         inputs(sfidx) = sf1
@@ -139,7 +148,8 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
     }
     def otherTest(): Unit = {
       if (testPositions.nonEmpty) {
-        val pos = Position.offset(inputs(sfidx), rand.nextInt(testPositions.length))
+        val pos =
+          Position.offset(inputs(sfidx), rand.nextInt(testPositions.length))
         rand.nextInt(3) match {
           case 0 => askTypeAt(pos)
           case 1 => askTypeCompletion(pos)
@@ -148,9 +158,13 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
       }
     }
     for (i <- 0 until randomBatchesPerSourceFile()) {
-      val changes = Vector.fill(/**/randomChangesPerBatch()) {
+      val changes = Vector.fill( /**/ randomChangesPerBatch()) {
+
         /**/
-        new Change(sfidx, randomPositionIn(inputs(sfidx)), randomNumChars(), rand.nextBoolean())
+        new Change(sfidx,
+                   randomPositionIn(inputs(sfidx)),
+                   randomNumChars(),
+                   rand.nextBoolean())
       }
       doTest(sfidx, changes, testPositions, () => otherTest()) match {
         case Some(errortrace) =>
@@ -161,28 +175,33 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
     }
   }
 
-  def doTest(sfidx: Int, changes: scala.collection.Seq[Change], testPositions: scala.collection.Seq[Int], otherTest: () => Unit): Option[ErrorTrace] = {
-    print("new round with "+changes.length+" changes:")
+  def doTest(sfidx: Int,
+             changes: scala.collection.Seq[Change],
+             testPositions: scala.collection.Seq[Int],
+             otherTest: () => Unit): Option[ErrorTrace] = {
+    print("new round with " + changes.length + " changes:")
     changes foreach (_.deleteAll())
     otherTest()
     def errorCount() = compiler.ask(() => reporter.ERROR.count)
 //    println("\nhalf test round: "+errorCount())
     changes.view.reverse foreach (_.insertAll())
     otherTest()
-    println("done test round: "+errorCount())
+    println("done test round: " + errorCount())
     if (errorCount() != 0)
       Some(ErrorTrace(sfidx, changes, reporter.infos, inputs(sfidx).content))
     else
       None
   }
 
-  case class ErrorTrace(
-    sfidx: Int, changes: scala.collection.Seq[Change], infos: scala.collection.Set[reporter.Info], content: Array[Char]) {
+  case class ErrorTrace(sfidx: Int,
+                        changes: scala.collection.Seq[Change],
+                        infos: scala.collection.Set[reporter.Info],
+                        content: Array[Char]) {
     override def toString =
-      "Sourcefile: "+inputs(sfidx)+
-      "\nChanges:\n  "+changes.mkString("\n  ")+
-      "\nErrors:\n  "+infos.mkString("\n  ")+
-      "\nContents:\n"+content.mkString
+      "Sourcefile: " + inputs(sfidx) +
+        "\nChanges:\n  " + changes.mkString("\n  ") +
+        "\nErrors:\n  " + infos.mkString("\n  ") +
+        "\nContents:\n" + content.mkString
   }
 
   def minimize(etrace: ErrorTrace): Unit = ()
@@ -208,9 +227,11 @@ class Tester(ntests: Int, inputs: Array[SourceFile], settings: Settings) {
 object Tester {
   def main(args: Array[String]): Unit = {
     val settings = new Settings()
-    val (_, filenames) = settings.processArguments(args.toList.tail, processAll = true)
-    println("filenames = "+filenames)
-    val files = filenames.toArray map (str => new BatchSourceFile(AbstractFile.getFile(str)): SourceFile)
+    val (_, filenames) =
+      settings.processArguments(args.toList.tail, processAll = true)
+    println("filenames = " + filenames)
+    val files = filenames.toArray map (str =>
+      new BatchSourceFile(AbstractFile.getFile(str)): SourceFile)
     new Tester(args(0).toInt, files, settings).run()
     System.exit(0)
   }

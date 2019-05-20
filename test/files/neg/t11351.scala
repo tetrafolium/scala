@@ -11,7 +11,8 @@ trait B extends A[X] {
 
 trait C extends A[Y] {
   override def foo: Y = new Y
-  def superFoo: Y = super.foo // C will have an abstract `def C$$super$foo: Y` because of this call
+  def superFoo: Y =
+    super.foo // C will have an abstract `def C$$super$foo: Y` because of this call
 }
 
 class Fail extends B with C

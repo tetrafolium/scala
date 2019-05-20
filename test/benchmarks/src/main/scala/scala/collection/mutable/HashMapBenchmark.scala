@@ -25,20 +25,23 @@ class HashMapBenchmark {
   var missingKeys: Array[Any] = _
 
   @Setup(Level.Trial) def initKeys(): Unit = {
-    existingKeys = (0 to size).map(i => (i % 4) match {
-      case _ if stringsOnly => i.toString
-      case 0 => i.toString
-      case 1 => i.toChar
-      case 2 => i.toDouble
-      case 3 => i.toInt
-    }).toArray
+    existingKeys = (0 to size)
+      .map(i =>
+        (i % 4) match {
+          case _ if stringsOnly => i.toString
+          case 0                => i.toString
+          case 1                => i.toChar
+          case 2                => i.toDouble
+          case 3                => i.toInt
+      })
+      .toArray
     missingKeys = (size to 2 * size).toArray.map(_.toString)
   }
 
   var map: collection.mutable.HashMap[Any, Any] = null
 
   @Setup(Level.Trial) def initialize = {
-    map = collection.mutable.HashMap(existingKeys.map(x => (x, x)) : _*)
+    map = collection.mutable.HashMap(existingKeys.map(x => (x, x)): _*)
   }
 
   @Benchmark def contains(bh: Blackhole): Unit = {

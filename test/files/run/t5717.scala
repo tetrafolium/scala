@@ -5,7 +5,8 @@ object Test extends StoreReporterDirectTest {
   def code = ???
 
   def compileCode(code: String) = {
-    val classpath = List(sys.props("partest.lib"), testOutput.path) mkString sys.props("path.separator")
+    val classpath = List(sys.props("partest.lib"), testOutput.path) mkString sys
+      .props("path.separator")
     compileString(newCompiler("-cp", classpath, "-d", testOutput.path))(code)
   }
   // TODO
@@ -19,7 +20,7 @@ object Test extends StoreReporterDirectTest {
     compileCode("package a { class B }")
     val List(i) = filteredInfos
     // for some reason, nio doesn't throw the same exception on windows and linux/mac
-    val path = if(util.Properties.isWin)"\\a" else "/a"
+    val path = if (util.Properties.isWin) "\\a" else "/a"
     val expected = "error writing a/B: Can't create directory " + path +
       "; there is an existing (non-directory) file in its path"
     val actual = i.msg.replace(testOutput.path, "")

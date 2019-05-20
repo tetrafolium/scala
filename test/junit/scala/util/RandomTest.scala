@@ -7,7 +7,8 @@ import scala.collection.immutable.WrappedString
 class RandomTest {
   // Test for scala/bug#9059
   @Test def testAlphanumeric: Unit = {
-    def isAlphaNum(c: Char) = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+    def isAlphaNum(c: Char) =
+      (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
 
     val items = Random.alphanumeric.take(100000)
     for (c <- items) {
@@ -21,7 +22,8 @@ class RandomTest {
     val sT: WrappedString = s
     val ws = Random.shuffle("bar".toSeq)
     val wsT: WrappedString = ws
-    val lhm = Random.shuffle(collection.mutable.LinkedHashMap("foo" -> 1, "bar" -> 2))
+    val lhm =
+      Random.shuffle(collection.mutable.LinkedHashMap("foo" -> 1, "bar" -> 2))
     val lhmT: collection.mutable.LinkedHashMap[String, Int] = lhm
   }
 }

@@ -6,7 +6,6 @@ class C extends Serializable
 @SerialVersionUID(43 - 1)
 class D extends Serializable
 
-
 object Test extends App {
   def checkId(cls: Class[_]): Unit = {
     val field = cls.getDeclaredField("serialVersionUID")

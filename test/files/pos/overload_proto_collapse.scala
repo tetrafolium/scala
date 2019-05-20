@@ -1,11 +1,9 @@
-
 class Test {
   def prepended[B >: Char](elem: B): String = ???
   def prepended(c: Char): String = ???
 
   def +:[B >: Char](elem: B): String = prepended(elem)
 }
-
 
 trait DurationConversions {
   trait Classifier[C] { type R }
@@ -16,16 +14,15 @@ trait DurationConversions {
   def day[C](c: C)(implicit ev: Classifier[C]): ev.R = days(c)
 }
 
-
 trait AnonMatch {
   trait MapOps[K, +V, +CC[_, _]] {
     def map[K2, V2](f: ((K, V)) => (K2, V2)): CC[K2, V2] = ???
-    def map[K2 <: AnyRef, V2](f: ((K with AnyRef, V)) => (K2, V2)): MapOps[K2, V2, Map] = ???
+    def map[K2 <: AnyRef, V2](
+        f: ((K with AnyRef, V)) => (K2, V2)): MapOps[K2, V2, Map] = ???
   }
 
-  (??? : MapOps[String, Int, Map]).map{ case (k,v) => ??? }
+  (??? : MapOps[String, Int, Map]).map { case (k, v) => ??? }
 }
-
 
 trait FBounds {
   def f[A](x: A) = 11;
@@ -44,14 +41,15 @@ class Trees { outer =>
     prune(t, (a: Option[A]) => a).getOrElse(??? : Tree[A])
 
   def prune[A, B](t: Tree[A], f: A => Option[B]): Option[Tree[B]] = ???
-  def prune[A](t: Tree[A], f: Tree[A] => Option[A])(implicit initial: A): Tree[A] = ???
+  def prune[A](t: Tree[A], f: Tree[A] => Option[A])(
+      implicit initial: A): Tree[A] = ???
 }
-
 
 // From gigahorse
 abstract class Sam[A] { def apply(a: String): A }
 
 class GigaHorse {
-  def map[A](f: String => A): A = map(new Sam[A] { def apply(a: String): A = f(a) })
+  def map[A](f: String => A): A =
+    map(new Sam[A] { def apply(a: String): A = f(a) })
   def map[A](f: Sam[A]): A = ???
 }

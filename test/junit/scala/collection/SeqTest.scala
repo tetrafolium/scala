@@ -20,7 +20,8 @@ class SeqTest {
   @Test def combinations(): Unit = {
     assertEquals(List(Nil), Nil.combinations(0).toList)
     assertEquals(Nil, Nil.combinations(1).toList)
-    assertEquals(List(List(1, 2), List(1, 3), List(2, 3)), List(1, 2, 3).combinations(2).toList)
+    assertEquals(List(List(1, 2), List(1, 3), List(2, 3)),
+                 List(1, 2, 3).combinations(2).toList)
     assertEquals(List(List(1, 2, 3)), List(1, 2, 3).combinations(3).toList)
   }
 
@@ -31,7 +32,8 @@ class SeqTest {
 
   @Test
   def hasCorrectDistinctBy: Unit = {
-    val result = Seq("a", "aa", "aaa", "b", "bb", "bbb", "bbbb", "c").distinctBy(_.length)
+    val result =
+      Seq("a", "aa", "aaa", "b", "bb", "bbb", "bbbb", "c").distinctBy(_.length)
 
     assertEquals(Seq("a", "aa", "aaa", "bbbb"), result)
   }
@@ -41,7 +43,8 @@ class SeqTest {
     assertEquals(0, Vector(0, 1).indexOfSlice(List(0, 1)))
     assertEquals(0, Vector(0, 1).indexOfSlice(Vector(0, 1)))
     assertEquals(1, Vector(0, 1, 2, 0, 1, 2).indexOfSlice(Vector(1, 2)))
-    assertEquals(4, Vector(0, 1, 2, 0, 1, 2).indexOfSlice(Vector(1, 2), from = 2))
+    assertEquals(4,
+                 Vector(0, 1, 2, 0, 1, 2).indexOfSlice(Vector(1, 2), from = 2))
     assertEquals(-1, List(0, 1).indexOfSlice(List(1, 2)))
   }
 
@@ -50,7 +53,9 @@ class SeqTest {
     assertEquals(0, Vector(0, 1).lastIndexOfSlice(List(0, 1)))
     assertEquals(0, Vector(0, 1).lastIndexOfSlice(Vector(0, 1)))
     assertEquals(4, Vector(0, 1, 2, 0, 1, 2).lastIndexOfSlice(Vector(1, 2)))
-    assertEquals(1, Vector(0, 1, 2, 0, 1, 2).lastIndexOfSlice(Vector(1, 2), end = 3))
+    assertEquals(
+      1,
+      Vector(0, 1, 2, 0, 1, 2).lastIndexOfSlice(Vector(1, 2), end = 3))
     assertEquals(-1, List(0, 1).lastIndexOfSlice(List(1, 2)))
   }
 

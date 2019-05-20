@@ -18,24 +18,28 @@ import scala.reflect.internal.FatalError
 import scala.reflect.io.AbstractFile
 
 /**
- * Common methods related to Java files and abstract files used in the context of classpath
- */
+  * Common methods related to Java files and abstract files used in the context of classpath
+  */
 object FileUtils {
   implicit class AbstractFileOps(val file: AbstractFile) extends AnyVal {
     def isPackage: Boolean = file.isDirectory && mayBeValidPackage(file.name)
 
     def isClass: Boolean = !file.isDirectory && file.hasExtension("class")
 
-    def isScalaOrJavaSource: Boolean = !file.isDirectory && (file.hasExtension("scala") || file.hasExtension("java"))
+    def isScalaOrJavaSource: Boolean =
+      !file.isDirectory && (file.hasExtension("scala") || file.hasExtension(
+        "java"))
 
     // TODO do we need to check also other files using ZipMagicNumber like in scala.tools.nsc.io.Jar.isJarOrZip?
-    def isJarOrZip: Boolean = file.hasExtension("jar") || file.hasExtension("zip")
+    def isJarOrZip: Boolean =
+      file.hasExtension("jar") || file.hasExtension("zip")
 
     /**
-     * Safe method returning a sequence containing one URL representing this file, when underlying file exists,
-     * and returning given default value in other case
-     */
-    def toURLs(default: => Seq[URL] = Seq.empty): Seq[URL] = if (file.file == null) default else Seq(file.toURL)
+      * Safe method returning a sequence containing one URL representing this file, when underlying file exists,
+      * and returning given default value in other case
+      */
+    def toURLs(default: => Seq[URL] = Seq.empty): Seq[URL] =
+      if (file.file == null) default else Seq(file.toURL)
   }
 
   implicit class FileOps(val file: JFile) extends AnyVal {
@@ -56,19 +60,20 @@ object FileUtils {
 
   def dirPath(forPackage: String) = forPackage.replace('.', '/')
 
-  @inline private def ends (filename:String, suffix:String) = filename.endsWith(suffix) && filename.length > suffix.length
+  @inline private def ends(filename: String, suffix: String) =
+    filename.endsWith(suffix) && filename.length > suffix.length
 
   def endsClass(fileName: String): Boolean =
-    ends (fileName, SUFFIX_CLASS) || fileName.endsWith(SUFFIX_SIG)
+    ends(fileName, SUFFIX_CLASS) || fileName.endsWith(SUFFIX_SIG)
 
   def endsScalaOrJava(fileName: String): Boolean =
     endsScala(fileName) || endsJava(fileName)
 
   def endsJava(fileName: String): Boolean =
-    ends (fileName, SUFFIX_JAVA)
+    ends(fileName, SUFFIX_JAVA)
 
   def endsScala(fileName: String): Boolean =
-    ends (fileName, SUFFIX_SCALA)
+    ends(fileName, SUFFIX_SCALA)
 
   def stripClassExtension(fileName: String): String =
     fileName.substring(0, fileName.lastIndexOf('.'))

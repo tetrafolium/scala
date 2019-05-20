@@ -1,14 +1,14 @@
 package foo {
   package object bar {
-    def duh(n: Long)   = println("long")
+    def duh(n: Long) = println("long")
     def duh(n: Double) = println("double")
 
     def duh2(n: Double) = println("double")
-    def duh2(n: Long)   = println("long")
+    def duh2(n: Long) = println("long")
   }
   package bar {
     object Main {
-      def main(args:Array[String]): Unit = {
+      def main(args: Array[String]): Unit = {
         duh(33L)
         bip.bar.duh(33L)
         duh(33d)
@@ -25,18 +25,18 @@ package foo {
 
 package bip {
   trait Duh {
-    def duh(n: Long)   = println("long")
+    def duh(n: Long) = println("long")
     def duh(n: Double) = println("double")
   }
   trait Duh2 {
     def duh2(n: Double) = println("double")
-    def duh2(n: Long)   = println("long")
+    def duh2(n: Long) = println("long")
   }
 
-  package object bar extends Duh with Duh2 { }
+  package object bar extends Duh with Duh2 {}
   package bar {
     object Main {
-      def main(args:Array[String]): Unit = {
+      def main(args: Array[String]): Unit = {
         duh(33L)
         bip.bar.duh(33L)
         duh(33d)

@@ -1,4 +1,3 @@
-
 class Container {
   private case class Inner(s: String)
   private object Inner {

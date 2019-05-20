@@ -1,3 +1,4 @@
 package issue10
 
-@pkg.identity @pkg.placebo class C
+@pkg.identity @pkg.placebo
+class C

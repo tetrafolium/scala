@@ -12,7 +12,7 @@ class C {
   }
 
   def methodLift3 = {
-    def isEven(c: Int) = {toString; c % 2 == 0}
+    def isEven(c: Int) = { toString; c % 2 == 0 }
     def isEven0(c: Int) = isEven(c)
     val f: Int => Boolean = isEven0
     f
@@ -32,7 +32,6 @@ object Test {
       assert(!f1(1))
     }
 
-
     {
       val f = c.methodLift2
       assert(f(0))
@@ -51,7 +50,7 @@ object Test {
         assert(false)
       } catch {
         case _: java.io.NotSerializableException =>
-          // expected, the closure in methodLift3 must capture C which is not serializable
+        // expected, the closure in methodLift3 must capture C which is not serializable
       }
     }
   }

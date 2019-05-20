@@ -13,7 +13,7 @@
 package scala
 package collection
 package immutable
- 
+
 /** This class implements an immutable map that preserves order using
   * a hash map for the key to value mapping to provide efficient lookup,
   * and a tree for the ordering of the keys to provide efficient
@@ -48,7 +48,7 @@ final class TreeSeqMap[K, +V] private (
     private val mapping: TreeSeqMap.Mapping[K, V],
     private val ordinal: Int,
     val orderedBy: TreeSeqMap.OrderBy)
-  extends AbstractMap[K, V]
+    extends AbstractMap[K, V]
     with SeqMap[K, V]
     with MapOps[K, V, TreeSeqMap, TreeSeqMap[K, V]]
     with StrictOptimizedIterableOps[(K, V), Iterable, TreeSeqMap[K, V]]
@@ -73,7 +73,8 @@ final class TreeSeqMap[K, +V] private (
 
   def updated[V1 >: V](key: K, value: V1): TreeSeqMap[K, V1] = {
     mapping.get(key) match {
-      case e if ordinal == -1 && (orderedBy == OrderBy.Modification || e.isEmpty) =>
+      case e
+          if ordinal == -1 && (orderedBy == OrderBy.Modification || e.isEmpty) =>
         // Reinsert into fresh instance to restart ordinal counting, expensive but only done after 2^32 updates.
         TreeSeqMap.empty[K, V](orderedBy) ++ this + (key -> value)
       case Some((o, _)) if orderedBy == OrderBy.Insertion =>
@@ -81,32 +82,30 @@ final class TreeSeqMap[K, +V] private (
           ordering.include(o, key),
           mapping.updated[(Int, V1)](key, (o, value)),
           ordinal, // Do not increment the ordinal since the key is already present, i.e. o <= ordinal.
-          orderedBy)
+          orderedBy
+        )
       case Some((o, _)) =>
         val o1 = increment(ordinal)
-        new TreeSeqMap(
-          ordering.exclude(o).append(o1, key),
-          mapping.updated[(Int, V1)](key, (o1, value)),
-          o1,
-          orderedBy)
+        new TreeSeqMap(ordering.exclude(o).append(o1, key),
+                       mapping.updated[(Int, V1)](key, (o1, value)),
+                       o1,
+                       orderedBy)
       case None =>
         val o1 = increment(ordinal)
-        new TreeSeqMap(
-          ordering.append(o1, key),
-          mapping.updated[(Int, V1)](key, (o1, value)),
-          o1,
-          orderedBy)
+        new TreeSeqMap(ordering.append(o1, key),
+                       mapping.updated[(Int, V1)](key, (o1, value)),
+                       o1,
+                       orderedBy)
     }
   }
 
   def removed(key: K): TreeSeqMap[K, V] = {
     mapping.get(key) match {
       case Some((o, _)) =>
-        new TreeSeqMap(
-          ordering.exclude(o),
-          mapping.removed(key),
-          ordinal,
-          orderedBy)
+        new TreeSeqMap(ordering.exclude(o),
+                       mapping.removed(key),
+                       ordinal,
+                       orderedBy)
       case None =>
         this
     }
@@ -116,11 +115,10 @@ final class TreeSeqMap[K, +V] private (
     mapping.get(key) match {
       case Some((o, _)) =>
         val o1 = increment(ordinal)
-        new TreeSeqMap(
-          ordering.exclude(o).append(o1, key),
-          mapping,
-          o1,
-          orderedBy)
+        new TreeSeqMap(ordering.exclude(o).append(o1, key),
+                       mapping,
+                       o1,
+                       orderedBy)
       case None =>
         this
     }
@@ -226,7 +224,8 @@ final class TreeSeqMap[K, +V] private (
     bdr.result()
   }
 
-  override def flatMap[K2, V2](f: ((K, V)) => IterableOnce[(K2, V2)]): TreeSeqMap[K2, V2] = {
+  override def flatMap[K2, V2](
+      f: ((K, V)) => IterableOnce[(K2, V2)]): TreeSeqMap[K2, V2] = {
     val bdr = newBuilder[K2, V2](orderedBy)
     val iter = ordering.iterator
     while (iter.hasNext) {
@@ -241,7 +240,8 @@ final class TreeSeqMap[K, +V] private (
     bdr.result()
   }
 
-  override def collect[K2, V2](pf: PartialFunction[(K, V), (K2, V2)]): TreeSeqMap[K2, V2] = {
+  override def collect[K2, V2](
+      pf: PartialFunction[(K, V), (K2, V2)]): TreeSeqMap[K2, V2] = {
     val bdr = newBuilder[K2, V2](orderedBy)
     val iter = ordering.iterator
     while (iter.hasNext) {
@@ -255,7 +255,8 @@ final class TreeSeqMap[K, +V] private (
     bdr.result()
   }
 
-  override def concat[V2 >: V](suffix: IterableOnce[(K, V2)]): TreeSeqMap[K, V2] = {
+  override def concat[V2 >: V](
+      suffix: IterableOnce[(K, V2)]): TreeSeqMap[K, V2] = {
     var ong: Ordering[K] = ordering
     var mng: Mapping[K, V2] = mapping
     var ord = increment(ordinal)
@@ -264,7 +265,8 @@ final class TreeSeqMap[K, +V] private (
       val (k, v2) = iter.next()
       mng.get(k) match {
         case Some((o, v)) =>
-          if (orderedBy == OrderBy.Insertion && v != v2) mng = mng.updated(k, (o, v2))
+          if (orderedBy == OrderBy.Insertion && v != v2)
+            mng = mng.updated(k, (o, v2))
           else if (orderedBy == OrderBy.Modification) {
             mng = mng.updated(k, (ord, v2))
             ong = ong.exclude(o).append(ord, k)
@@ -289,22 +291,31 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
     case object Modification extends OrderBy
   }
 
-  val Empty = new TreeSeqMap[Nothing, Nothing](Ordering.empty, HashMap.empty, 0, OrderBy.Insertion)
+  val Empty = new TreeSeqMap[Nothing, Nothing](Ordering.empty,
+                                               HashMap.empty,
+                                               0,
+                                               OrderBy.Insertion)
   def empty[K, V]: TreeSeqMap[K, V] = empty(OrderBy.Insertion)
-  def empty[K, V](orderBy: OrderBy): TreeSeqMap[K, V] = Empty.asInstanceOf[TreeSeqMap[K, V]]
+  def empty[K, V](orderBy: OrderBy): TreeSeqMap[K, V] =
+    Empty.asInstanceOf[TreeSeqMap[K, V]]
 
   def from[K, V](it: collection.IterableOnce[(K, V)]): TreeSeqMap[K, V] =
     it match {
       case om: TreeSeqMap[K, V] => om
-      case _ => (newBuilder[K, V] ++= it).result()
+      case _                    => (newBuilder[K, V] ++= it).result()
     }
 
-  @inline private def increment(ord: Int) = if (ord == Int.MaxValue) Int.MinValue else ord + 1
+  @inline private def increment(ord: Int) =
+    if (ord == Int.MaxValue) Int.MinValue else ord + 1
 
-  def newBuilder[K, V]: mutable.Builder[(K, V), TreeSeqMap[K, V]] = newBuilder(OrderBy.Insertion)
-  def newBuilder[K, V](orderedBy: OrderBy): mutable.Builder[(K, V), TreeSeqMap[K, V]] = new Builder[K, V](orderedBy)
+  def newBuilder[K, V]: mutable.Builder[(K, V), TreeSeqMap[K, V]] =
+    newBuilder(OrderBy.Insertion)
+  def newBuilder[K, V](
+      orderedBy: OrderBy): mutable.Builder[(K, V), TreeSeqMap[K, V]] =
+    new Builder[K, V](orderedBy)
 
-  final class Builder[K, V](orderedBy: OrderBy) extends mutable.Builder[(K, V), TreeSeqMap[K, V]] {
+  final class Builder[K, V](orderedBy: OrderBy)
+      extends mutable.Builder[(K, V), TreeSeqMap[K, V]] {
     private[this] val bdr = new MapBuilderImpl[K, (Int, V)]
     private[this] var ong = Ordering.empty[K]
     private[this] var ord = 0
@@ -317,7 +328,8 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
       } else {
         bdr.getOrElse(key, null) match {
           case (o, v) =>
-            if (orderedBy == OrderBy.Insertion && v != value) bdr.addOne(key, (o, value))
+            if (orderedBy == OrderBy.Insertion && v != value)
+              bdr.addOne(key, (o, value))
             else if (orderedBy == OrderBy.Modification) {
               bdr.addOne(key, (ord, value))
               ong = ong.exclude(o).appendInPlace(ord, key)
@@ -354,9 +366,10 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
   private[immutable] object Ordering {
     import scala.collection.generic.BitOperations.Int._
 
-    @inline private[immutable] def toBinaryString(i: Int): String = s"$i/${i.toBinaryString}"
+    @inline private[immutable] def toBinaryString(i: Int): String =
+      s"$i/${i.toBinaryString}"
 
-    def empty[T] : Ordering[T] = Zero
+    def empty[T]: Ordering[T] = Zero
 
     def apply[T](elems: (Int, T)*): Ordering[T] =
       elems.foldLeft(empty[T])((x, y) => x.include(y._1, y._2))
@@ -385,7 +398,7 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
       def hasNext = index != 0
       def next(): V =
         pop match {
-          case Bin(_,_, Tip(_, v), right) =>
+          case Bin(_, _, Tip(_, v), right) =>
             push(right)
             v
           case Bin(_, _, left, right) =>
@@ -395,7 +408,8 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
           case Tip(_, v) => v
           // This should never happen. We don't allow Ordering.Zero in subtrees of the Ordering
           // and don't return an Ordering.Iterator for Ordering.Zero.
-          case Zero => throw new IllegalStateException("empty subtree not allowed")
+          case Zero =>
+            throw new IllegalStateException("empty subtree not allowed")
         }
     }
 
@@ -409,27 +423,41 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
       // loop from Map.equals => size => pattern-match-on-Nil => equals
       // develops.  Case objects and custom equality don't mix without
       // careful handling.
-      override def equals(that : Any): Boolean = that match {
-        case _: this.type => true
+      override def equals(that: Any): Boolean = that match {
+        case _: this.type   => true
         case _: Ordering[_] => false // The only empty Orderings are eq Nil
-        case _ => super.equals(that)
+        case _              => super.equals(that)
       }
-      protected def format(sb: StringBuilder, prefix: String, subPrefix: String): Unit = sb ++= s"${prefix}Ø"
+      protected def format(sb: StringBuilder,
+                           prefix: String,
+                           subPrefix: String): Unit = sb ++= s"${prefix}Ø"
     }
 
     final case class Tip[+T](ord: Int, value: T) extends Ordering[T] {
       def withValue[S](s: S) =
-        if (s.asInstanceOf[AnyRef] eq value.asInstanceOf[AnyRef]) this.asInstanceOf[Tip[S]]
+        if (s.asInstanceOf[AnyRef] eq value.asInstanceOf[AnyRef])
+          this.asInstanceOf[Tip[S]]
         else Tip(ord, s)
-      protected def format(sb: StringBuilder, prefix: String, subPrefix: String): Unit = sb ++= s"${prefix}Tip(${toBinaryString(ord)} -> $value)\n"
+      protected def format(sb: StringBuilder,
+                           prefix: String,
+                           subPrefix: String): Unit =
+        sb ++= s"${prefix}Tip(${toBinaryString(ord)} -> $value)\n"
     }
 
-    final case class Bin[+T](prefix: Int, mask: Int, left: Ordering[T], var right: Ordering[T] @scala.annotation.unchecked.uncheckedVariance) extends Ordering[T] {
+    final case class Bin[+T](
+        prefix: Int,
+        mask: Int,
+        left: Ordering[T],
+        var right: Ordering[T] @scala.annotation.unchecked.uncheckedVariance)
+        extends Ordering[T] {
       def bin[S](left: Ordering[S], right: Ordering[S]): Ordering[S] = {
-        if ((this.left eq left) && (this.right eq right)) this.asInstanceOf[Bin[S]]
+        if ((this.left eq left) && (this.right eq right))
+          this.asInstanceOf[Bin[S]]
         else Bin[S](prefix, mask, left, right)
       }
-      protected def format(sb: StringBuilder, prefix: String, subPrefix: String): Unit = {
+      protected def format(sb: StringBuilder,
+                           prefix: String,
+                           subPrefix: String): Unit = {
         sb ++= s"${prefix}Bin(${toBinaryString(this.prefix)}:${toBinaryString(mask)})\n"
         left.format(sb, subPrefix + "├── ", subPrefix + "│   ")
         right.format(sb, subPrefix + "└── ", subPrefix + "    ")
@@ -438,17 +466,23 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
 
     private def branchMask(i: Int, j: Int) = highestOneBit(i ^ j)
 
-    private def join[T](p1: Int, t1: Ordering[T], p2: Int, t2: Ordering[T]): Ordering[T] = {
+    private def join[T](p1: Int,
+                        t1: Ordering[T],
+                        p2: Int,
+                        t2: Ordering[T]): Ordering[T] = {
       val m = branchMask(p1, p2)
       val p = mask(p1, m)
       if (zero(p1, m)) Bin(p, m, t1, t2)
       else Bin(p, m, t2, t1)
     }
 
-    private def bin[T](prefix: Int, mask: Int, left: Ordering[T], right: Ordering[T]): Ordering[T] = (left, right) match {
+    private def bin[T](prefix: Int,
+                       mask: Int,
+                       left: Ordering[T],
+                       right: Ordering[T]): Ordering[T] = (left, right) match {
       case (l, Zero) => l
       case (Zero, r) => r
-      case (l, r) => Bin(prefix, mask, l, r)
+      case (l, r)    => Bin(prefix, mask, l, r)
     }
   }
 
@@ -463,51 +497,53 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
       format(sb, "", "")
       sb.toString()
     }
-    protected def format(sb: StringBuilder, prefix: String, subPrefix: String): Unit
+    protected def format(sb: StringBuilder,
+                         prefix: String,
+                         subPrefix: String): Unit
 
     @tailrec
     final def head: T = this match {
-      case Zero => throw new NoSuchElementException("head of empty map")
-      case Tip(k, v) => v
+      case Zero            => throw new NoSuchElementException("head of empty map")
+      case Tip(k, v)       => v
       case Bin(_, _, l, _) => l.head
     }
 
     @tailrec
     final def headOption: Option[T] = this match {
-      case Zero => None
-      case Tip(_, v) => Some(v)
+      case Zero            => None
+      case Tip(_, v)       => Some(v)
       case Bin(_, _, l, _) => l.headOption
     }
 
     @tailrec
     final def last: T = this match {
-      case Zero => throw new NoSuchElementException("last of empty map")
-      case Tip(_, v) => v
+      case Zero            => throw new NoSuchElementException("last of empty map")
+      case Tip(_, v)       => v
       case Bin(_, _, _, r) => r.last
     }
 
     @tailrec
     final def lastOption: Option[T] = this match {
-      case Zero => None
-      case Tip(_, v) => Some(v)
+      case Zero            => None
+      case Tip(_, v)       => Some(v)
       case Bin(_, _, _, r) => r.lastOption
     }
 
     @tailrec
     final def ordinal: Int = this match {
-      case Zero => 0
-      case Tip(o, _) => o
+      case Zero            => 0
+      case Tip(o, _)       => o
       case Bin(_, _, _, r) => r.ordinal
     }
 
     final def tail: Ordering[T] = this match {
-      case Zero => throw new NoSuchElementException("tail of empty map")
-      case Tip(_, _) => Zero
+      case Zero            => throw new NoSuchElementException("tail of empty map")
+      case Tip(_, _)       => Zero
       case Bin(p, m, l, r) => bin(p, m, l.tail, r)
     }
 
     final def headTail: (T, Ordering[T]) = this match {
-      case Zero => throw new NoSuchElementException("init of empty map")
+      case Zero      => throw new NoSuchElementException("init of empty map")
       case Tip(_, v) => (v, Zero)
       case Bin(p, m, l, r) =>
         val (head, tail) = l.headTail
@@ -515,14 +551,14 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
     }
 
     final def init: Ordering[T] = this match {
-      case Zero => throw new NoSuchElementException("init of empty map")
+      case Zero      => throw new NoSuchElementException("init of empty map")
       case Tip(_, _) => Zero
       case Bin(p, m, l, r) =>
         bin(p, m, l, r.init)
     }
 
     final def initLast: (Ordering[T], T) = this match {
-      case Zero => throw new NoSuchElementException("init of empty map")
+      case Zero      => throw new NoSuchElementException("init of empty map")
       case Tip(_, v) => (Zero, v)
       case Bin(p, m, l, r) =>
         val (init, last) = r.initLast
@@ -531,20 +567,22 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
 
     final def iterator: Iterator[T] = this match {
       case Zero => Iterator.empty
-      case _ => new Iterator(this)
+      case _    => new Iterator(this)
     }
 
-    final def include[S >: T](ordinal: Int, value: S): Ordering[S] = this match {
-      case Zero =>
-        Tip(ordinal, value)
-      case Tip(o, _) =>
-        if (ordinal == o) Tip(ordinal, value)
-        else join(ordinal, Tip(ordinal, value), o, this)
-      case Bin(p, m, l, r) =>
-        if (!hasMatch(ordinal, p, m)) join(ordinal, Tip(ordinal, value), p, this)
-        else if (zero(ordinal, m)) Bin(p, m, l.include(ordinal, value), r)
-        else Bin(p, m, l, r.include(ordinal, value))
-    }
+    final def include[S >: T](ordinal: Int, value: S): Ordering[S] =
+      this match {
+        case Zero =>
+          Tip(ordinal, value)
+        case Tip(o, _) =>
+          if (ordinal == o) Tip(ordinal, value)
+          else join(ordinal, Tip(ordinal, value), o, this)
+        case Bin(p, m, l, r) =>
+          if (!hasMatch(ordinal, p, m))
+            join(ordinal, Tip(ordinal, value), p, this)
+          else if (zero(ordinal, m)) Bin(p, m, l.include(ordinal, value), r)
+          else Bin(p, m, l, r.include(ordinal, value))
+      }
 
     final def append[S >: T](ordinal: Int, value: S): Ordering[S] = this match {
       case Zero =>
@@ -553,17 +591,26 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
         if (ordinal == o) Tip(ordinal, value)
         else join(ordinal, Tip(ordinal, value), o, this)
       case Bin(p, m, l, r) =>
-        if (!hasMatch(ordinal, p, m)) join(ordinal, Tip(ordinal, value), p, this)
-        else if (zero(ordinal, m)) throw new IllegalArgumentException(s"Append called with ordinal out of range: $ordinal is not greater than current max ordinal ${this.ordinal}")
+        if (!hasMatch(ordinal, p, m))
+          join(ordinal, Tip(ordinal, value), p, this)
+        else if (zero(ordinal, m))
+          throw new IllegalArgumentException(
+            s"Append called with ordinal out of range: $ordinal is not greater than current max ordinal ${this.ordinal}")
         else Bin(p, m, l, r.append(ordinal, value))
     }
 
-    @inline private[collection] final def appendInPlace[S >: T](ordinal: Int, value: S): Ordering[S] = appendInPlace1(null, ordinal, value)
-    private[collection] final def appendInPlace1[S >: T](parent: Bin[S], ordinal: Int, value: S): Ordering[S] = this match {
+    @inline private[collection] final def appendInPlace[S >: T](
+        ordinal: Int,
+        value: S): Ordering[S] = appendInPlace1(null, ordinal, value)
+    private[collection] final def appendInPlace1[S >: T](
+        parent: Bin[S],
+        ordinal: Int,
+        value: S): Ordering[S] = this match {
       case Zero =>
         Tip(ordinal, value)
       case Tip(o, _) if o >= ordinal =>
-        throw new IllegalArgumentException(s"Append called with ordinal out of range: $o is not greater than current max ordinal ${this.ordinal}")
+        throw new IllegalArgumentException(
+          s"Append called with ordinal out of range: $o is not greater than current max ordinal ${this.ordinal}")
       case Tip(o, _) if parent == null =>
         join(ordinal, Tip(ordinal, value), o, this)
       case Tip(o, _) =>
@@ -576,7 +623,9 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
             parent.right = b2
             parent
           } else b2
-        } else if (zero(ordinal, m)) throw new IllegalArgumentException(s"Append called with ordinal out of range: $ordinal is not greater than current max ordinal ${this.ordinal}")
+        } else if (zero(ordinal, m))
+          throw new IllegalArgumentException(
+            s"Append called with ordinal out of range: $ordinal is not greater than current max ordinal ${this.ordinal}")
         else {
           r.appendInPlace1(b, ordinal, value)
           this
@@ -618,21 +667,23 @@ object TreeSeqMap extends MapFactory[TreeSeqMap] {
       * @param f   The transforming function.
       * @return    The modified map.
       */
-    final def modifyOrRemove[S](f: (Int, T) => Option[S]): Ordering[S] = this match {
-      case Zero => Zero
-      case Tip(key, value) =>
-        f(key, value) match {
-          case None => Zero
-          case Some(value2) =>
-            // hack to preserve sharing
-            if (value.asInstanceOf[AnyRef] eq value2.asInstanceOf[AnyRef]) this.asInstanceOf[Ordering[S]]
-            else Tip(key, value2)
-        }
-      case Bin(prefix, mask, left, right) =>
-        val l = left.modifyOrRemove(f)
-        val r = right.modifyOrRemove(f)
-        if ((left eq l) && (right eq r)) this.asInstanceOf[Ordering[S]]
-        else bin(prefix, mask, l, r)
-    }
+    final def modifyOrRemove[S](f: (Int, T) => Option[S]): Ordering[S] =
+      this match {
+        case Zero => Zero
+        case Tip(key, value) =>
+          f(key, value) match {
+            case None         => Zero
+            case Some(value2) =>
+              // hack to preserve sharing
+              if (value.asInstanceOf[AnyRef] eq value2.asInstanceOf[AnyRef])
+                this.asInstanceOf[Ordering[S]]
+              else Tip(key, value2)
+          }
+        case Bin(prefix, mask, left, right) =>
+          val l = left.modifyOrRemove(f)
+          val r = right.modifyOrRemove(f)
+          if ((left eq l) && (right eq r)) this.asInstanceOf[Ordering[S]]
+          else bin(prefix, mask, l, r)
+      }
   }
 }

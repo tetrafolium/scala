@@ -7,8 +7,8 @@ class Foo[_ <: B]
 
 object Test {
 
-  def f[F[ _]](tc: TC[F]): Unit = ()
-  def g[F[+_]](tc: TC[F]): Unit = ()
+  def f[F[_]](tc: TC[F]): Unit = ()
+  def g[F[+ _]](tc: TC[F]): Unit = ()
 
   val tcFoo: TC[Foo] = new TC[Foo] {}
 

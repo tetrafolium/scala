@@ -1,5 +1,6 @@
 object Test extends App {
-  def f(xs: Array[Int]): Boolean = xs.isInstanceOf[scala.collection.immutable.Seq[_]]
+  def f(xs: Array[Int]): Boolean =
+    xs.isInstanceOf[scala.collection.immutable.Seq[_]]
   def g(xs: Int*): Boolean = xs.isInstanceOf[scala.collection.immutable.Seq[_]]
 
   println(f(Array(1, 2, 3)))

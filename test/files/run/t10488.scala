@@ -1,5 +1,3 @@
-
-
 import javax.script._
 
 object Test {

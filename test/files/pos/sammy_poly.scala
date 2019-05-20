@@ -1,5 +1,5 @@
 // test synthesizeSAMFunction where the sam type is not fully defined
-trait F[T, R]{ def apply(x: T): R }
+trait F[T, R] { def apply(x: T): R }
 
 class PolySammy {
   (x => x + 1): F[Int, Int]

@@ -12,11 +12,11 @@ object Test {
     print(num)
     // if num == -1, then steram is infinite sequence
     if (num == INFINITE) {
-      for(i <- 0 until 10) {
+      for (i <- 0 until 10) {
         print(" " + iter.next())
       }
     } else {
-      while(iter.hasNext) {
+      while (iter.hasNext) {
         print(" " + iter.next())
       }
     }
@@ -30,9 +30,11 @@ object Test {
     testLazyListIterator(1, LazyList(1))
     testLazyListIterator(2, LazyList(1, 2))
     //LazyList with side effect
-    testLazyListIterator(2, cons(1, cons({ print(" A"); 2}, empty)))
+    testLazyListIterator(2, cons(1, cons({ print(" A"); 2 }, empty)))
     testLazyListIterator(3, LazyList(1, 2, 3))
     //LazyList with side effect
-    testLazyListIterator(3, cons(1, cons({ print(" A"); 2}, cons({ print(" B"); 3}, LazyList.empty))))
+    testLazyListIterator(3, cons(1, cons({ print(" A"); 2 }, cons({
+      print(" B"); 3
+    }, LazyList.empty))))
   }
 }

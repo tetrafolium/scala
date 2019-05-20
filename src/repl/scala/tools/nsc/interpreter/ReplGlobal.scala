@@ -27,17 +27,23 @@ trait ReplGlobal extends Global {
 
   override protected[scala] def findMacroClassLoader(): ClassLoader = {
     val loader = super.findMacroClassLoader
-    analyzer.macroLogVerbose("macro classloader: initializing from a REPL classloader: %s".format(classPath.asURLs))
-    val virtualDirectory = analyzer.globalSettings.outputDirs.getSingleOutput.get
+    analyzer.macroLogVerbose(
+      "macro classloader: initializing from a REPL classloader: %s".format(
+        classPath.asURLs))
+    val virtualDirectory =
+      analyzer.globalSettings.outputDirs.getSingleOutput.get
     new util.AbstractFileClassLoader(virtualDirectory, loader) {}
   }
 
   override def optimizerClassPath(base: ClassPath): ClassPath = {
     settings.outputDirs.getSingleOutput match {
-      case None => base
+      case None      => base
       case Some(out) =>
         // Make bytecode of previous lines available to the inliner
-        val replOutClasspath = ClassPathFactory.newClassPath(settings.outputDirs.getSingleOutput.get, settings, closeableRegistry)
+        val replOutClasspath = ClassPathFactory.newClassPath(
+          settings.outputDirs.getSingleOutput.get,
+          settings,
+          closeableRegistry)
         AggregateClassPath.createAggregate(platform.classPath, replOutClasspath)
     }
   }

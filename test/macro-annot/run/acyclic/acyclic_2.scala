@@ -1,4 +1,3 @@
-
 object Test extends App {
   def assertEquals(a: Any, b: Any): Unit = { assert(a == b, s"$a != $b") }
 
@@ -20,7 +19,7 @@ object Test extends App {
 
   // @Test  def testC: Unit =
   // {
-    import Module4._
-    @identity4 class C4
+  import Module4._
+  @identity4 class C4
   // }
 }

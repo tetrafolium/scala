@@ -39,11 +39,11 @@ import scala.runtime.Statics.releaseFence
   *  @define willNotTerminateInf
   */
 class ListBuffer[A]
-  extends AbstractBuffer[A]
-     with SeqOps[A, ListBuffer, ListBuffer[A]]
-     with StrictOptimizedSeqOps[A, ListBuffer, ListBuffer[A]]
-     with ReusableBuilder[A, immutable.List[A]]
-     with DefaultSerializable {
+    extends AbstractBuffer[A]
+    with SeqOps[A, ListBuffer, ListBuffer[A]]
+    with StrictOptimizedSeqOps[A, ListBuffer, ListBuffer[A]]
+    with ReusableBuilder[A, immutable.List[A]]
+    with DefaultSerializable {
 
   private var first: List[A] = Nil
   private var last0: ::[A] = null
@@ -135,12 +135,10 @@ class ListBuffer[A]
 
   override def subtractOne(elem: A): this.type = {
     ensureUnaliased()
-    if (isEmpty) {}
-    else if (first.head == elem) {
+    if (isEmpty) {} else if (first.head == elem) {
       first = first.tail
       reduceLengthBy(1)
-    }
-    else {
+    } else {
       var cursor = first
       while (!cursor.tail.isEmpty && cursor.tail.head != elem) {
         cursor = cursor.tail
@@ -161,7 +159,7 @@ class ListBuffer[A]
     */
   private def reduceLengthBy(num: Int): Unit = {
     len -= num
-    if (len <= 0)   // obviously shouldn't be < 0, but still better not to leak
+    if (len <= 0) // obviously shouldn't be < 0, but still better not to leak
       last0 = null
   }
 
@@ -193,14 +191,18 @@ class ListBuffer[A]
 
   def update(idx: Int, elem: A): Unit = {
     ensureUnaliased()
-    if (idx < 0 || idx >= len) throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${len-1})")
+    if (idx < 0 || idx >= len)
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${len - 1})")
     val p = locate(idx)
     setNext(p, elem :: getNext(p).tail)
   }
 
   def insert(idx: Int, elem: A): Unit = {
     ensureUnaliased()
-    if (idx < 0 || idx > len) throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${len-1})")
+    if (idx < 0 || idx > len)
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${len - 1})")
     if (idx == len) +=(elem)
     else {
       val p = locate(idx)
@@ -214,7 +216,8 @@ class ListBuffer[A]
     this
   }
 
-  private def insertAfter(p: Predecessor[A], it: Iterator[A]): Predecessor[A] = {
+  private def insertAfter(p: Predecessor[A],
+                          it: Iterator[A]): Predecessor[A] = {
     var prev = p
     val follow = getNext(prev)
     while (it.hasNext) {
@@ -231,7 +234,9 @@ class ListBuffer[A]
     val it = elems.iterator
     if (it.hasNext) {
       ensureUnaliased()
-      if (idx < 0 || idx > len) throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${len-1})")
+      if (idx < 0 || idx > len)
+        throw new IndexOutOfBoundsException(
+          s"$idx is out of bounds (min 0, max ${len - 1})")
       if (idx == len) ++=(elems)
       else insertAfter(locate(idx), it)
     }
@@ -239,7 +244,9 @@ class ListBuffer[A]
 
   def remove(idx: Int): A = {
     ensureUnaliased()
-    if (idx < 0 || idx >= len) throw new IndexOutOfBoundsException(s"$idx is out of bounds (min 0, max ${len-1})")
+    if (idx < 0 || idx >= len)
+      throw new IndexOutOfBoundsException(
+        s"$idx is out of bounds (min 0, max ${len - 1})")
     val p = locate(idx)
     val nx = getNext(p)
     setNext(p, nx.tail)
@@ -250,10 +257,13 @@ class ListBuffer[A]
   def remove(idx: Int, count: Int): Unit =
     if (count > 0) {
       ensureUnaliased()
-      if (idx < 0 || idx + count > len) throw new IndexOutOfBoundsException(s"$idx to ${idx + count} is out of bounds (min 0, max ${len-1})")
+      if (idx < 0 || idx + count > len)
+        throw new IndexOutOfBoundsException(
+          s"$idx to ${idx + count} is out of bounds (min 0, max ${len - 1})")
       removeAfter(locate(idx), count)
     } else if (count < 0) {
-      throw new IllegalArgumentException("removing negative number of elements: " + count)
+      throw new IllegalArgumentException(
+        "removing negative number of elements: " + count)
     }
 
   private def removeAfter(prev: Predecessor[A], n: Int) = {
@@ -303,7 +313,9 @@ class ListBuffer[A]
     this
   }
 
-  def patchInPlace(from: Int, patch: collection.IterableOnce[A], replaced: Int): this.type = {
+  def patchInPlace(from: Int,
+                   patch: collection.IterableOnce[A],
+                   replaced: Int): this.type = {
     val i = math.min(math.max(from, 0), length)
     val n = math.min(math.max(replaced, 0), length)
     ensureUnaliased()
@@ -314,25 +326,29 @@ class ListBuffer[A]
   }
 
   /**
-   * Selects the last element.
-   *
-   * Runs in constant time.
-   *
-   * @return The last element of this $coll.
-   * @throws NoSuchElementException If the $coll is empty.
-   */
-  override def last: A = if (last0 eq null) throw new NoSuchElementException("last of empty ListBuffer") else last0.head
+    * Selects the last element.
+    *
+    * Runs in constant time.
+    *
+    * @return The last element of this $coll.
+    * @throws NoSuchElementException If the $coll is empty.
+    */
+  override def last: A =
+    if (last0 eq null)
+      throw new NoSuchElementException("last of empty ListBuffer")
+    else last0.head
 
   /**
-   * Optionally selects the last element.
-   *
-   * Runs in constant time.
-   *
-   * @return the last element of this $coll$ if it is nonempty, `None` if it is empty.
-   */
-  override def lastOption: Option[A] = if (last0 eq null) None else Some(last0.head)
+    * Optionally selects the last element.
+    *
+    * Runs in constant time.
+    *
+    * @return the last element of this $coll$ if it is nonempty, `None` if it is empty.
+    */
+  override def lastOption: Option[A] =
+    if (last0 eq null) None else Some(last0.head)
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "ListBuffer"
 
 }
@@ -340,7 +356,8 @@ class ListBuffer[A]
 @SerialVersionUID(3L)
 object ListBuffer extends StrictOptimizedSeqFactory[ListBuffer] {
 
-  def from[A](coll: collection.IterableOnce[A]): ListBuffer[A] = new ListBuffer[A] ++= coll
+  def from[A](coll: collection.IterableOnce[A]): ListBuffer[A] =
+    new ListBuffer[A] ++= coll
 
   def newBuilder[A]: Builder[A, ListBuffer[A]] = new GrowableBuilder(empty[A])
 

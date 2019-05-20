@@ -26,7 +26,7 @@ class AnyRefMapBenchmark {
   @Setup(Level.Trial) def initialize: Unit = {
     existingKeys = (0 to size).map(_.toString).toArray
     missingKeys = (size to 2 * size).toArray.map(_.toString)
-    map = collection.mutable.AnyRefMap(existingKeys.map(x => (x, x)) : _*)
+    map = collection.mutable.AnyRefMap(existingKeys.map(x => (x, x)): _*)
   }
 
   @Benchmark def contains(bh: Blackhole): Unit = {

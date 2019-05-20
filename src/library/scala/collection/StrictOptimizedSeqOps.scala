@@ -18,8 +18,8 @@ import scala.language.higherKinds
   * Trait that overrides operations on sequences in order
   * to take advantage of strict builders.
   */
-trait StrictOptimizedSeqOps [+A, +CC[_], +C]
-  extends Any
+trait StrictOptimizedSeqOps[+A, +CC[_], +C]
+    extends Any
     with SeqOps[A, CC, C]
     with StrictOptimizedIterableOps[A, CC, C] {
 
@@ -65,8 +65,9 @@ trait StrictOptimizedSeqOps [+A, +CC[_], +C]
   }
 
   // Must override here to ensure that `concat` is still an alias for `appendedAll` since it is overridden in `StrictOptimizedIterableOps`
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
-  override def concat[B >: A](suffix: IterableOnce[B]): CC[B] = appendedAll(suffix)
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
+  override def concat[B >: A](suffix: IterableOnce[B]): CC[B] =
+    appendedAll(suffix)
 
   override def padTo[B >: A](len: Int, elem: B): CC[B] = {
     val b = iterableFactory.newBuilder[B]
@@ -85,7 +86,7 @@ trait StrictOptimizedSeqOps [+A, +CC[_], +C]
     val occ = occCounts(that)
     val b = newSpecificBuilder
     for (x <- this) {
-      val ox = occ(x)  // Avoid multiple map lookups
+      val ox = occ(x) // Avoid multiple map lookups
       if (ox == 0) b += x
       else occ(x) = ox - 1
     }
@@ -96,7 +97,7 @@ trait StrictOptimizedSeqOps [+A, +CC[_], +C]
     val occ = occCounts(that)
     val b = newSpecificBuilder
     for (x <- this) {
-      val ox = occ(x)  // Avoid multiple map lookups
+      val ox = occ(x) // Avoid multiple map lookups
       if (ox > 0) {
         b += x
         occ(x) = ox - 1

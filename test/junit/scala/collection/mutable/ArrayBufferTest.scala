@@ -5,7 +5,6 @@ import org.junit.runners.JUnit4
 import org.junit.Test
 import org.junit.Assert.assertEquals
 
-
 import scala.tools.testing.AssertUtil
 import scala.tools.testing.AssertUtil.assertThrows
 
@@ -34,7 +33,9 @@ class ArrayBufferTest {
 
     // Overflow is caught
     AssertUtil.assertThrows[IndexOutOfBoundsException] { insertAt(-1) }
-    AssertUtil.assertThrows[IndexOutOfBoundsException] { insertAt(traver.size + 10) }
+    AssertUtil.assertThrows[IndexOutOfBoundsException] {
+      insertAt(traver.size + 10)
+    }
   }
 
   @Test
@@ -74,61 +75,78 @@ class ArrayBufferTest {
 
     val res = xs.flatMapInPlace(i => ys take i)
 
-    assertEquals(ArrayBuffer(-1, -2, -3, -1, -2, -3, -4, -1, -2, -3, -4, -5), res)
+    assertEquals(ArrayBuffer(-1, -2, -3, -1, -2, -3, -4, -1, -2, -3, -4, -5),
+                 res)
   }
 
   @Test
   def testFilterInPlace: Unit = {
-    assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 100).filterInPlace(_ => false))
-    assertEquals(ArrayBuffer.range(0, 100), ArrayBuffer.range(0, 100).filterInPlace(_ => true))
-    assertEquals(ArrayBuffer.range(start = 0, end = 100, step = 2), ArrayBuffer.range(0, 100).filterInPlace(_ % 2 == 0))
-    assertEquals(ArrayBuffer.range(start = 1, end = 100, step = 2), ArrayBuffer.range(0, 100).filterInPlace(_ % 2 != 0))
+    assertEquals(ArrayBuffer(),
+                 ArrayBuffer.range(0, 100).filterInPlace(_ => false))
+    assertEquals(ArrayBuffer.range(0, 100),
+                 ArrayBuffer.range(0, 100).filterInPlace(_ => true))
+    assertEquals(ArrayBuffer.range(start = 0, end = 100, step = 2),
+                 ArrayBuffer.range(0, 100).filterInPlace(_ % 2 == 0))
+    assertEquals(ArrayBuffer.range(start = 1, end = 100, step = 2),
+                 ArrayBuffer.range(0, 100).filterInPlace(_ % 2 != 0))
   }
 
   @Test
   def testTakeInPlace: Unit = {
     assertEquals(ArrayBuffer(), ArrayBuffer().takeInPlace(10))
     assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 10).takeInPlace(-1))
-    assertEquals(ArrayBuffer.range(0, 10), ArrayBuffer.range(0, 10).takeInPlace(10))
-    assertEquals(ArrayBuffer.range(0, 10), ArrayBuffer.range(0, 100).takeInPlace(10))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ArrayBuffer.range(0, 10).takeInPlace(10))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ArrayBuffer.range(0, 100).takeInPlace(10))
   }
 
   @Test
   def testTakeRightInPlace: Unit = {
     assertEquals(ArrayBuffer(), ArrayBuffer().takeRightInPlace(10))
     assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 10).takeRightInPlace(-1))
-    assertEquals(ArrayBuffer.range(0, 10), ArrayBuffer.range(0, 10).takeRightInPlace(10))
-    assertEquals(ArrayBuffer.range(90, 100), ArrayBuffer.range(0, 100).takeRightInPlace(10))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ArrayBuffer.range(0, 10).takeRightInPlace(10))
+    assertEquals(ArrayBuffer.range(90, 100),
+                 ArrayBuffer.range(0, 100).takeRightInPlace(10))
   }
 
   @Test
   def testTakeWhileInPlace: Unit = {
     assertEquals(ArrayBuffer(), ListBuffer[Int]().takeWhileInPlace(_ < 50))
-    assertEquals(ArrayBuffer.range(0, 10), ListBuffer.range(0, 10).takeWhileInPlace(_ < 50))
-    assertEquals(ArrayBuffer.range(0, 50), ListBuffer.range(0, 100).takeWhileInPlace(_ < 50))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ListBuffer.range(0, 10).takeWhileInPlace(_ < 50))
+    assertEquals(ArrayBuffer.range(0, 50),
+                 ListBuffer.range(0, 100).takeWhileInPlace(_ < 50))
   }
 
   @Test
   def testDropInPlace: Unit = {
     assertEquals(ArrayBuffer(), ArrayBuffer().dropInPlace(10))
-    assertEquals(ArrayBuffer.range(0, 10), ArrayBuffer.range(0, 10).dropInPlace(-1))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ArrayBuffer.range(0, 10).dropInPlace(-1))
     assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 10).dropInPlace(10))
-    assertEquals(ArrayBuffer.range(10, 100), ArrayBuffer.range(0, 100).dropInPlace(10))
+    assertEquals(ArrayBuffer.range(10, 100),
+                 ArrayBuffer.range(0, 100).dropInPlace(10))
   }
 
   @Test
   def testDropRightInPlace: Unit = {
     assertEquals(ArrayBuffer(), ArrayBuffer().dropRightInPlace(10))
-    assertEquals(ArrayBuffer.range(0, 10), ArrayBuffer.range(0, 10).dropRightInPlace(-1))
+    assertEquals(ArrayBuffer.range(0, 10),
+                 ArrayBuffer.range(0, 10).dropRightInPlace(-1))
     assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 10).dropRightInPlace(10))
-    assertEquals(ArrayBuffer.range(0, 90), ArrayBuffer.range(0, 100).dropRightInPlace(10))
+    assertEquals(ArrayBuffer.range(0, 90),
+                 ArrayBuffer.range(0, 100).dropRightInPlace(10))
   }
 
   @Test
   def testDropWhileInPlace: Unit = {
     assertEquals(ArrayBuffer(), ArrayBuffer[Int]().dropWhileInPlace(_ < 50))
-    assertEquals(ArrayBuffer(), ArrayBuffer.range(0, 10).dropWhileInPlace(_ < 50))
-    assertEquals(ArrayBuffer.range(50, 100), ArrayBuffer.range(0, 100).dropWhileInPlace(_ < 50))
+    assertEquals(ArrayBuffer(),
+                 ArrayBuffer.range(0, 10).dropWhileInPlace(_ < 50))
+    assertEquals(ArrayBuffer.range(50, 100),
+                 ArrayBuffer.range(0, 100).dropWhileInPlace(_ < 50))
   }
 
   @Test
@@ -158,7 +176,9 @@ class ArrayBufferTest {
 
   @Test
   def testRemoveMany: Unit = {
-    def testRemoveMany(index: Int, count: Int, expectation: ArrayBuffer[Int]): Unit = {
+    def testRemoveMany(index: Int,
+                       count: Int,
+                       expectation: ArrayBuffer[Int]): Unit = {
       val buffer = ArrayBuffer(0, 1, 2)
       buffer.remove(index, count)
       assertEquals(expectation, buffer)
@@ -235,27 +255,53 @@ class ArrayBufferTest {
   def testPatch: Unit = {
     val buffer = ArrayBuffer(0, 1, 2, 3)
     val patch = List(-3, -2, -1)
-    assertEquals(ArrayBuffer(-3, -2, -1, 0, 1, 2, 3), buffer.patch(from = -1, patch, replaced = -1))
-    assertEquals(ArrayBuffer(-3, -2, -1, 0, 1, 2, 3), buffer.patch(from = 0, patch, replaced = 0))
-    assertEquals(ArrayBuffer(0, -3, -2, -1, 2, 3), buffer.patch(from = 1, patch, replaced = 1))
-    assertEquals(ArrayBuffer(0, -3, -2, -1), buffer.patch(from = 1, patch, replaced = 3))
-    assertEquals(ArrayBuffer(0, 1, -3, -2, -1), buffer.patch(from = 2, patch, replaced = 2))
-    assertEquals(ArrayBuffer(0, 1, 2, 3, -3, -2, -1), buffer.patch(from = 10, patch, replaced = 10))
-    assertEquals(ArrayBuffer(-3, -2, -1), buffer.patch(from = 0, patch, replaced = 100))
+    assertEquals(ArrayBuffer(-3, -2, -1, 0, 1, 2, 3),
+                 buffer.patch(from = -1, patch, replaced = -1))
+    assertEquals(ArrayBuffer(-3, -2, -1, 0, 1, 2, 3),
+                 buffer.patch(from = 0, patch, replaced = 0))
+    assertEquals(ArrayBuffer(0, -3, -2, -1, 2, 3),
+                 buffer.patch(from = 1, patch, replaced = 1))
+    assertEquals(ArrayBuffer(0, -3, -2, -1),
+                 buffer.patch(from = 1, patch, replaced = 3))
+    assertEquals(ArrayBuffer(0, 1, -3, -2, -1),
+                 buffer.patch(from = 2, patch, replaced = 2))
+    assertEquals(ArrayBuffer(0, 1, 2, 3, -3, -2, -1),
+                 buffer.patch(from = 10, patch, replaced = 10))
+    assertEquals(ArrayBuffer(-3, -2, -1),
+                 buffer.patch(from = 0, patch, replaced = 100))
   }
 
   @Test
   def testPatchInPlace: Unit = {
-    def testPatchInPlace(from: Int, replaced: Int, expectation: ArrayBuffer[Int]) =
-      assertEquals(expectation, ArrayBuffer(0, 1, 2).patchInPlace(from, patch = List(-3, -2, -1), replaced))
+    def testPatchInPlace(from: Int,
+                         replaced: Int,
+                         expectation: ArrayBuffer[Int]) =
+      assertEquals(expectation,
+                   ArrayBuffer(0, 1, 2).patchInPlace(from,
+                                                     patch = List(-3, -2, -1),
+                                                     replaced))
 
-    testPatchInPlace(from = -1, replaced = -1, expectation = ArrayBuffer(-3, -2, -1, 0, 1, 2))
-    testPatchInPlace(from = 0, replaced = 0, expectation = ArrayBuffer(-3, -2, -1, 0, 1, 2))
-    testPatchInPlace(from = 1, replaced = 1, expectation = ArrayBuffer(0, -3, -2, -1, 2))
-    testPatchInPlace(from = 1, replaced = 2, expectation = ArrayBuffer(0, -3, -2, -1))
-    testPatchInPlace(from = 2, replaced = 1, expectation = ArrayBuffer(0, 1, -3, -2, -1))
-    testPatchInPlace(from = 10, replaced = 10, expectation = ArrayBuffer(0, 1, 2, -3, -2, -1))
-    testPatchInPlace(from = 0, replaced = 100, expectation = ArrayBuffer(-3, -2, -1))
+    testPatchInPlace(from = -1,
+                     replaced = -1,
+                     expectation = ArrayBuffer(-3, -2, -1, 0, 1, 2))
+    testPatchInPlace(from = 0,
+                     replaced = 0,
+                     expectation = ArrayBuffer(-3, -2, -1, 0, 1, 2))
+    testPatchInPlace(from = 1,
+                     replaced = 1,
+                     expectation = ArrayBuffer(0, -3, -2, -1, 2))
+    testPatchInPlace(from = 1,
+                     replaced = 2,
+                     expectation = ArrayBuffer(0, -3, -2, -1))
+    testPatchInPlace(from = 2,
+                     replaced = 1,
+                     expectation = ArrayBuffer(0, 1, -3, -2, -1))
+    testPatchInPlace(from = 10,
+                     replaced = 10,
+                     expectation = ArrayBuffer(0, 1, 2, -3, -2, -1))
+    testPatchInPlace(from = 0,
+                     replaced = 100,
+                     expectation = ArrayBuffer(-3, -2, -1))
   }
 
   @Test(expected = classOf[IndexOutOfBoundsException])
@@ -312,17 +358,22 @@ class ArrayBufferTest {
 
   @Test
   def emptyIteratorDropOneMustBeEmpty: Unit = {
-    assertThrows[NoSuchElementException](new ArrayBuffer[Int].iterator.drop(1).next())
+    assertThrows[NoSuchElementException](
+      new ArrayBuffer[Int].iterator.drop(1).next())
   }
 
   @Test
   def t11114_ArrayBufferPatch: Unit = {
     {
       def newBuf = ArrayBuffer(1, 2, 3, 4, 5)
-      assertEquals(ArrayBuffer(1, 2, 3, 10, 11), newBuf.patchInPlace(3, List(10, 11), 4))
-      assertEquals(ArrayBuffer(1, 2, 3, 10, 11), newBuf.patchInPlace(3, List(10, 11), 10))
-      assertEquals(ArrayBuffer(10, 11), newBuf.patchInPlace(0, List(10, 11), 10))
-      assertEquals(ArrayBuffer(1, 2, 3, 10, 11, 12), newBuf.patchInPlace(3, List(10, 11, 12), 4))
+      assertEquals(ArrayBuffer(1, 2, 3, 10, 11),
+                   newBuf.patchInPlace(3, List(10, 11), 4))
+      assertEquals(ArrayBuffer(1, 2, 3, 10, 11),
+                   newBuf.patchInPlace(3, List(10, 11), 10))
+      assertEquals(ArrayBuffer(10, 11),
+                   newBuf.patchInPlace(0, List(10, 11), 10))
+      assertEquals(ArrayBuffer(1, 2, 3, 10, 11, 12),
+                   newBuf.patchInPlace(3, List(10, 11, 12), 4))
     }
 
     for {
@@ -338,7 +389,8 @@ class ArrayBufferTest {
       val fromPatch = createBuf.patch(from, patch(), replaced)
       val fromPatchInPlace = createBuf.patchInPlace(from, patch(), replaced)
 
-      assert(fromPatch == fromPatchInPlace,
+      assert(
+        fromPatch == fromPatchInPlace,
         s"""Failed on:
            |  size: $size
            |  targetBuffer: $createBuf
@@ -351,6 +403,5 @@ class ArrayBufferTest {
       )
     }
   }
-
 
 }

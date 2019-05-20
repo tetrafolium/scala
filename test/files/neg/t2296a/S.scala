@@ -11,8 +11,8 @@ package s {
 }
 
 object Test {
-  def main(args : Array[String]): Unit = {
+  def main(args: Array[String]): Unit = {
     (new s.SC).bar()
-    (new s.S { }).bar()
+    (new s.S {}).bar()
   }
 }

@@ -2,10 +2,16 @@
 
 import pkg._
 
-@plusTwo class CPreToplevelNocomp { override def toString = "CPreToplevelNocomp" }
+@plusTwo class CPreToplevelNocomp {
+  override def toString = "CPreToplevelNocomp"
+}
 object CPreToplevelPrecomp { def apply() = new CPreToplevelPrecomp }
-@plusTwo class CPreToplevelPrecomp { override def toString = "CPreToplevelPrecomp" }
-@plusTwo class CPreToplevelPostcomp { override def toString = "CPreToplevelPostcomp" }
+@plusTwo class CPreToplevelPrecomp {
+  override def toString = "CPreToplevelPrecomp"
+}
+@plusTwo class CPreToplevelPostcomp {
+  override def toString = "CPreToplevelPostcomp"
+}
 object CPreToplevelPostcomp { def apply() = new CPreToplevelPostcomp }
 
 object Test extends App {
@@ -21,8 +27,12 @@ object Test extends App {
 
   @plusTwo class CPreMemberNocomp { override def toString = "CPreMemberNocomp" }
   object CPreMemberPrecomp { def apply() = new CPreMemberPrecomp }
-  @plusTwo class CPreMemberPrecomp { override def toString = "CPreMemberPrecomp" }
-  @plusTwo class CPreMemberPostcomp { override def toString = "CPreMemberPostcomp" }
+  @plusTwo class CPreMemberPrecomp {
+    override def toString = "CPreMemberPrecomp"
+  }
+  @plusTwo class CPreMemberPostcomp {
+    override def toString = "CPreMemberPostcomp"
+  }
   object CPreMemberPostcomp { def apply() = new CPreMemberPostcomp }
   objects += new CPreMemberNocomp()
   objects += CPreMemberPrecomp()
@@ -30,18 +40,28 @@ object Test extends App {
   objects += new CPostMemberNocomp()
   objects += CPostMemberPrecomp()
   objects += CPostMemberPostcomp()
-  @plusTwo class CPostMemberNocomp { override def toString = "CPostMemberNocomp" }
+  @plusTwo class CPostMemberNocomp {
+    override def toString = "CPostMemberNocomp"
+  }
   object CPostMemberPrecomp { def apply() = new CPostMemberPrecomp }
-  @plusTwo class CPostMemberPrecomp { override def toString = "CPostMemberPrecomp" }
-  @plusTwo class CPostMemberPostcomp { override def toString = "CPostMemberPostcomp" }
+  @plusTwo class CPostMemberPrecomp {
+    override def toString = "CPostMemberPrecomp"
+  }
+  @plusTwo class CPostMemberPostcomp {
+    override def toString = "CPostMemberPostcomp"
+  }
   object CPostMemberPostcomp { def apply() = new CPostMemberPostcomp }
 
   // @Test def combo: Unit =
   {
     @plusTwo class CPreLocalNocomp { override def toString = "CPreLocalNocomp" }
     object CPreLocalPrecomp { def apply() = new CPreLocalPrecomp }
-    @plusTwo class CPreLocalPrecomp { override def toString = "CPreLocalPrecomp" }
-    @plusTwo class CPreLocalPostcomp { override def toString = "CPreLocalPostcomp" }
+    @plusTwo class CPreLocalPrecomp {
+      override def toString = "CPreLocalPrecomp"
+    }
+    @plusTwo class CPreLocalPostcomp {
+      override def toString = "CPreLocalPostcomp"
+    }
     object CPreLocalPostcomp { def apply() = new CPreLocalPostcomp }
     objects += new CPreLocalNocomp()
     objects += CPreLocalPrecomp()
@@ -49,13 +69,21 @@ object Test extends App {
     objects += new CPostLocalNocomp()
     objects += CPostLocalPrecomp()
     objects += CPostLocalPostcomp()
-    @plusTwo class CPostLocalNocomp { override def toString = "CPostLocalNocomp" }
+    @plusTwo class CPostLocalNocomp {
+      override def toString = "CPostLocalNocomp"
+    }
     object CPostLocalPrecomp { def apply() = new CPostLocalPrecomp }
-    @plusTwo class CPostLocalPrecomp { override def toString = "CPostLocalPrecomp" }
-    @plusTwo class CPostLocalPostcomp { override def toString = "CPostLocalPostcomp" }
+    @plusTwo class CPostLocalPrecomp {
+      override def toString = "CPostLocalPrecomp"
+    }
+    @plusTwo class CPostLocalPostcomp {
+      override def toString = "CPostLocalPostcomp"
+    }
     object CPostLocalPostcomp { def apply() = new CPostLocalPostcomp }
 
-    assertEquals(objects.mkString("\n"), """
+    assertEquals(
+      objects.mkString("\n"),
+      """
       |CPreToplevelNocomp+1+1
       |CPreToplevelPrecomp+1+1
       |CPreToplevelPostcomp+1+1
@@ -74,12 +102,19 @@ object Test extends App {
       |CPostLocalNocomp+1+1
       |CPostLocalPrecomp+1+1
       |CPostLocalPostcomp+1+1
-    """.trim.stripMargin)
+    """.trim.stripMargin
+    )
   }
 }
 
-@plusTwo class CPostToplevelNocomp { override def toString = "CPostToplevelNocomp" }
+@plusTwo class CPostToplevelNocomp {
+  override def toString = "CPostToplevelNocomp"
+}
 object CPostToplevelPrecomp { def apply() = new CPostToplevelPrecomp }
-@plusTwo class CPostToplevelPrecomp { override def toString = "CPostToplevelPrecomp" }
-@plusTwo class CPostToplevelPostcomp { override def toString = "CPostToplevelPostcomp" }
+@plusTwo class CPostToplevelPrecomp {
+  override def toString = "CPostToplevelPrecomp"
+}
+@plusTwo class CPostToplevelPostcomp {
+  override def toString = "CPostToplevelPostcomp"
+}
 object CPostToplevelPostcomp { def apply() = new CPostToplevelPostcomp }

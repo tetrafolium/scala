@@ -12,7 +12,6 @@
 
 package scala.collection
 
-
 package object immutable {
   type StringOps = scala.collection.StringOps
   val StringOps = scala.collection.StringOps

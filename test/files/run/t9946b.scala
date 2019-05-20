@@ -9,4 +9,3 @@ object Test {
     assert(t.x == "foo", t.x)
   }
 }
-

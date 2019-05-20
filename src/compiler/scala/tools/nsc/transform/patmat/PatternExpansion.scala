@@ -64,11 +64,16 @@ trait PatternExpansion {
   // One solution could be to widen all expected types for sub-patterns since the extractor's result type
   // may contain singleton types that depend on `arg` (<unapply-selector>)
   // `formals mapConserve (_.widen)`
-  def unapplyFormals(fun: Tree, args: List[Tree])(context: Contexts#Context): List[Type] =
-    new ExtractorAlignment(fun, args)(context).unapplyFormals.map{case NoType => ErrorType case tp => tp}
+  def unapplyFormals(fun: Tree, args: List[Tree])(
+      context: Contexts#Context): List[Type] =
+    new ExtractorAlignment(fun, args)(context).unapplyFormals.map {
+      case NoType => ErrorType
+      case tp     => tp
+    }
 
   /** The arities we can derive looking only at the subpatterns (the args of the unapply node) */
   trait ExtractorSubPatternAlignment {
+
     /** Args will be broken down into the concatenation of:
       * `productArity` product patterns (fixed length, corresponding to fields in case class or tuple components in classic unapply,
       *   or product selectors in product-based unapply)
@@ -81,24 +86,28 @@ trait PatternExpansion {
     // args.length == nonStarArity + starArity
     val (nonStarArity, isStar) = args match {
       case init :+ last if treeInfo.isStar(last) => (init.length, true)
-      case _ => (args.length, false)
+      case _                                     => (args.length, false)
     }
 
-    def starArity  = if (isStar) 1 else 0
+    def starArity = if (isStar) 1 else 0
     def totalArity = nonStarArity + starArity
   }
 
   // Analyze the fun / args of a case class or extractor pattern in terms of repeated patterns etc.
   // Extracts some info from signatures of get/apply/head methods (name-based patmat)
-  class ExtractorAlignment(val fun: Tree, val args: List[Tree])(context: Contexts#Context) extends ExtractorSubPatternAlignment {
+  class ExtractorAlignment(val fun: Tree, val args: List[Tree])(
+      context: Contexts#Context)
+      extends ExtractorSubPatternAlignment {
     def unapplySelector: Symbol = NoSymbol
 
-    def productArity = productTypes.length // values coming from the fixed-length content
+    def productArity =
+      productTypes.length // values coming from the fixed-length content
 
-    def elementArity = nonStarArity - productArity // number of elements picked off from the sequence (the variable-length values of the extracted parts)
+    def elementArity =
+      nonStarArity - productArity // number of elements picked off from the sequence (the variable-length values of the extracted parts)
     def isSeq = elementType ne NoType
 
-    def isBool   = !isSeq && productTypes.isEmpty
+    def isBool = !isSeq && productTypes.isEmpty
     def isSingle = !isSeq && totalArity == 1 // a Tuple1 is not decomposed
 
     // the expected argument type of the unapply method (or the result type of the case class constructor)
@@ -120,14 +129,18 @@ trait PatternExpansion {
         else tps.map(_.substSym(List(unapplySelector), List(extractedBinder)))
 
       val withoutStar = productTypes ::: List.fill(elementArity)(elementType)
-      replaceUnapplySelector(if (isStar) withoutStar :+ seqType(elementType) else withoutStar)
+      replaceUnapplySelector(
+        if (isStar) withoutStar :+ seqType(elementType) else withoutStar)
     }
 
     // rest is private
-    private val isUnapply        = fun.symbol.name == nme.unapply
-    private val isUnapplySeq     = fun.symbol.name == nme.unapplySeq
-    private def isBooleanUnapply = isUnapply && unapplyResultType() =:= BooleanTpe
-    private def isRepeatedCaseClass = caseCtorParamTypes.exists(tpes => tpes.nonEmpty && isScalaRepeatedParamType(tpes.last))
+    private val isUnapply = fun.symbol.name == nme.unapply
+    private val isUnapplySeq = fun.symbol.name == nme.unapplySeq
+    private def isBooleanUnapply =
+      isUnapply && unapplyResultType() =:= BooleanTpe
+    private def isRepeatedCaseClass =
+      caseCtorParamTypes.exists(tpes =>
+        tpes.nonEmpty && isScalaRepeatedParamType(tpes.last))
 
     private def caseCtorParamTypes: Option[List[Type]] =
       if (isUnapply || isUnapplySeq) None else Some(fun.tpe.paramTypes)
@@ -135,13 +148,16 @@ trait PatternExpansion {
     // scala/bug#6130 scala/bug#11162 unapply's result type may refer to the binder we're extracting,
     // as well as implicit args. Example: `def unapply(x: T)(implicit ops: Foo): Option[(x.T, ops.U)]`.
     // Existentially abstract over any unknown values to approximate the type.
-    private def unapplyResultType(extractedBinder: Symbol = unapplySelector): Type = {
-        val appliedToExtractedBinder =
-          if (extractedBinder != NoSymbol) fun.tpe.resultType(List(SingleType(NoPrefix, extractedBinder)))
-          else fun.tpe
+    private def unapplyResultType(
+        extractedBinder: Symbol = unapplySelector): Type = {
+      val appliedToExtractedBinder =
+        if (extractedBinder != NoSymbol)
+          fun.tpe.resultType(List(SingleType(NoPrefix, extractedBinder)))
+        else fun.tpe
 
-        packSymbols(appliedToExtractedBinder.paramss.flatten, appliedToExtractedBinder.finalResultType)
-      }
+      packSymbols(appliedToExtractedBinder.paramss.flatten,
+                  appliedToExtractedBinder.finalResultType)
+    }
 
     private def resultOfGetInMonad(arg: Symbol = unapplySelector) =
       elementTypeFromGet(unapplyResultType(arg))
@@ -162,8 +178,13 @@ trait PatternExpansion {
       val res = resultOfGetInMonad()
       // Can't only check for _1 thanks to pos/t796.
       if (res.hasNonPrivateMember(nme._1) && res.hasNonPrivateMember(nme._2))
-        Some(Stream.from(1).map(n => res.nonPrivateMember(newTermName("_" + n))).
-             takeWhile(m => m.isMethod && m.paramLists.isEmpty).toList.map(m => res.memberType(m).resultType))
+        Some(
+          Stream
+            .from(1)
+            .map(n => res.nonPrivateMember(newTermName("_" + n)))
+            .takeWhile(m => m.isMethod && m.paramLists.isEmpty)
+            .toList
+            .map(m => res.memberType(m).resultType))
       else None
     }
 
@@ -172,15 +193,16 @@ trait PatternExpansion {
     // In terms of the (equivalent -- if we're dealing with an unapply) case class, what are the constructor's parameter types?
     private val equivConstrParamTypes =
       caseCtorParamTypes orElse
-      booleanUnapply orElse
-      fromTupleComponents orElse
-      fromProductSelectors getOrElse
-      (resultOfGetInMonad() :: Nil) // hope for the best
+        booleanUnapply orElse
+        fromTupleComponents orElse
+        fromProductSelectors getOrElse
+        (resultOfGetInMonad() :: Nil) // hope for the best
 
     // The non-sequence types which are extracted
     private val productTypes =
       if (equivConstrParamTypes.isEmpty) Nil
-      else if (isUnapplySeq || (!isUnapply && isRepeatedCaseClass)) equivConstrParamTypes.init
+      else if (isUnapplySeq || (!isUnapply && isRepeatedCaseClass))
+        equivConstrParamTypes.init
       // scala/bug#9029 A pattern with arity-1 that doesn't match the arity of
       // the Product-like result of the `get` method, will match that result in its entirety.
       //
@@ -196,9 +218,9 @@ trait PatternExpansion {
       // ```
       else if (totalArity == 1 && equivConstrParamTypes.tail.nonEmpty) {
         warnPatternTupling()
-        (if (tupleValuedUnapply) tupleType(equivConstrParamTypes) else resultOfGetInMonad()) :: Nil
-      }
-      else equivConstrParamTypes
+        (if (tupleValuedUnapply) tupleType(equivConstrParamTypes)
+         else resultOfGetInMonad()) :: Nil
+      } else equivConstrParamTypes
 
     private def notRepeated = (NoType, NoType)
     private val (elementType, repeatedType) =
@@ -211,7 +233,7 @@ trait PatternExpansion {
           (elementTp, scalaRepeatedType(elementTp))
         } else {
           definitions.elementType(RepeatedParamClass, lastParamTp) match {
-            case NoType => notRepeated
+            case NoType    => notRepeated
             case elementTp => (elementTp, lastParamTp)
           }
         }
@@ -219,9 +241,13 @@ trait PatternExpansion {
 
     // errors & warnings
 
-    private def err(msg: String) = context.error(fun.pos,msg)
-    private def warn(msg: String) = context.warning(fun.pos,msg)
-    private def depr(msg: String, since: String) = currentRun.reporting.deprecationWarning(fun.pos, fun.symbol.owner, msg, since)
+    private def err(msg: String) = context.error(fun.pos, msg)
+    private def warn(msg: String) = context.warning(fun.pos, msg)
+    private def depr(msg: String, since: String) =
+      currentRun.reporting.deprecationWarning(fun.pos,
+                                              fun.symbol.owner,
+                                              msg,
+                                              since)
 
     private def warnPatternTupling() =
       if (effectivePatternArity(args) == 1 && tupleValuedUnapply) {
@@ -230,31 +256,45 @@ trait PatternExpansion {
           else s" to hold ${equivConstrParamTypes.mkString("(", ", ", ")")}"
         val sym = fun.symbol.owner
         val arr = equivConstrParamTypes.length
-        depr(s"${sym} expects $arr patterns$acceptMessage but crushing into $arr-tuple to fit single pattern (scala/bug#6675)", "2.11.0")
+        depr(
+          s"${sym} expects $arr patterns$acceptMessage but crushing into $arr-tuple to fit single pattern (scala/bug#6675)",
+          "2.11.0")
       }
 
     private def arityError(mismatch: String) = {
       val isErroneous = (productTypes contains NoType) && !(isSeq && (elementType ne NoType))
 
-      val offeringString = if (isErroneous) "<error>" else productTypes match {
-        case tps if isSeq => (tps.map(_.toString) :+ s"${elementType}*").mkString("(", ", ", ")")
-        case Nil       => "Boolean"
-        case tp :: Nil => tp
-        case tps       => tps.mkString("(", ", ", ")")
-      }
+      val offeringString =
+        if (isErroneous) "<error>"
+        else
+          productTypes match {
+            case tps if isSeq =>
+              (tps.map(_.toString) :+ s"${elementType}*")
+                .mkString("(", ", ", ")")
+            case Nil       => "Boolean"
+            case tp :: Nil => tp
+            case tps       => tps.mkString("(", ", ", ")")
+          }
       val offerString = if (isErroneous) "" else s" offering $offeringString"
       val expected = (if (isSeq) "at least " else "") + productArity
-      err(s"$mismatch patterns for ${fun.symbol.owner}$offerString: expected $expected, found $totalArity")
+      err(
+        s"$mismatch patterns for ${fun.symbol.owner}$offerString: expected $expected, found $totalArity")
     }
 
     // emit error/warning on mismatch
-    if (isStar && !isSeq) err("Star pattern must correspond with varargs or unapplySeq")
-    else if (equivConstrParamTypes == List(NoType)) err(s"The result type of an ${fun.symbol.name} method must contain a member `get` to be used as an extractor pattern, no such member exists in ${unapplyResultType()}")
+    if (isStar && !isSeq)
+      err("Star pattern must correspond with varargs or unapplySeq")
+    else if (equivConstrParamTypes == List(NoType))
+      err(
+        s"The result type of an ${fun.symbol.name} method must contain a member `get` to be used as an extractor pattern, no such member exists in ${unapplyResultType()}")
     else if (elementArity < 0) arityError("not enough")
     else if (elementArity > 0 && !isSeq) arityError("too many")
-    else if (settings.warnStarsAlign && isSeq && productArity > 0 && elementArity > 0) warn(
-      if (isStar) "Sequence wildcard (_*) does not align with repeated case parameter or extracted sequence; the result may be unexpected."
-      else "A repeated case parameter or extracted sequence is not matched by a sequence wildcard (_*), and may fail at runtime.")
+    else if (settings.warnStarsAlign && isSeq && productArity > 0 && elementArity > 0)
+      warn(
+        if (isStar)
+          "Sequence wildcard (_*) does not align with repeated case parameter or extracted sequence; the result may be unexpected."
+        else
+          "A repeated case parameter or extracted sequence is not matched by a sequence wildcard (_*), and may fail at runtime.")
 
   }
 }

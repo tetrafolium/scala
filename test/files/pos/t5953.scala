@@ -7,7 +7,8 @@ object Vector {
 }
 
 package object foo {
-  @inline implicit class TravOps[A, CC[A] <: GenTraversable[A]](val coll: CC[A]) extends AnyVal {
+  @inline implicit class TravOps[A, CC[A] <: GenTraversable[A]](val coll: CC[A])
+      extends AnyVal {
     def build[CC2[X]](implicit cbf: CBF[Nothing, A, CC2[A]]): CC2[A] = ???
   }
 }

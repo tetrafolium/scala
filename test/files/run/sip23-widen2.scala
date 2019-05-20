@@ -12,7 +12,8 @@ object Test extends App {
 
   def widened[T](t: T)(implicit w: Widened[T], f: F[T]): Boolean = w.value
 
-  def boundedWidened[T <: Singleton](t: T)(implicit w: Widened[T]): Boolean = w.value
+  def boundedWidened[T <: Singleton](t: T)(implicit w: Widened[T]): Boolean =
+    w.value
 
   assert(widened(23))
   assert(!boundedWidened(23))

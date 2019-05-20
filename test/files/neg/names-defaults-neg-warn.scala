@@ -34,9 +34,9 @@ class C {
     f2 { x = 1 }
 
     synchronized(x = 1) // deprecation warning in 2.12, error in 2.13
-    synchronized((x = 1))   // ok
+    synchronized((x = 1)) // ok
     synchronized({ x = 1 }) // ok
-    synchronized { x = 1 }  // ok
+    synchronized { x = 1 } // ok
   }
 
   def t2 = {

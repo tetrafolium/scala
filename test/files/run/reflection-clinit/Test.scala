@@ -5,4 +5,3 @@ object Test {
     typeOf[p1.A] // used to call C.<clinit>
   }
 }
-

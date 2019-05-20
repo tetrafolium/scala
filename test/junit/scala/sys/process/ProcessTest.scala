@@ -19,7 +19,8 @@ import org.junit.Assert._
 @RunWith(classOf[JUnit4])
 class ProcessTest {
   private def testily(body: => Unit) = if (!isWin) body
-  private val tempFiles = Seq(File.createTempFile("foo", "tmp"), File.createTempFile("bar", "tmp"))
+  private val tempFiles =
+    Seq(File.createTempFile("foo", "tmp"), File.createTempFile("bar", "tmp"))
 
   @Test def t10007(): Unit = testily {
     val res = ("cat" #< new ByteArrayInputStream("lol".getBytes)).!!
@@ -27,7 +28,7 @@ class ProcessTest {
   }
   // test non-hanging
   @Test def t10055(): Unit = testily {
-    val res = ("cat" #< ( () => -1 ) ).!
+    val res = ("cat" #< (() => -1)).!
     assertEquals(0, res)
   }
 
@@ -103,7 +104,7 @@ class ProcessTest {
     val outf = out.toFile
 
     try {
-      val p0 = (file1.toFile : ProcessBuilder.Source).cat #&& pb2
+      val p0 = (file1.toFile: ProcessBuilder.Source).cat #&& pb2
       val p = p0 #> outf
 
       assertEquals(1, p.!)

@@ -4,7 +4,7 @@ trait T[A] {
 }
 
 object Test {
-  def f = (x: C[Any]) => {println(s"f($x)"); x} // okay
+  def f = (x: C[Any]) => { println(s"f($x)"); x } // okay
   def g = new T[C[Any]] { def apply(a: C[Any]) = a } // okay
 
   // we can't rename the specific apply method to avoid the clash

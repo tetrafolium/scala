@@ -45,7 +45,6 @@ package sd229 {
   }
 }
 
-
 // already fixed in 2.11.8, crashes in 2.10.6
 package t4683a {
   class A { log("a") }
@@ -61,11 +60,11 @@ package t4683a {
 package t4683b {
   class Entity extends DelayedInit {
     def delayedInit(x: => Unit): Unit = x
-    
+
     class Field
-    
+
     protected def EntityField[T <: Entity: reflect.ClassTag] = new Field
-    
+
     def find[T <: Entity: reflect.ClassTag]: Unit = {
       Nil.map(dbo => {
         class EntityHolder extends Entity {
@@ -128,11 +127,11 @@ package t4683f {
     def foo = log("foo")
     var inits: List[() => Unit] = Nil
   }
-  
+
   class Bar extends Foo {
     log("barInit")
     def bar = foo
-    def newBaz: Foo = new Baz 
+    def newBaz: Foo = new Baz
     private class Baz extends Foo {
       log("bazInit")
       bar
@@ -144,13 +143,12 @@ package t4683g {
   trait MatExpWorld { self =>
     class T extends Runner { val expWorld: self.type = self }
   }
-  
+
   trait Runner extends DelayedInit {
     def delayedInit(init: => Unit): Unit = init
     val expWorld: MatExpWorld
   }
 }
-
 
 object Test extends App {
   new t9697.C()
@@ -198,7 +196,7 @@ object Test extends App {
   log.check("bazInitfoofooInit")
   assert(bzz.inits == Nil)
 
-  val mew = new t4683g.MatExpWorld { }
+  val mew = new t4683g.MatExpWorld {}
   val mt = new mew.T
   assert(mt.expWorld == mew)
 }

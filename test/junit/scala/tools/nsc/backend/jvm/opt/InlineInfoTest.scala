@@ -20,10 +20,10 @@ class InlineInfoTest extends BytecodeTesting {
 
   override def compilerArgs = "-opt:l:inline -opt-inline-from:**"
 
-  compiler.keepPerRunCachesAfterRun(List(
-    JavaClearable.forMap(bTypes.classBTypeCache),
-    postProcessor.byteCodeRepository.compilingClasses,
-    postProcessor.byteCodeRepository.parsedClasses))
+  compiler.keepPerRunCachesAfterRun(
+    List(JavaClearable.forMap(bTypes.classBTypeCache),
+         postProcessor.byteCodeRepository.compilingClasses,
+         postProcessor.byteCodeRepository.parsedClasses))
 
   @Test
   def inlineInfosFromSymbolAndAttribute(): Unit = {
@@ -46,11 +46,14 @@ class InlineInfoTest extends BytecodeTesting {
       """.stripMargin
     val classes = compileClasses(code)
 
-    val fromSyms = classes.map(c => global.genBCode.bTypes.cachedClassBType(c.name).info.get.inlineInfo)
+    val fromSyms = classes.map(c =>
+      global.genBCode.bTypes.cachedClassBType(c.name).info.get.inlineInfo)
 
     val fromAttrs = classes.map(c => {
-      assert(c.attrs.asScala.exists(_.isInstanceOf[InlineInfoAttribute]), c.attrs)
-      global.genBCode.postProcessor.bTypesFromClassfile.inlineInfoFromClassfile(c)
+      assert(c.attrs.asScala.exists(_.isInstanceOf[InlineInfoAttribute]),
+             c.attrs)
+      global.genBCode.postProcessor.bTypesFromClassfile
+        .inlineInfoFromClassfile(c)
     })
 
     assert(fromSyms == fromAttrs)
@@ -66,10 +69,12 @@ class InlineInfoTest extends BytecodeTesting {
       """.stripMargin
     compileClasses("class C { new A }", javaCode = List((jCode, "A.java")))
     val info = global.genBCode.bTypes.cachedClassBType("A").info.get.inlineInfo
-    assertEquals(info.methodInfos, Map(
-      "bar()I"    -> MethodInlineInfo(true,false,false),
-      "<init>()V" -> MethodInlineInfo(false,false,false),
-      "baz()I"    -> MethodInlineInfo(true,false,false)))
+    assertEquals(
+      info.methodInfos,
+      Map("bar()I" -> MethodInlineInfo(true, false, false),
+          "<init>()V" -> MethodInlineInfo(false, false, false),
+          "baz()I" -> MethodInlineInfo(true, false, false))
+    )
   }
 
   @Test
@@ -83,12 +88,19 @@ class InlineInfoTest extends BytecodeTesting {
         |}
         |
       """.stripMargin
-    compileClasses("class C { def t: java.nio.file.WatchEvent.Kind[String] = null }", javaCode = List((jCode, "WatchEvent.java")))
+    compileClasses(
+      "class C { def t: java.nio.file.WatchEvent.Kind[String] = null }",
+      javaCode = List((jCode, "WatchEvent.java")))
     // before the fix of scala-dev#402, the companion of the nested class `Kind` (containing the static method) was taken from
     // the classpath (classfile WatchEvent$Kind.class) instead of the actual companion from the source, so the static method was missing.
-    val info = global.genBCode.bTypes.cachedClassBType("java/nio/file/WatchEvent$Kind").info.get.inlineInfo
-    assertEquals(info.methodInfos, Map(
-      "HAI()Ljava/lang/String;" -> MethodInlineInfo(true,false,false),
-      "<init>()V"               -> MethodInlineInfo(false,false,false)))
+    val info = global.genBCode.bTypes
+      .cachedClassBType("java/nio/file/WatchEvent$Kind")
+      .info
+      .get
+      .inlineInfo
+    assertEquals(
+      info.methodInfos,
+      Map("HAI()Ljava/lang/String;" -> MethodInlineInfo(true, false, false),
+          "<init>()V" -> MethodInlineInfo(false, false, false)))
   }
 }

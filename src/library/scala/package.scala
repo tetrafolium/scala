@@ -13,29 +13,30 @@
 import scala.annotation.migration
 
 /**
- * Core Scala types. They are always available without an explicit import.
- * @contentDiagram hideNodes "scala.Serializable"
- */
+  * Core Scala types. They are always available without an explicit import.
+  * @contentDiagram hideNodes "scala.Serializable"
+  */
 package object scala {
-  type Cloneable    = java.lang.Cloneable
+  type Cloneable = java.lang.Cloneable
   type Serializable = java.io.Serializable
 
   type Throwable = java.lang.Throwable
   type Exception = java.lang.Exception
-  type Error     = java.lang.Error
+  type Error = java.lang.Error
 
-  type RuntimeException                = java.lang.RuntimeException
-  type NullPointerException            = java.lang.NullPointerException
-  type ClassCastException              = java.lang.ClassCastException
-  type IndexOutOfBoundsException       = java.lang.IndexOutOfBoundsException
-  type ArrayIndexOutOfBoundsException  = java.lang.ArrayIndexOutOfBoundsException
-  type StringIndexOutOfBoundsException = java.lang.StringIndexOutOfBoundsException
-  type UnsupportedOperationException   = java.lang.UnsupportedOperationException
-  type IllegalArgumentException        = java.lang.IllegalArgumentException
-  type NoSuchElementException          = java.util.NoSuchElementException
-  type NumberFormatException           = java.lang.NumberFormatException
-  type AbstractMethodError             = java.lang.AbstractMethodError
-  type InterruptedException            = java.lang.InterruptedException
+  type RuntimeException = java.lang.RuntimeException
+  type NullPointerException = java.lang.NullPointerException
+  type ClassCastException = java.lang.ClassCastException
+  type IndexOutOfBoundsException = java.lang.IndexOutOfBoundsException
+  type ArrayIndexOutOfBoundsException = java.lang.ArrayIndexOutOfBoundsException
+  type StringIndexOutOfBoundsException =
+    java.lang.StringIndexOutOfBoundsException
+  type UnsupportedOperationException = java.lang.UnsupportedOperationException
+  type IllegalArgumentException = java.lang.IllegalArgumentException
+  type NoSuchElementException = java.util.NoSuchElementException
+  type NumberFormatException = java.lang.NumberFormatException
+  type AbstractMethodError = java.lang.AbstractMethodError
+  type InterruptedException = java.lang.InterruptedException
 
   // A dummy used by the specialization annotation.
   val AnyRef = new Specializable {
@@ -55,18 +56,24 @@ package object scala {
   type Iterable[+A] = scala.collection.Iterable[A]
   val Iterable = scala.collection.Iterable
 
-  @migration("scala.Seq is now scala.collection.immutable.Seq instead of scala.collection.Seq", "2.13.0")
+  @migration(
+    "scala.Seq is now scala.collection.immutable.Seq instead of scala.collection.Seq",
+    "2.13.0")
   type Seq[+A] = scala.collection.immutable.Seq[A]
   val Seq = scala.collection.immutable.Seq
 
-  @migration("scala.IndexedSeq is now scala.collection.immutable.IndexedSeq instead of scala.collection.IndexedSeq", "2.13.0")
+  @migration(
+    "scala.IndexedSeq is now scala.collection.immutable.IndexedSeq instead of scala.collection.IndexedSeq",
+    "2.13.0")
   type IndexedSeq[+A] = scala.collection.immutable.IndexedSeq[A]
   val IndexedSeq = scala.collection.immutable.IndexedSeq
 
   type Iterator[+A] = scala.collection.Iterator[A]
   val Iterator = scala.collection.Iterator
 
-  @deprecated("Use scala.collection.BufferedIterator instead of scala.BufferedIterator", "2.13.0")
+  @deprecated(
+    "Use scala.collection.BufferedIterator instead of scala.BufferedIterator",
+    "2.13.0")
   type BufferedIterator[+A] = scala.collection.BufferedIterator[A]
 
   type List[+A] = scala.collection.immutable.List[A]

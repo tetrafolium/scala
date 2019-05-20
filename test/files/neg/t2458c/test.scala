@@ -1,4 +1,3 @@
-
 import q.X._
 
 package p {
@@ -10,5 +9,5 @@ package p {
   }
 }
 package q {
-  object X { def f = "bye" ; def g = "hi" }
+  object X { def f = "bye"; def g = "hi" }
 }

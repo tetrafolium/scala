@@ -5,7 +5,12 @@ import org.junit.runners.JUnit4
 import org.junit.Test
 
 import scala.collection.mutable
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  ObjectInputStream,
+  ObjectOutputStream
+}
 
 import scala.tools.testing.AssertUtil.assertThrows
 
@@ -14,7 +19,7 @@ import scala.tools.testing.AssertUtil.assertThrows
 class PriorityQueueTest {
   val priorityQueue = new mutable.PriorityQueue[Int]()
   val elements = List.fill(1000)(scala.util.Random.nextInt(Int.MaxValue))
-  priorityQueue.enqueue(elements :_*)
+  priorityQueue.enqueue(elements: _*)
 
   @Test
   def orderedCompanion(): Unit = {
@@ -24,10 +29,10 @@ class PriorityQueueTest {
 
   @Test
   def orderingReverseReverse(): Unit = {
-    val pq = new mutable.PriorityQueue[Nothing]()((_,_)=>42)
+    val pq = new mutable.PriorityQueue[Nothing]()((_, _) => 42)
     assert(pq.ord eq pq.reverse.reverse.ord)
   }
-  
+
   @Test
   def canSerialize(): Unit = {
     val outputStream = new ByteArrayOutputStream()
@@ -40,15 +45,20 @@ class PriorityQueueTest {
     new ObjectOutputStream(outputStream).writeObject(priorityQueue)
     val bytes = outputStream.toByteArray
 
-    val objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes))
-    val deserializedPriorityQueue = objectInputStream.readObject().asInstanceOf[PriorityQueue[Int]]
+    val objectInputStream = new ObjectInputStream(
+      new ByteArrayInputStream(bytes))
+    val deserializedPriorityQueue =
+      objectInputStream.readObject().asInstanceOf[PriorityQueue[Int]]
     //correct sequencing is also tested here:
     assert(deserializedPriorityQueue.dequeueAll == elements.sorted.reverse)
   }
   @Test
   def lastOfEmptyThrowsException(): Unit = {
-    assert(List(1,2,3,4,5).contains(collection.mutable.PriorityQueue[Int](1,2,3,4,5).last))
-    assertThrows[NoSuchElementException](collection.mutable.PriorityQueue[Int]().last)
+    assert(
+      List(1, 2, 3, 4, 5).contains(
+        collection.mutable.PriorityQueue[Int](1, 2, 3, 4, 5).last))
+    assertThrows[NoSuchElementException](
+      collection.mutable.PriorityQueue[Int]().last)
   }
 
   @Test
@@ -71,7 +81,8 @@ class PriorityQueueTest {
       val v0 = dst0.toVector
       val v1 = dst1.toVector
 
-      assert(v0 == v1,
+      assert(
+        v0 == v1,
         s"""Failed on:
            |  size: $size
            |  destinationSize: $dstSize

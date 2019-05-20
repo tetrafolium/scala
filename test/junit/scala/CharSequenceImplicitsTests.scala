@@ -10,7 +10,7 @@ import org.junit.runners.JUnit4
 @RunWith(classOf[JUnit4])
 class CharSequenceImplicitsTests {
   @Test def arrayAsCharSequence(): Unit =
-    assertEquals("ab", (Array     ('a', 'b'): CharSequence).toString)
+    assertEquals("ab", (Array('a', 'b'): CharSequence).toString)
   @Test def indexedSeqAsCharSequence(): Unit =
     assertEquals("ab", (IndexedSeq('a', 'b'): CharSequence).toString)
 }

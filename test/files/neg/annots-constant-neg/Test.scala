@@ -1,11 +1,11 @@
 import scala.annotation._
 import java.lang.annotation._
 
-class Ann(
-  value: Int,
-  a: String = "",
-  b: Class[_] = classOf[String],
-  c: Array[Object] = Array()) extends ConstantAnnotation
+class Ann(value: Int,
+          a: String = "",
+          b: Class[_] = classOf[String],
+          c: Array[Object] = Array())
+    extends ConstantAnnotation
 
 // non-constant defaults are allowed
 class Ann1(value: Int = Test.nonConst) extends ConstantAnnotation {
@@ -30,7 +30,12 @@ object Test {
   @JAnn(0, "") def t7 = 0 // err
   @JAnn(0, a = "") def t8 = 0 // err
 
-  @JAnn(value = 0, a = "moin", b = classOf[Object], c = Array(""), d = new SuppressWarnings(value = Array("", "")), e = RetentionPolicy.CLASS) def t9 = 0
+  @JAnn(value = 0,
+        a = "moin",
+        b = classOf[Object],
+        c = Array(""),
+        d = new SuppressWarnings(value = Array("", "")),
+        e = RetentionPolicy.CLASS) def t9 = 0
   @JAnn(value = 0, a = null) def t10 = 0 // err
   @JAnn(value = 0, b = getClass) def t11 = 0 // err
   @JAnn(value = 0, c = new Array(1)) def t12 = 0 // err
@@ -63,10 +68,12 @@ object Test {
   @Ann1(value = 0) def v3 = 0 // err
   @Ann1(x = "") def v4 = 0 // err
   @Ann1 def v5 = 0 // err
-  @Ann1(0)(0) def v6 = 0 // err
+  @Ann1(0)(0)
+  def v6 = 0 // err
   @Ann2 def v7 = 0 // err
   @Ann2(x = 0) def v8 = 0
-  @Ann2(x = 0)(y = 0) def v9 = 0 // err
+  @Ann2(x = 0)(y = 0)
+  def v9 = 0 // err
   @Ann3 def v10 = 0
   @Ann3(0) def v11 = 0 // err
   @Ann4(0) def v12 = 0

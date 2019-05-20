@@ -1,6 +1,8 @@
 class C { // C is not serializable
   def foo = {
-    { (x: Any) => new Object {} }
+    { (x: Any) =>
+      new Object {}
+    }
   }
 }
 object Test {

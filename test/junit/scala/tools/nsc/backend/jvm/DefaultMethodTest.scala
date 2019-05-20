@@ -19,6 +19,7 @@ class DefaultMethodTest extends BytecodeTesting {
     val code = "package pack { trait T { def foo: Int }}"
     object makeFooDefaultMethod extends Transformer {
       val Foo = TermName("foo")
+
       /** Transforms a single tree. */
       override def transform(tree: global.Tree): global.Tree = tree match {
         case dd @ DefDef(_, Foo, _, _, _, _) =>
@@ -27,9 +28,13 @@ class DefaultMethodTest extends BytecodeTesting {
         case _ => super.transform(tree)
       }
     }
-    val asmClasses: List[ClassNode] = compiler.compileClassesTransformed(code, Nil, makeFooDefaultMethod.transform(_))
+    val asmClasses: List[ClassNode] = compiler.compileClassesTransformed(
+      code,
+      Nil,
+      makeFooDefaultMethod.transform(_))
     val foo = asmClasses.head.methods.iterator.asScala.toList.last
-    assertTrue("default method should not be abstract", (foo.access & Opcodes.ACC_ABSTRACT) == 0)
+    assertTrue("default method should not be abstract",
+               (foo.access & Opcodes.ACC_ABSTRACT) == 0)
     assertTrue("default method body emitted", foo.instructions.size() > 0)
   }
 }

@@ -34,8 +34,9 @@ object Test extends ScaladocModelTest {
   def scalaURL = "http://bog.us"
 
   override def scaladocSettings = {
-    val samplePath = getClass.getClassLoader.getResource("scala/Function1.class").getPath
-    val scalaLibPath = if(samplePath.contains("!")) { // in scala-library.jar
+    val samplePath =
+      getClass.getClassLoader.getResource("scala/Function1.class").getPath
+    val scalaLibPath = if (samplePath.contains("!")) { // in scala-library.jar
       val scalaLibUri = samplePath.split("!")(0)
       new URI(scalaLibUri).getPath
     } else { // individual class files on disk
@@ -50,7 +51,8 @@ object Test extends ScaladocModelTest {
 
     def check(memberDef: Def, expected: Int): Unit = {
       val externals = memberDef.valueParams(0)(0).resultType.refEntity collect {
-        case (_, (LinkToExternalTpl(name, url, _), _)) => assert(url.contains(scalaURL)); name
+        case (_, (LinkToExternalTpl(name, url, _), _)) =>
+          assert(url.contains(scalaURL)); name
       }
       assert(externals.size == expected)
     }
@@ -60,31 +62,37 @@ object Test extends ScaladocModelTest {
     check(test._method("barr"), 2)
     check(test._method("baz"), 0)
 
-    val expectedUrls = collection.mutable.Set[String](
-                         "scala/collection/Map",
-                         "scala/collection/immutable/$colon$colon",
-                         "scala/Int",
-                         "scala/Predef$",
-                         "scala/Int#toLong:Long",
-                         "scala/index",
-                         "scala/index#AbstractMethodError=AbstractMethodError",
-                         "scala/Predef$#String=String"
-                      ).map( _.split("#").toSeq ).map({
-                        case Seq(one)      => scalaURL + "/" + one + ".html"
-                        case Seq(one, two) => scalaURL + "/" + one + ".html#" + two
-                      })
+    val expectedUrls = collection.mutable
+      .Set[String](
+        "scala/collection/Map",
+        "scala/collection/immutable/$colon$colon",
+        "scala/Int",
+        "scala/Predef$",
+        "scala/Int#toLong:Long",
+        "scala/index",
+        "scala/index#AbstractMethodError=AbstractMethodError",
+        "scala/Predef$#String=String"
+      )
+      .map(_.split("#").toSeq)
+      .map({
+        case Seq(one)      => scalaURL + "/" + one + ".html"
+        case Seq(one, two) => scalaURL + "/" + one + ".html#" + two
+      })
 
     def isExpectedExternalLink(l: EntityLink) = l.link match {
       case LinkToExternalTpl(name, baseUrlString, tpl: TemplateEntity) =>
-        val baseUrl = new URI(Page.makeUrl(baseUrlString, Page.templateToPath(tpl)))
-        val url = if (name.isEmpty) baseUrl
-                  else new URI(baseUrl.getScheme, baseUrl.getSchemeSpecificPart, name)
-        assert(expectedUrls contains url.toString, url.toString + " " + expectedUrls)
+        val baseUrl = new URI(
+          Page.makeUrl(baseUrlString, Page.templateToPath(tpl)))
+        val url =
+          if (name.isEmpty) baseUrl
+          else new URI(baseUrl.getScheme, baseUrl.getSchemeSpecificPart, name)
+        assert(expectedUrls contains url.toString,
+               url.toString + " " + expectedUrls)
         true
       case _ => false
     }
 
     assert(countLinks(test.comment.get, isExpectedExternalLink) == 8,
-            "${countLinks(test.comment.get, isExpectedExternalLink)} == 8")
+           "${countLinks(test.comment.get, isExpectedExternalLink)} == 8")
   }
 }

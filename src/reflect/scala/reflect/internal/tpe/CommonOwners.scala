@@ -45,14 +45,15 @@ private[internal] trait CommonOwners {
       if ((result eq null) || (sym eq NoSymbol))
         result = sym
       else
-        while ((result ne NoSymbol) && (result ne sym) && !(sym isNestedIn result))
-          result = result.owner
+        while ((result ne NoSymbol) && (result ne sym) && !(sym isNestedIn result)) result =
+          result.owner
     }
     def apply(tp: Type) = tp.normalize match {
-      case ThisType(sym)                => register(sym)
-      case TypeRef(NoPrefix, sym, args) => register(sym.owner) ; args foreach apply
-      case SingleType(NoPrefix, sym)    => register(sym.owner)
-      case _                            => tp.foldOver(this)
+      case ThisType(sym) => register(sym)
+      case TypeRef(NoPrefix, sym, args) =>
+        register(sym.owner); args foreach apply
+      case SingleType(NoPrefix, sym) => register(sym.owner)
+      case _                         => tp.foldOver(this)
     }
   }
 

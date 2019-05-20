@@ -20,4 +20,3 @@ object Test extends App {
   new LM().h(Some(new CC(new LM())))
 }
 case class CC(n: LM)
-

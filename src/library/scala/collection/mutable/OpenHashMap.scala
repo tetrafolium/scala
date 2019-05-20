@@ -23,14 +23,16 @@ import scala.collection.generic.DefaultSerializable
   *
   *  @since 2.7
   */
-@deprecated("Use HashMap or one of the specialized versions (LongMap, AnyRefMap) instead of OpenHashMap", "2.13.0")
+@deprecated(
+  "Use HashMap or one of the specialized versions (LongMap, AnyRefMap) instead of OpenHashMap",
+  "2.13.0")
 @SerialVersionUID(3L)
 object OpenHashMap extends MapFactory[OpenHashMap] {
 
   def empty[K, V] = new OpenHashMap[K, V]
-  def from[K, V](it: IterableOnce[(K, V)]): OpenHashMap[K,V] = empty ++= it
+  def from[K, V](it: IterableOnce[(K, V)]): OpenHashMap[K, V] = empty ++= it
 
-  def newBuilder[K, V]: Builder[(K, V), OpenHashMap[K,V]] =
+  def newBuilder[K, V]: Builder[(K, V), OpenHashMap[K, V]] =
     new GrowableBuilder[(K, V), OpenHashMap[K, V]](empty)
 
   /** A hash table entry.
@@ -63,11 +65,15 @@ object OpenHashMap extends MapFactory[OpenHashMap] {
   *  @define mayNotTerminateInf
   *  @define willNotTerminateInf
   */
-@deprecated("Use HashMap or one of the specialized versions (LongMap, AnyRefMap) instead of OpenHashMap", "2.13.0")
-class OpenHashMap[Key, Value](initialSize : Int)
-  extends AbstractMap[Key, Value]
+@deprecated(
+  "Use HashMap or one of the specialized versions (LongMap, AnyRefMap) instead of OpenHashMap",
+  "2.13.0")
+class OpenHashMap[Key, Value](initialSize: Int)
+    extends AbstractMap[Key, Value]
     with MapOps[Key, Value, OpenHashMap, OpenHashMap[Key, Value]]
-    with StrictOptimizedIterableOps[(Key, Value), Iterable, OpenHashMap[Key, Value]]
+    with StrictOptimizedIterableOps[(Key, Value),
+                                    Iterable,
+                                    OpenHashMap[Key, Value]]
     with DefaultSerializable {
 
   import OpenHashMap.OpenEntry
@@ -79,7 +85,8 @@ class OpenHashMap[Key, Value](initialSize : Int)
 
   override def mapFactory: MapFactory[OpenHashMap] = OpenHashMap
 
-  private[this] val actualInitialSize = HashTable.nextPositivePowerOfTwo(initialSize)
+  private[this] val actualInitialSize =
+    HashTable.nextPositivePowerOfTwo(initialSize)
 
   private[this] var mask = actualInitialSize - 1
 
@@ -98,8 +105,9 @@ class OpenHashMap[Key, Value](initialSize : Int)
 
   override def size = _size
   override def knownSize: Int = size
-  private[this] def size_=(s : Int): Unit = _size = s
+  private[this] def size_=(s: Int): Unit = _size = s
   override def isEmpty: Boolean = _size == 0
+
   /** Returns a mangled hash code of the provided key. */
   protected def hashOf(key: Key) = {
     var h = key.##
@@ -116,9 +124,10 @@ class OpenHashMap[Key, Value](initialSize : Int)
     val oldTable = table
     table = new Array[Entry](newSize)
     mask = newSize - 1
-    oldTable.foreach( entry =>
-      if (entry != null && entry.value != None)
-        table(findIndex(entry.key, entry.hash)) = entry )
+    oldTable.foreach(
+      entry =>
+        if (entry != null && entry.value != None)
+          table(findIndex(entry.key, entry.hash)) = entry)
     deleted = 0
   }
 
@@ -153,11 +162,15 @@ class OpenHashMap[Key, Value](initialSize : Int)
   // TODO refactor `put` to extract `findOrAddEntry` and implement this in terms of that to avoid Some boxing.
   override def update(key: Key, value: Value): Unit = put(key, value)
 
-  @deprecatedOverriding("addOne should not be overridden in order to maintain consistency with put.", "2.11.0")
-  def addOne (kv: (Key, Value)): this.type = { put(kv._1, kv._2); this }
+  @deprecatedOverriding(
+    "addOne should not be overridden in order to maintain consistency with put.",
+    "2.11.0")
+  def addOne(kv: (Key, Value)): this.type = { put(kv._1, kv._2); this }
 
-  @deprecatedOverriding("subtractOne should not be overridden in order to maintain consistency with remove.", "2.11.0")
-  def subtractOne (key: Key): this.type = { remove(key); this }
+  @deprecatedOverriding(
+    "subtractOne should not be overridden in order to maintain consistency with remove.",
+    "2.11.0")
+  def subtractOne(key: Key): this.type = { remove(key); this }
 
   override def put(key: Key, value: Value): Option[Value] =
     put(key, hashOf(key), value)
@@ -196,7 +209,7 @@ class OpenHashMap[Key, Value](initialSize : Int)
     deleted += 1
   }
 
-  override def remove(key : Key): Option[Value] = {
+  override def remove(key: Key): Option[Value] = {
     val entry = table(findIndex(key, hashOf(key)))
     if (entry != null && entry.value != None) {
       val res = entry.value
@@ -205,14 +218,14 @@ class OpenHashMap[Key, Value](initialSize : Int)
     } else None
   }
 
-  def get(key : Key) : Option[Value] = {
+  def get(key: Key): Option[Value] = {
     val hash = hashOf(key)
     var index = hash & mask
     var entry = table(index)
     var j = 0
-    while(entry != null){
+    while (entry != null) {
       if (entry.hash == hash &&
-        entry.key == key){
+          entry.key == key) {
         return entry.value
       }
 
@@ -229,15 +242,17 @@ class OpenHashMap[Key, Value](initialSize : Int)
     *  @return   the iterator
     */
   def iterator: Iterator[(Key, Value)] = new OpenHashMapIterator[(Key, Value)] {
-    override protected def nextResult(node: Entry): (Key, Value) = (node.key, node.value.get)
+    override protected def nextResult(node: Entry): (Key, Value) =
+      (node.key, node.value.get)
   }
 
   override def keysIterator: Iterator[Key] = new OpenHashMapIterator[Key] {
     override protected def nextResult(node: Entry): Key = node.key
   }
-  override def valuesIterator: Iterator[Value] = new OpenHashMapIterator[Value] {
-    override protected def nextResult(node: Entry): Value = node.value.get
-  }
+  override def valuesIterator: Iterator[Value] =
+    new OpenHashMapIterator[Value] {
+      override protected def nextResult(node: Entry): Value = node.value.get
+    }
 
   private abstract class OpenHashMapIterator[A] extends AbstractIterator[A] {
     private[this] var index = 0
@@ -245,10 +260,10 @@ class OpenHashMap[Key, Value](initialSize : Int)
 
     private[this] def advance(): Unit = {
       if (initialModCount != modCount) throw new ConcurrentModificationException
-      while((index <= mask) && (table(index) == null || table(index).value == None)) index+=1
+      while ((index <= mask) && (table(index) == null || table(index).value == None)) index += 1
     }
 
-    def hasNext = {advance(); index <= mask }
+    def hasNext = { advance(); index <= mask }
 
     def next() = {
       advance()
@@ -261,7 +276,8 @@ class OpenHashMap[Key, Value](initialSize : Int)
 
   override def clone() = {
     val it = new OpenHashMap[Key, Value]
-    foreachUndeletedEntry(entry => it.put(entry.key, entry.hash, entry.value.get))
+    foreachUndeletedEntry(
+      entry => it.put(entry.key, entry.hash, entry.value.get))
     it
   }
 
@@ -275,25 +291,27 @@ class OpenHashMap[Key, Value](initialSize : Int)
     *  @tparam U  The return type of the specified function `f`, return result of which is ignored.
     *  @param f   The function to apply to each key, value mapping.
     */
-  override def foreach[U](f : ((Key, Value)) => U): Unit = {
+  override def foreach[U](f: ((Key, Value)) => U): Unit = {
     val startModCount = modCount
     foreachUndeletedEntry(entry => {
       if (modCount != startModCount) throw new ConcurrentModificationException
-      f((entry.key, entry.value.get))}
-    )
+      f((entry.key, entry.value.get))
+    })
   }
 
-  private[this] def foreachUndeletedEntry(f : Entry => Unit): Unit = {
+  private[this] def foreachUndeletedEntry(f: Entry => Unit): Unit = {
     table.foreach(entry => if (entry != null && entry.value != None) f(entry))
   }
 
-  override def mapValuesInPlace(f : (Key, Value) => Value): this.type = {
-    foreachUndeletedEntry(entry => entry.value = Some(f(entry.key, entry.value.get)))
+  override def mapValuesInPlace(f: (Key, Value) => Value): this.type = {
+    foreachUndeletedEntry(
+      entry => entry.value = Some(f(entry.key, entry.value.get)))
     this
   }
 
-  override def filterInPlace(f : (Key, Value) => Boolean): this.type = {
-    foreachUndeletedEntry(entry => if (!f(entry.key, entry.value.get)) deleteSlot(entry))
+  override def filterInPlace(f: (Key, Value) => Boolean): this.type = {
+    foreachUndeletedEntry(
+      entry => if (!f(entry.key, entry.value.get)) deleteSlot(entry))
     this
   }
 

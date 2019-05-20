@@ -5,7 +5,7 @@ case object B extends X
 
 object Test {
   def test(x: X) = x match {
-    case A(true) =>
+    case A(true)      =>
     case A(false) | B =>
   }
 }

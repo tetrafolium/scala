@@ -15,6 +15,7 @@ trait Base {
 abstract class Derived extends Base {
   override type T = ConcreteType
   override val m = Map[Double, Double]()
+
   /** This does not work. §3.2.10 indicates that types n is shorthand for type of m. */
   override val n = Map[Double, Double]()
 }

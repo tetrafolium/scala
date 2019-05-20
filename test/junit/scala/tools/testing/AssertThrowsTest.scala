@@ -26,7 +26,7 @@ class AssertThrowsTest {
         assertThrows[Foo] { throw new Bar }
         false
       } catch {
-        case bar: Bar => true
+        case bar: Bar     => true
         case e: Throwable => fail(s"expected Bar but got $e"); false
       }
     })
@@ -38,7 +38,8 @@ class AssertThrowsTest {
     } catch {
       case e: AssertionError => return
     }
-    fail("assertThrows should error if the tested expression does not throw anything")
+    fail(
+      "assertThrows should error if the tested expression does not throw anything")
   }
 
   @Test
@@ -48,7 +49,9 @@ class AssertThrowsTest {
     } catch {
       case ae: AssertionError =>
         assertEquals(1, ae.getSuppressed.length)
-        assertEquals("Exception failed check: scala.tools.testing.AssertThrowsTest$Foo", ae.getMessage)
+        assertEquals(
+          "Exception failed check: scala.tools.testing.AssertThrowsTest$Foo",
+          ae.getMessage)
         assertEquals(classOf[Foo], ae.getSuppressed.head.getClass)
       case t: Throwable => fail("Expected an AssertionError: $t")
     }
@@ -60,7 +63,9 @@ class AssertThrowsTest {
     } catch {
       case ae: AssertionError =>
         assertEquals(1, ae.getSuppressed.length)
-        assertEquals("Exception not a scala.tools.testing.AssertThrowsTest$Foo: scala.tools.testing.AssertThrowsTest$Bar", ae.getMessage)
+        assertEquals(
+          "Exception not a scala.tools.testing.AssertThrowsTest$Foo: scala.tools.testing.AssertThrowsTest$Bar",
+          ae.getMessage)
         assertEquals(classOf[Bar], ae.getSuppressed.head.getClass)
       case t: Throwable => fail("Expected an AssertionError: $t")
     }

@@ -17,17 +17,19 @@ package fsc
 import scala.reflect.io.Path
 import scala.util.control.NonFatal
 
-class ResidentScriptRunner(settings: GenericRunnerSettings) extends AbstractScriptRunner(settings) with HasCompileSocket {
+class ResidentScriptRunner(settings: GenericRunnerSettings)
+    extends AbstractScriptRunner(settings)
+    with HasCompileSocket {
   lazy val compileSocket = CompileSocket
 
   /** Compile a script using the fsc compilation daemon.
-   */
+    */
   protected def doCompile(scriptFile: String) = {
-    val scriptPath       = Path(scriptFile).toAbsolute.path
+    val scriptPath = Path(scriptFile).toAbsolute.path
     val compSettingNames = new Settings(msg => throw new RuntimeException(msg)).visibleSettings.toList map (_.name)
-    val compSettings     = settings.visibleSettings.toList filter (compSettingNames contains _.name)
-    val coreCompArgs     = compSettings flatMap (_.unparse)
-    val compArgs         = coreCompArgs ++ List("-Xscript", mainClass, scriptPath)
+    val compSettings = settings.visibleSettings.toList filter (compSettingNames contains _.name)
+    val coreCompArgs = compSettings flatMap (_.unparse)
+    val compArgs = coreCompArgs ++ List("-Xscript", mainClass, scriptPath)
 
     // TODO: untangle this mess of top-level objects with their own little view of the mutable world of settings
     compileSocket.verbose = settings.verbose.value

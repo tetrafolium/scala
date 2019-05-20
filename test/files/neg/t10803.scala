@@ -15,7 +15,8 @@ object DistributiveCategory {
 
     implicit val function1: SymmetricDistributiveCategory[Function1] {
       type Obj[A]
-    } = new SymmetricDistributiveCategory[Function1] with CCC[Function1] { self =>
+    } = new SymmetricDistributiveCategory[Function1] with CCC[Function1] {
+      self =>
       type Zero
       val sum = new CocartesianMonoidalCategory[F] {}
     }

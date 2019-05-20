@@ -42,10 +42,12 @@ class OptimizedBytecodeTest extends BytecodeTesting {
       """.stripMargin
     val c = compileClass(code)
 
-    assertSameSummary(getMethod(c, "t"), List(
-      LDC, ASTORE, ALOAD /*0*/, ALOAD /*1*/, "$anonfun$t$1", IRETURN))
-    assertSameSummary(getMethod(c, "$anonfun$t$1"), List(LDC, "$anonfun$t$2", IRETURN))
-    assertSameSummary(getMethod(c, "$anonfun$t$2"), List(-1 /*A*/, GOTO /*A*/))
+    assertSameSummary(
+      getMethod(c, "t"),
+      List(LDC, ASTORE, ALOAD /*0*/, ALOAD /*1*/, "$anonfun$t$1", IRETURN))
+    assertSameSummary(getMethod(c, "$anonfun$t$1"),
+                      List(LDC, "$anonfun$t$2", IRETURN))
+    assertSameSummary(getMethod(c, "$anonfun$t$2"), List(-1 /*A*/, GOTO /*A*/ ))
   }
 
   @Test
@@ -66,7 +68,8 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |  def h(block: => Unit): Nothing = ???
         |}
       """.stripMargin
-    val List(c, t, tMod) = compileClasses(code, allowMessage = _.msg.contains("not be exhaustive"))
+    val List(c, t, tMod) =
+      compileClasses(code, allowMessage = _.msg.contains("not be exhaustive"))
     assertSameSummary(getMethod(c, "t"), List(NEW, DUP, "<init>", ATHROW))
   }
 
@@ -114,7 +117,8 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |object Warmup { def filter[A](p: Any => Boolean): Int = 1 + filter[Any](p) }
       """.stripMargin
     val c2 = "class C { def t = warmup.Warmup.filter[Any](x => false) }"
-    val List(c, _, _) = compileClassesSeparately(List(c1, c2), extraArgs = compilerArgs)
+    val List(c, _, _) =
+      compileClassesSeparately(List(c1, c2), extraArgs = compilerArgs)
     assertInvoke(getMethod(c, "t"), "warmup/Warmup$", "filter")
   }
 
@@ -213,10 +217,16 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameSummary(getMethod(c, "t"), List(
-        ALOAD /*1*/, INSTANCEOF /*Some*/, IFNE /*A*/,
-        ALOAD /*0*/, "getInt", POP,
-        -1 /*A*/, BIPUSH, IRETURN))
+    assertSameSummary(getMethod(c, "t"),
+                      List(ALOAD /*1*/,
+                           INSTANCEOF /*Some*/,
+                           IFNE /*A*/,
+                           ALOAD /*0*/,
+                           "getInt",
+                           POP,
+                           -1 /*A*/,
+                           BIPUSH,
+                           IRETURN))
   }
 
   @Test
@@ -232,11 +242,24 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |}
       """.stripMargin
     val c = compileClass(code)
-    assertSameSummary(getMethod(c, "t"), List(
-      -1 /*A*/, ILOAD /*1*/, TABLESWITCH,
-      -1, ALOAD, "pr", RETURN,
-      -1, ALOAD, "pr", RETURN,
-      -1, ILOAD, ICONST_2, ISUB, ISTORE, GOTO /*A*/))
+    assertSameSummary(getMethod(c, "t"),
+                      List(-1 /*A*/,
+                           ILOAD /*1*/,
+                           TABLESWITCH,
+                           -1,
+                           ALOAD,
+                           "pr",
+                           RETURN,
+                           -1,
+                           ALOAD,
+                           "pr",
+                           RETURN,
+                           -1,
+                           ILOAD,
+                           ICONST_2,
+                           ISUB,
+                           ISTORE,
+                           GOTO /*A*/ ))
   }
 
   @Test
@@ -258,11 +281,19 @@ class OptimizedBytecodeTest extends BytecodeTesting {
     val cls = compileClassesSeparately(List(c1, c2), extraArgs = compilerArgs)
     val c = findClass(cls, "C")
 
-    assertSameSummary(getMethod(c, "t"), List(
-      GETSTATIC, POP, // null checks on module loads are eliminated by default, but module loads are not eliminated (except for Predef and a few built-in friends)
-      ICONST_1,
-      GETSTATIC, POP,
-      ICONST_2, IADD, IRETURN))
+    assertSameSummary(
+      getMethod(c, "t"),
+      List(
+        GETSTATIC,
+        POP, // null checks on module loads are eliminated by default, but module loads are not eliminated (except for Predef and a few built-in friends)
+        ICONST_1,
+        GETSTATIC,
+        POP,
+        ICONST_2,
+        IADD,
+        IRETURN
+      )
+    )
   }
 
   @Test
@@ -296,11 +327,20 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |  def f2b() = identity(wrapper2(5))  // not inlined
         |}
       """.stripMargin
-    val c = compileClass(code, allowMessage = _.msg.contains("exception handler declared in the inlined method"))
-    assertInvokedMethods(getMethod(c, "f1a"), List("C.C$$x1", "C.C$$x1_$eq", "C.C$$x1_$eq", "C.C$$x1_$eq")) // accessors not inlined
+    val c = compileClass(
+      code,
+      allowMessage =
+        _.msg.contains("exception handler declared in the inlined method"))
+    assertInvokedMethods(getMethod(c, "f1a"),
+                         List("C.C$$x1",
+                              "C.C$$x1_$eq",
+                              "C.C$$x1_$eq",
+                              "C.C$$x1_$eq")) // accessors not inlined
     assertInvoke(getMethod(c, "f1b"), "C", "wrapper1")
-    assertInvokedMethods(getMethod(c, "f2a"), List("C.x2", "C.x2_$eq", "C.x2_$eq", "C.x2_$eq"))
-    assertInvoke(getMethod(c, "f2b"), "C", "wrapper2")  }
+    assertInvokedMethods(getMethod(c, "f2a"),
+                         List("C.x2", "C.x2_$eq", "C.x2_$eq", "C.x2_$eq"))
+    assertInvoke(getMethod(c, "f2b"), "C", "wrapper2")
+  }
 
   @Test
   def t7060(): Unit = {
@@ -332,7 +372,9 @@ class OptimizedBytecodeTest extends BytecodeTesting {
         |class Listt
       """.stripMargin
     val List(c, nil, nilMod, listt) = compileClasses(code)
-    assertInvoke(getMethod(c, "t"), "scala/runtime/NonLocalReturnControl$mcV$sp", "<init>")
+    assertInvoke(getMethod(c, "t"),
+                 "scala/runtime/NonLocalReturnControl$mcV$sp",
+                 "<init>")
   }
 
   @Test
@@ -357,7 +399,9 @@ class OptimizedBytecodeTest extends BytecodeTesting {
   @Test
   def optimiseEnablesNewOpt(): Unit = {
     val code = """class C { def t = (1 to 10) foreach println }"""
-    val List(c) = readAsmClasses(newCompiler(extraArgs = "-optimise -deprecation").compileToBytes(code, allowMessage = _.msg.contains("is deprecated")))
+    val List(c) = readAsmClasses(
+      newCompiler(extraArgs = "-optimise -deprecation")
+        .compileToBytes(code, allowMessage = _.msg.contains("is deprecated")))
     assertInvoke(getMethod(c, "t"), "scala/Console$", "println") // range-foreach inlined from classpath
   }
 }

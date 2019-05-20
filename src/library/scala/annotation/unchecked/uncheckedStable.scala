@@ -13,8 +13,8 @@
 package scala.annotation.unchecked
 
 /** An annotation for values that are assumed to be stable even though their
- *  types are volatile.
- *
- *  @since 2.7
- */
+  *  types are volatile.
+  *
+  *  @since 2.7
+  */
 final class uncheckedStable extends scala.annotation.StaticAnnotation {}

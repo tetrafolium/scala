@@ -12,29 +12,29 @@
 
 package scala.tools
 
-import java.util.concurrent.{ Callable, ExecutorService }
+import java.util.concurrent.{Callable, ExecutorService}
 import scala.concurrent.duration.Duration
 import scala.tools.nsc.util.Exceptional
 
 package object partest {
-  type File         = java.io.File
-  type SFile        = scala.reflect.io.File
-  type Directory    = scala.reflect.io.Directory
-  type Path         = scala.reflect.io.Path
+  type File = java.io.File
+  type SFile = scala.reflect.io.File
+  type Directory = scala.reflect.io.Directory
+  type Path = scala.reflect.io.Path
   type PathResolver = scala.tools.util.PathResolver
   type StringWriter = java.io.StringWriter
 
-  val SFile        = scala.reflect.io.File
-  val Directory    = scala.reflect.io.Directory
-  val Path         = scala.reflect.io.Path
+  val SFile = scala.reflect.io.File
+  val Directory = scala.reflect.io.Directory
+  val Path = scala.reflect.io.Path
   val PathResolver = scala.tools.util.PathResolver
-  val ClassPath    = scala.tools.nsc.util.ClassPath
+  val ClassPath = scala.tools.nsc.util.ClassPath
 
-  val space                       = "\u0020"
-  val EOL                         = System.lineSeparator()
-  def onull(s: String)            = if (s == null) "" else s
-  def oempty(xs: String*)         = xs filterNot (x => x == null || x == "")
-  def ojoin(xs: String*): String  = oempty(xs: _*) mkString space
+  val space = "\u0020"
+  val EOL = System.lineSeparator()
+  def onull(s: String) = if (s == null) "" else s
+  def oempty(xs: String*) = xs filterNot (x => x == null || x == "")
+  def ojoin(xs: String*): String = oempty(xs: _*) mkString space
   def nljoin(xs: String*): String = oempty(xs: _*) mkString EOL
 
   implicit val codec = scala.io.Codec.UTF8
@@ -55,7 +55,8 @@ package object partest {
   private val GroupPattern = """.*_(\d+)""".r
 
   implicit class `special string ops`(private val s: String) extends AnyVal {
-    def linesIfNonEmpty: Iterator[String] = if (!s.isEmpty) s.linesIterator else Iterator.empty
+    def linesIfNonEmpty: Iterator[String] =
+      if (!s.isEmpty) s.linesIterator else Iterator.empty
   }
 
   implicit class FileOps(val f: File) {
@@ -64,18 +65,21 @@ package object partest {
     private def sf = SFile(f)
 
     // e.g. pos/t1234
-    def withEnclosing: String = f.toPath.iterator.asScala.toList.takeRight(2).mkString("/")
+    def withEnclosing: String =
+      f.toPath.iterator.asScala.toList.takeRight(2).mkString("/")
     def testIdent = withEnclosing
 
-    def mapInPlace(mapFn: String => String)(filterFn: String => Boolean = _ => true): Unit =
+    def mapInPlace(mapFn: String => String)(filterFn: String => Boolean = _ =>
+                                              true): Unit =
       writeAll(fileLines filter filterFn map (x => mapFn(x) + EOL): _*)
 
     def appendAll(strings: String*): Unit = sf.appendAll(strings: _*)
     def writeAll(strings: String*): Unit = sf.writeAll(strings: _*)
-    def absolutePathSegments: List[String] = f.getAbsolutePath.split("""[/\\]+""").toList
+    def absolutePathSegments: List[String] =
+      f.getAbsolutePath.split("""[/\\]+""").toList
 
-    def isJava        = f.isFile && (sf hasExtension "java")
-    def isScala       = f.isFile && (sf hasExtension "scala")
+    def isJava = f.isFile && (sf hasExtension "java")
+    def isScala = f.isFile && (sf hasExtension "scala")
     def isJavaOrScala = isJava || isScala
 
     def extension = sf.extension
@@ -89,26 +93,31 @@ package object partest {
         case _                               => -1
       }
 
-    def fileContents: String    = try sf.slurp() catch { case _: java.io.FileNotFoundException => "" }
+    def fileContents: String =
+      try sf.slurp()
+      catch { case _: java.io.FileNotFoundException => "" }
     def fileLines: List[String] = fileContents.linesIfNonEmpty.toList
   }
 
   implicit class PathOps(p: Path) extends FileOps(p.jfile)
 
   implicit class Copier(val f: SFile) extends AnyVal {
-    def copyTo(dest: Path): Unit = dest.toFile writeAll f.slurp(scala.io.Codec.UTF8)
+    def copyTo(dest: Path): Unit =
+      dest.toFile writeAll f.slurp(scala.io.Codec.UTF8)
   }
 
   implicit class LoaderOps(val loader: ClassLoader) extends AnyVal {
     import scala.util.control.Exception.catching
+
     /** Like ScalaClassLoader.create for the case where the result type is
-     *  available to the current class loader, implying that the current
-     *  loader is a parent of `loader`.
-     */
-    def instantiate[A >: Null](name: String): A = (
-      catching(classOf[ClassNotFoundException], classOf[SecurityException]) opt
-      loader.loadClass(name).getConstructor().newInstance().asInstanceOf[A]
-    ).orNull
+      *  available to the current class loader, implying that the current
+      *  loader is a parent of `loader`.
+      */
+    def instantiate[A >: Null](name: String): A =
+      (
+        catching(classOf[ClassNotFoundException], classOf[SecurityException]) opt
+          loader.loadClass(name).getConstructor().newInstance().asInstanceOf[A]
+      ).orNull
   }
 
   implicit class ExecutorOps(val executor: ExecutorService) {
@@ -136,22 +145,24 @@ package object partest {
     (result, t2 - t1)
   }
 
-  def callable[T](body: => T): Callable[T] = new Callable[T] { override def call() = body }
+  def callable[T](body: => T): Callable[T] = new Callable[T] {
+    override def call() = body
+  }
 
   def file2String(f: File): String = f.fileContents
 
   def basename(name: String): String = Path(name).stripExtension
 
   /** In order to allow for spaces in flags/options, this
-   *  parses .flags, .javaopts, javacopts etc files as follows:
-   *  If it is exactly one line, it is split (naively) on spaces.
-   *  If it contains more than one line, each line is its own
-   *  token, spaces and all.
-   */
+    *  parses .flags, .javaopts, javacopts etc files as follows:
+    *  If it is exactly one line, it is split (naively) on spaces.
+    *  If it contains more than one line, each line is its own
+    *  token, spaces and all.
+    */
   def readOptionsFile(file: File): List[String] = {
     file.fileLines match {
-      case x :: Nil   => words(x)
-      case xs         => xs
+      case x :: Nil => words(x)
+      case xs       => xs
     }
   }
 
@@ -165,11 +176,11 @@ package object partest {
 
   def now = (new java.util.Date).toString
   def elapsedString(millis: Long): String = {
-    val elapsedSecs = millis/1000
-    val elapsedMins = elapsedSecs/60
-    val elapsedHrs  = elapsedMins/60
-    val dispMins    = elapsedMins - elapsedHrs  * 60
-    val dispSecs    = elapsedSecs - elapsedMins * 60
+    val elapsedSecs = millis / 1000
+    val elapsedMins = elapsedSecs / 60
+    val elapsedHrs = elapsedMins / 60
+    val dispMins = elapsedMins - elapsedHrs * 60
+    val dispSecs = elapsedSecs - elapsedMins * 60
 
     "%02d:%02d:%02d".format(elapsedHrs, dispMins, dispSecs)
   }
@@ -187,6 +198,8 @@ package object partest {
 
   def allPropertiesString = {
     import scala.collection.JavaConverters._
-    System.getProperties.asScala.toList.sorted map { case (k, v) => "%s -> %s\n".format(k, v) } mkString ""
+    System.getProperties.asScala.toList.sorted map {
+      case (k, v) => "%s -> %s\n".format(k, v)
+    } mkString ""
   }
 }

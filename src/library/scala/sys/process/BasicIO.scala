@@ -15,7 +15,12 @@ package sys
 package process
 
 import processInternal._
-import java.io.{ BufferedReader, InputStreamReader, FilterInputStream, FilterOutputStream }
+import java.io.{
+  BufferedReader,
+  InputStreamReader,
+  FilterInputStream,
+  FilterOutputStream
+}
 import java.util.concurrent.LinkedBlockingQueue
 import scala.annotation.tailrec
 
@@ -32,47 +37,57 @@ import scala.annotation.tailrec
   * features, but can also be used by client code.
   */
 object BasicIO {
+
   /** Size of the buffer used in all the functions that copy data */
   final val BufferSize = 8192
 
   /** Used to separate lines in the `processFully` function that takes `Appendable`. */
-  final val Newline    = System.lineSeparator
+  final val Newline = System.lineSeparator
 
   private[process] final class LazilyListed[T](
-    val  process:   T => Unit,
-    val     done: Int => Unit,
-    val lazyList: LazyList[T]
+      val process: T => Unit,
+      val done: Int => Unit,
+      val lazyList: LazyList[T]
   )
 
   private[process] object LazilyListed {
-    def apply[T](nonzeroException: Boolean, capacity: Integer): LazilyListed[T] = {
+    def apply[T](nonzeroException: Boolean,
+                 capacity: Integer): LazilyListed[T] = {
       val queue = new LinkedBlockingQueue[Either[Int, T]](capacity)
       val ll = LazyList.unfold(queue) { q =>
         q.take match {
-          case Left(0)    => None
-          case Left(code) => if (nonzeroException) scala.sys.error("Nonzero exit code: " + code) else None
-          case Right(s)   => Some((s, q))
+          case Left(0) => None
+          case Left(code) =>
+            if (nonzeroException) scala.sys.error("Nonzero exit code: " + code)
+            else None
+          case Right(s) => Some((s, q))
         }
       }
-      new LazilyListed((s: T) => queue put Right(s), code => queue put Left(code), ll)
+      new LazilyListed((s: T) => queue put Right(s),
+                       code => queue put Left(code),
+                       ll)
     }
   }
 
   private[process] final class Streamed[T](
-    val process:   T => Unit,
-    val    done: Int => Unit,
-    val  stream:  () => Stream[T]
+      val process: T => Unit,
+      val done: Int => Unit,
+      val stream: () => Stream[T]
   )
 
   private[process] object Streamed {
     def apply[T](nonzeroException: Boolean, capacity: Integer): Streamed[T] = {
       val q = new LinkedBlockingQueue[Either[Int, T]](capacity)
       def next(): Stream[T] = q.take match {
-        case Left(0)    => Stream.empty
-        case Left(code) => if (nonzeroException) scala.sys.error("Nonzero exit code: " + code) else Stream.empty
-        case Right(s)   => Stream.cons(s, next())
+        case Left(0) => Stream.empty
+        case Left(code) =>
+          if (nonzeroException) scala.sys.error("Nonzero exit code: " + code)
+          else Stream.empty
+        case Right(s) => Stream.cons(s, next())
       }
-      new Streamed((s: T) => q put Right(s), code => q put Left(code), () => next())
+      new Streamed((s: T) => q put Right(s),
+                   code => q put Left(code),
+                   () => next())
     }
   }
 
@@ -80,10 +95,14 @@ object BasicIO {
     final override def close(): Unit = ()
   }
   private[process] object Uncloseable {
-    def apply(in: InputStream): InputStream      = new FilterInputStream(in) with Uncloseable { }
-    def apply(out: OutputStream): OutputStream   = new FilterOutputStream(out) with Uncloseable { }
-    def protect(in: InputStream): InputStream    = if (in eq stdin) Uncloseable(in) else in
-    def protect(out: OutputStream): OutputStream = if ((out eq stdout) || (out eq stderr)) Uncloseable(out) else out
+    def apply(in: InputStream): InputStream =
+      new FilterInputStream(in) with Uncloseable {}
+    def apply(out: OutputStream): OutputStream =
+      new FilterOutputStream(out) with Uncloseable {}
+    def protect(in: InputStream): InputStream =
+      if (in eq stdin) Uncloseable(in) else in
+    def protect(out: OutputStream): OutputStream =
+      if ((out eq stdout) || (out eq stderr)) Uncloseable(out) else out
   }
 
   /** Creates a `ProcessIO` from a function `String => Unit`. It can attach the
@@ -103,7 +122,9 @@ object BasicIO {
     *               sent. If `None`, output will be sent to stderr.
     * @return A `ProcessIO` with the characteristics above.
     */
-  def apply(withIn: Boolean, output: String => Unit, log: Option[ProcessLogger]) =
+  def apply(withIn: Boolean,
+            output: String => Unit,
+            log: Option[ProcessLogger]) =
     new ProcessIO(input(withIn), processFully(output), getErr(log))
 
   /** Creates a `ProcessIO` that appends its output to an `Appendable`. It can
@@ -159,7 +180,9 @@ object BasicIO {
   private def processOutFully(log: ProcessLogger) = processFully(log out _)
 
   /** Closes a `Closeable` without throwing an exception */
-  def close(c: Closeable) = try c.close() catch { case _: IOException => () }
+  def close(c: Closeable) =
+    try c.close()
+    catch { case _: IOException => () }
 
   /** Returns a function `InputStream => Unit` that appends all data read to the
     * provided `Appendable`. This function can be used to create a
@@ -170,7 +193,8 @@ object BasicIO {
     *          [[scala.sys.process.ProcessIO]] which will append all data read
     *          from the stream to the buffer.
     */
-  def processFully(buffer: Appendable): InputStream => Unit = processFully(appendLine(buffer))
+  def processFully(buffer: Appendable): InputStream => Unit =
+    processFully(appendLine(buffer))
 
   /** Returns a function `InputStream => Unit` that will call the passed
     * function with all data read. This function can be used to create a
@@ -190,9 +214,10 @@ object BasicIO {
   }
 
   /** Calls `processLine` with the result of `readLine` until the latter returns
-   *  `null` or the current thread is interrupted.
-   */
-  def processLinesFully(processLine: String => Unit)(readLine: () => String): Unit = {
+    *  `null` or the current thread is interrupted.
+    */
+  def processLinesFully(processLine: String => Unit)(
+      readLine: () => String): Unit = {
     def working = (Thread.currentThread.isInterrupted == false)
     def halting = { Thread.currentThread.interrupt(); null }
     def readFully(): Unit =
@@ -212,7 +237,8 @@ object BasicIO {
   }
 
   /** Copy contents of stdin to the `OutputStream`. */
-  def connectToIn(o: OutputStream): Unit = transferFully(Uncloseable protect stdin, o)
+  def connectToIn(o: OutputStream): Unit =
+    transferFully(Uncloseable protect stdin, o)
 
   /** Returns a function `OutputStream => Unit` that either reads the content
     * from stdin or does nothing. This function can be used by
@@ -227,16 +253,17 @@ object BasicIO {
   def standard(connectInput: Boolean): ProcessIO = standard(input(connectInput))
 
   /** Returns a `ProcessIO` connected to stdout, stderr and the provided `in` */
-  def standard(in: OutputStream => Unit): ProcessIO = new ProcessIO(in, toStdOut, toStdErr)
+  def standard(in: OutputStream => Unit): ProcessIO =
+    new ProcessIO(in, toStdOut, toStdErr)
 
   /** Send all the input from the stream to stderr, and closes the input stream
-   * afterwards.
-   */
+    * afterwards.
+    */
   def toStdErr = (in: InputStream) => transferFully(in, stderr)
 
   /** Send all the input from the stream to stdout, and closes the input stream
-   * afterwards.
-   */
+    * afterwards.
+    */
   def toStdOut = (in: InputStream) => transferFully(in, stdout)
 
   /** Copy all input from the input stream to the output stream. Closes the
@@ -251,14 +278,17 @@ object BasicIO {
     buffer append Newline
   }
 
-  private[this] def transferFullyImpl(in: InputStream, out: OutputStream): Unit = {
+  private[this] def transferFullyImpl(in: InputStream,
+                                      out: OutputStream): Unit = {
     val buffer = new Array[Byte](BufferSize)
     @tailrec def loop(): Unit = {
       val byteCount = in.read(buffer)
       if (byteCount > 0) {
         out.write(buffer, 0, byteCount)
         // flush() will throw an exception once the process has terminated
-        val available = try { out.flush(); true } catch { case _: IOException => false }
+        val available = try { out.flush(); true } catch {
+          case _: IOException => false
+        }
         if (available) loop()
       }
     }

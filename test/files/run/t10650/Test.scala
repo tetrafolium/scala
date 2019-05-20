@@ -1,6 +1,6 @@
 class Foo
 object Foo {
-  def bar(a: Int, `_`: String, *** : Long, `unary_!` : Float, ABC: Double) = null
+  def bar(a: Int, `_`: String, *** : Long, `unary_!`: Float, ABC: Double) = null
 }
 
 object Test extends App {
@@ -8,7 +8,8 @@ object Test extends App {
 
   def printParams(params: Array[java.lang.reflect.Parameter]) = {
     params.foreach { param =>
-      println(s"name: ${param.getName}; isNamePresent: ${param.isNamePresent}; isSynthetic: ${param.isSynthetic}")
+      println(
+        s"name: ${param.getName}; isNamePresent: ${param.isNamePresent}; isSynthetic: ${param.isSynthetic}")
     }
   }
 

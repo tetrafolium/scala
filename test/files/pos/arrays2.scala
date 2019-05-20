@@ -19,9 +19,9 @@ test/files/pos/arrays2.scala:15: warning: Passing an explicit array value to a S
   "Hello %1$s".format(args: _*)
                       ^
 one warning found
-*/
+ */
 
 // #2461
 object arrays3 {
-  def apply[X](xs : X*) : java.util.List[X] = java.util.Arrays.asList(xs: _*)
+  def apply[X](xs: X*): java.util.List[X] = java.util.Arrays.asList(xs: _*)
 }

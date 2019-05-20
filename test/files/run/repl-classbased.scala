@@ -1,4 +1,3 @@
-
 import scala.tools.partest.ReplTest
 import scala.tools.nsc.Settings
 
@@ -9,7 +8,7 @@ object Test extends ReplTest {
     s
   }
 
-  def code = 
+  def code =
     """
 case class K(s: String)
 class C { implicit val k: K = K("OK?"); override def toString = s"C($k)" }

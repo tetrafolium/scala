@@ -3,7 +3,8 @@ import scala.tools.partest.ScaladocModelTest
 
 object Test extends ScaladocModelTest {
 
-  override def code = """
+  override def code =
+    """
     class CEarly extends { /**CEarly_Doc_foo*/ val foo = 0 } with AnyRef
     trait TEarly extends { /**TEarly_Doc_foo*/ val foo = 0 } with AnyRef
     class C {
@@ -34,10 +35,16 @@ object Test extends ScaladocModelTest {
 
   def assertDoc(classEntity: DocTemplateEntity, valName: String) = {
     import access._
-    val comment = classEntity._value(valName).comment.map(_.body.toString.trim).getOrElse("")
+    val comment = classEntity
+      ._value(valName)
+      .comment
+      .map(_.body.toString.trim)
+      .getOrElse("")
     val className = classEntity.name
     val marker = s"${className}_Doc_${valName}"
-    assert(comment.contains(marker), s"Expected $marker in comment for $valName in $className, found: $comment.")
+    assert(
+      comment.contains(marker),
+      s"Expected $marker in comment for $valName in $className, found: $comment.")
   }
 
   def testModel(rootPackage: Package) = {
@@ -45,7 +52,15 @@ object Test extends ScaladocModelTest {
     assertDoc(rootPackage._class("CEarly"), "foo")
     assertDoc(rootPackage._trait("TEarly"), "foo")
 
-    val valNames = List("sigInferred", "const", "varr", "abs", "absVar", "lazyValInferred", "lazyValConst", "lazyValUnit", "lazyVal")
+    val valNames = List("sigInferred",
+                        "const",
+                        "varr",
+                        "abs",
+                        "absVar",
+                        "lazyValInferred",
+                        "lazyValConst",
+                        "lazyValUnit",
+                        "lazyVal")
     val entities = List(rootPackage._class("C"), rootPackage._trait("T"))
     for (e <- entities; vn <- valNames) assertDoc(e, vn)
   }

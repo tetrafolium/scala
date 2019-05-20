@@ -38,7 +38,8 @@ class TypesTest {
   @Test
   def testTransitivityWithModuleTypeRef(): Unit = {
     import rootMirror.EmptyPackageClass
-    val (module, moduleClass) = EmptyPackageClass.newModuleAndClassSymbol(TermName("O"), NoPosition, 0L)
+    val (module, moduleClass) =
+      EmptyPackageClass.newModuleAndClassSymbol(TermName("O"), NoPosition, 0L)
     val minfo = ClassInfoType(List(ObjectTpe), newScope, moduleClass)
     module.moduleClass setInfo minfo
     module setInfo module.moduleClass.tpe
@@ -50,8 +51,10 @@ class TypesTest {
     tps.permutations.foreach {
       case ts @ List(a, b, c) =>
         def tsShownRaw = ts.map(t => showRaw(t)).mkString(", ")
-        if (a <:< b && b <:< c && !(a <:< c)) results += s"<:< intransitive: $tsShownRaw"
-        if (a =:= b && b =:= c && !(a =:= c)) results += s"=:= intransitive: $tsShownRaw"
+        if (a <:< b && b <:< c && !(a <:< c))
+          results += s"<:< intransitive: $tsShownRaw"
+        if (a =:= b && b =:= c && !(a =:= c))
+          results += s"=:= intransitive: $tsShownRaw"
     }
     results.toList match {
       case Nil => // okay
@@ -62,7 +65,7 @@ class TypesTest {
 
   @Test
   def testRefinementContains(): Unit = {
-    val refinement = typeOf[{def foo: Int}]
+    val refinement = typeOf[{ def foo: Int }]
     assert(refinement.isInstanceOf[RefinedType])
     assert(refinement.contains(IntClass))
     val elem0 = refinement.baseTypeSeq(0)
@@ -73,10 +76,22 @@ class TypesTest {
   @Test
   def testRefinedLubs(): Unit = {
     // https://github.com/scala/scala-dev/issues/168
-    assertEquals(typeOf[Option[AnyVal]], lub(typeOf[Option[Int] with Option[Char]] :: typeOf[Option[Boolean] with Option[Short]] :: Nil))
-    assertEquals(typeOf[Option[AnyVal]], lub(typeOf[Option[Int] with Option[Char]] :: typeOf[Option[Boolean]] :: Nil))
-    assertEquals(typeOf[Option[AnyVal]], lub((typeOf[Option[Int] with Option[Char]] :: typeOf[Option[Boolean] with Option[Short]] :: Nil).reverse))
-    assertEquals(typeOf[Option[AnyVal]], lub((typeOf[Option[Int] with Option[Char]] :: typeOf[Option[Boolean]] :: Nil).reverse))
+    assertEquals(typeOf[Option[AnyVal]],
+                 lub(
+                   typeOf[Option[Int] with Option[Char]] :: typeOf[
+                     Option[Boolean] with Option[Short]] :: Nil))
+    assertEquals(typeOf[Option[AnyVal]],
+                 lub(
+                   typeOf[Option[Int] with Option[Char]] :: typeOf[
+                     Option[Boolean]] :: Nil))
+    assertEquals(typeOf[Option[AnyVal]],
+                 lub(
+                   (typeOf[Option[Int] with Option[Char]] :: typeOf[
+                     Option[Boolean] with Option[Short]] :: Nil).reverse))
+    assertEquals(typeOf[Option[AnyVal]],
+                 lub(
+                   (typeOf[Option[Int] with Option[Char]] :: typeOf[
+                     Option[Boolean]] :: Nil).reverse))
   }
 
   @Test
@@ -86,20 +101,29 @@ class TypesTest {
     // class M[A]
     val MClass = EmptyPackageClass.newClass("M")
     val A = MClass.newTypeParameter("A").setInfo(TypeBounds.empty)
-    MClass.setInfo(PolyType(A :: Nil, ClassInfoType(ObjectClass.tpeHK :: Nil, newScopeWith(), MClass)))
+    MClass.setInfo(
+      PolyType(A :: Nil,
+               ClassInfoType(ObjectClass.tpeHK :: Nil, newScopeWith(), MClass)))
 
     // (M[Int] with M[X] { def m: Any }) forSome { type X }
     val X = NoSymbol.newExistential("X").setInfo(TypeBounds.empty)
     val T: Type = {
-      val decls = newScopeWith(MClass.newMethod("m").setInfo(NullaryMethodType(AnyClass.tpeHK)))
-      val refined = refinedType(appliedType(MClass, IntClass.tpeHK) :: appliedType(MClass, X.tpeHK) :: Nil, NoSymbol, decls, NoPosition)
+      val decls = newScopeWith(
+        MClass.newMethod("m").setInfo(NullaryMethodType(AnyClass.tpeHK)))
+      val refined =
+        refinedType(appliedType(MClass, IntClass.tpeHK) :: appliedType(
+                      MClass,
+                      X.tpeHK) :: Nil,
+                    NoSymbol,
+                    decls,
+                    NoPosition)
       newExistentialType(X :: Nil, refined)
     }
 
     val RefinementClass = T.underlying.typeSymbol
     assertTrue(RefinementClass.isRefinementClass)
     TypeRef(NoPrefix, RefinementClass, Nil) match {
-      case rtr : RefinementTypeRef =>
+      case rtr: RefinementTypeRef =>
         // ContainsCollector needs to look inside the info of symbols of RefinementTypeRefs
         assert(rtr.contains(X))
     }
@@ -108,7 +132,8 @@ class TypesTest {
     val baseTypeSeqIndices = T.baseTypeSeq.toList.indices
     for (i <- baseTypeSeqIndices) {
       // Elements of the existential type should have the same type symbol as underlying
-      assertEquals(T.baseTypeSeq.typeSymbol(i), underlying.baseTypeSeq.typeSymbol(i))
+      assertEquals(T.baseTypeSeq.typeSymbol(i),
+                   underlying.baseTypeSeq.typeSymbol(i))
     }
 
     // Type symbols should be distinct
@@ -121,19 +146,25 @@ class TypesTest {
 
     // This is the entry for the refinement class
     assertTrue(T.baseTypeSeq.typeSymbol(0).isRefinementClass)
-    assertEquals("M[Int] with M[X]{def m: Any} forSome { type X }", T.baseTypeSeq.rawElem(0).toString)
+    assertEquals("M[Int] with M[X]{def m: Any} forSome { type X }",
+                 T.baseTypeSeq.rawElem(0).toString)
 
     // This is the entry for M. The raw entry is an existential over a RefinedType which encodes a lazily computed base type
     assertEquals(T.baseTypeSeq.typeSymbol(1), MClass)
-    assertEquals("M[X] with M[Int] forSome { type X }", T.baseTypeSeq.rawElem(1).toString)
+    assertEquals("M[X] with M[Int] forSome { type X }",
+                 T.baseTypeSeq.rawElem(1).toString)
     // calling `apply` merges the prefix/args of the elements ot the RefinedType and rewraps in the existential
-    assertEquals("M[_1] forSome { type X; type _1 >: X with Int }", T.baseTypeSeq.apply(1).toString)
+    assertEquals("M[_1] forSome { type X; type _1 >: X with Int }",
+                 T.baseTypeSeq.apply(1).toString)
   }
 
   @Test
   def testExistentialMerge(): Unit = {
-    val ts = typeOf[Set[Any]] :: typeOf[Set[X] forSome { type X <: Y; type Y <: Int}] :: Nil
-    def merge(ts: List[Type]) = mergePrefixAndArgs(ts, Variance.Contravariant, lubDepth(ts))
+    val ts = typeOf[Set[Any]] :: typeOf[Set[X] forSome {
+      type X <: Y; type Y <: Int
+    }] :: Nil
+    def merge(ts: List[Type]) =
+      mergePrefixAndArgs(ts, Variance.Contravariant, lubDepth(ts))
     val merged1 = merge(ts)
     val merged2 = merge(ts.reverse)
     assert(ts.forall(_ <:< merged1)) // use to fail before fix to mergePrefixAndArgs for existentials
@@ -192,7 +223,8 @@ class TypesTest {
     def G() = TypeVar(G0)
 
     def polyType(f: TypeVar => Type, flags: Long = 0L): Type = {
-      val A = EmptyPackageClass.newTypeParameter(newTypeName("A"), newFlags = flags)
+      val A =
+        EmptyPackageClass.newTypeParameter(newTypeName("A"), newFlags = flags)
       A.setInfo(TypeBounds.empty)
       val A_ = TypeVar(A)
       PolyType(A :: Nil, f(A_))
@@ -307,14 +339,16 @@ class TypesTest {
     assert(polyType2((A, B) => Bar(Bar(B, A), A)) =:= G())
 
     // test that [A]Bar[Int, A] <:< ?F <:< [A]Bar[Any, A]
-    F() match { case _F =>
-      assert(polyType(A => Bar(Int, A)) <:< _F && _F <:< polyType(A => Bar(Any, A)))
+    F() match {
+      case _F =>
+        assert(polyType(A => Bar(Int, A)) <:< _F && _F <:< polyType(A =>
+          Bar(Any, A)))
     }
   }
 
   @Test
   def testAnyNothing(): Unit = {
-    object Foo { val a: Any = 23 ; val n: Nothing = ??? }
+    object Foo { val a: Any = 23; val n: Nothing = ??? }
     val aSym = typeOf[Foo.type].member(TermName("a"))
     val nSym = typeOf[Foo.type].member(TermName("n"))
 
@@ -327,7 +361,8 @@ class TypesTest {
 
   @Test
   def testSameTypesLub(): Unit = {
-    def testSameType(tpe: Type, num: Int = 5) = assert(lub(List.fill(num)(tpe)) =:= tpe)
+    def testSameType(tpe: Type, num: Int = 5) =
+      assert(lub(List.fill(num)(tpe)) =:= tpe)
 
     testSameType(IntTpe)
     testSameType(StringTpe)
@@ -372,8 +407,9 @@ class TypesTest {
       )
     )
 
-    interestingCombos foreach { case (result, checks) =>
-      checks.foreach(check => assert(lub(check) =:= result))
+    interestingCombos foreach {
+      case (result, checks) =>
+        checks.foreach(check => assert(lub(check) =:= result))
     }
   }
 }

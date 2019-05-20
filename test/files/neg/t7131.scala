@@ -14,9 +14,12 @@ object ObservableValue {
     }
   }
 
-  class TraversableMappable[T, Container[X] <: Traversable[X]](x: ObservableValue[Container[T]]) {
+  class TraversableMappable[T, Container[X] <: Traversable[X]](
+      x: ObservableValue[Container[T]]) {
 
-    def map[U, That](f: T => U)(implicit bf: CanBuildFrom[Traversable[T], U, That]): ObservableValue[That] = new ObservableValue[That] {
+    def map[U, That](f: T => U)(
+        implicit bf: CanBuildFrom[Traversable[T], U, That])
+      : ObservableValue[That] = new ObservableValue[That] {
       def value: That = {
         x.value.map(f)
       }
@@ -25,22 +28,28 @@ object ObservableValue {
   }
 
   //for some reason using an implicit class does not work
-  implicit def convertToTraversableMappable[T, Container[X] <: Traversable[X]](x: ObservableValue[Container[T]]) =
+  implicit def convertToTraversableMappable[T, Container[X] <: Traversable[X]](
+      x: ObservableValue[Container[T]]) =
     new TraversableMappable(x)
 
   type HasMap[T, That[_]] = {
     def map[U](f: T => U): That[U]
   }
 
-  class NestedMappable[T, Container[X] <: HasMap[X, Container]](x: ObservableValue[Container[T]]) {
+  class NestedMappable[T, Container[X] <: HasMap[X, Container]](
+      x: ObservableValue[Container[T]]) {
 
-    def map[U](f: T => U): ObservableValue[Container[U]] = new ObservableValue[Container[U]] {
-      def value: Container[U] = x.value.map(f)
-    }
+    def map[U](f: T => U): ObservableValue[Container[U]] =
+      new ObservableValue[Container[U]] {
+        def value: Container[U] = x.value.map(f)
+      }
   }
 
   //for some reason using an implicit class does not work
-  implicit def convertToSimpleMappable[T, Container[X] <: ObservableValue.HasMap[X, Container]](x: ObservableValue[Container[T]]) =
+  implicit def convertToSimpleMappable[
+      T,
+      Container[X] <: ObservableValue.HasMap[X, Container]](
+      x: ObservableValue[Container[T]]) =
     new NestedMappable(x)
 
 }
@@ -60,7 +69,6 @@ object Main extends App {
   x.value = 42
 
   println(r.value) //43
-
 
   class TestCase1 extends ObservableValue[Option[Int]] {
     var value: Option[Int] = None

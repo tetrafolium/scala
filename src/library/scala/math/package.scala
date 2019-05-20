@@ -84,65 +84,71 @@ package scala
   * @groupprio adjacent-float 170
   */
 package object math {
+
   /** The `Double` value that is closer than any other to `e`, the base of
-   *  the natural logarithms.
-   *  @group math-const
-   */
+    *  the natural logarithms.
+    *  @group math-const
+    */
   @inline final val E = java.lang.Math.E
 
   /** The `Double` value that is closer than any other to `pi`, the ratio of
-   *  the circumference of a circle to its diameter.
-   *  @group math-const
-   */
+    *  the circumference of a circle to its diameter.
+    *  @group math-const
+    */
   @inline final val Pi = java.lang.Math.PI
 
   /** Returns a `Double` value with a positive sign, greater than or equal
-   *  to `0.0` and less than `1.0`.
-   *
-   *  @group randomisation
-   */
+    *  to `0.0` and less than `1.0`.
+    *
+    *  @group randomisation
+    */
   def random(): Double = java.lang.Math.random()
 
   /**  @group trig */
   def sin(x: Double): Double = java.lang.Math.sin(x)
+
   /**  @group trig */
   def cos(x: Double): Double = java.lang.Math.cos(x)
+
   /**  @group trig */
   def tan(x: Double): Double = java.lang.Math.tan(x)
+
   /**  @group trig */
   def asin(x: Double): Double = java.lang.Math.asin(x)
+
   /**  @group trig */
   def acos(x: Double): Double = java.lang.Math.acos(x)
+
   /**  @group trig */
   def atan(x: Double): Double = java.lang.Math.atan(x)
 
   /** Converts an angle measured in degrees to an approximately equivalent
-   *  angle measured in radians.
-   *
-   *  @param  x an angle, in degrees
-   *  @return the measurement of the angle `x` in radians.
-   *  @group angle-conversion
-   */
+    *  angle measured in radians.
+    *
+    *  @param  x an angle, in degrees
+    *  @return the measurement of the angle `x` in radians.
+    *  @group angle-conversion
+    */
   def toRadians(x: Double): Double = java.lang.Math.toRadians(x)
 
   /** Converts an angle measured in radians to an approximately equivalent
-   *  angle measured in degrees.
-   *
-   *  @param  x angle, in radians
-   *  @return the measurement of the angle `x` in degrees.
-   *  @group angle-conversion
-   */
+    *  angle measured in degrees.
+    *
+    *  @param  x angle, in radians
+    *  @return the measurement of the angle `x` in degrees.
+    *  @group angle-conversion
+    */
   def toDegrees(x: Double): Double = java.lang.Math.toDegrees(x)
 
   /** Converts rectangular coordinates `(x, y)` to polar `(r, theta)`.
-   *
-   *  @param  x the ordinate coordinate
-   *  @param  y the abscissa coordinate
-   *  @return the ''theta'' component of the point `(r, theta)` in polar
-   *          coordinates that corresponds to the point `(x, y)` in
-   *          Cartesian coordinates.
-   *  @group polar-coords
-   */
+    *
+    *  @param  x the ordinate coordinate
+    *  @param  y the abscissa coordinate
+    *  @return the ''theta'' component of the point `(r, theta)` in polar
+    *          coordinates that corresponds to the point `(x, y)` in
+    *          Cartesian coordinates.
+    *  @group polar-coords
+    */
   def atan2(y: Double, x: Double): Double = java.lang.Math.atan2(y, x)
 
   /** Returns the square root of the sum of the squares of both given `Double`
@@ -160,7 +166,8 @@ package object math {
   // -----------------------------------------------------------------------
 
   /** @group rounding */
-  def ceil(x: Double): Double  = java.lang.Math.ceil(x)
+  def ceil(x: Double): Double = java.lang.Math.ceil(x)
+
   /** @group rounding */
   def floor(x: Double): Double = java.lang.Math.floor(x)
 
@@ -175,66 +182,80 @@ package object math {
   def rint(x: Double): Double = java.lang.Math.rint(x)
 
   /** There is no reason to round a `Long`, but this method prevents unintended conversion to `Float` followed by rounding to `Int`.
-   *
-   *  @note Does not forward to [[java.lang.Math]]
-   *  @group rounding
-   */
-  @deprecated("This is an integer type; there is no reason to round it. Perhaps you meant to call this with a floating-point value?", "2.11.0")
+    *
+    *  @note Does not forward to [[java.lang.Math]]
+    *  @group rounding
+    */
+  @deprecated(
+    "This is an integer type; there is no reason to round it. Perhaps you meant to call this with a floating-point value?",
+    "2.11.0")
   def round(x: Long): Long = x
 
   /** Returns the closest `Int` to the argument.
-   *
-   *  @param  x a floating-point value to be rounded to a `Int`.
-   *  @return the value of the argument rounded to the nearest `Int` value.
-   *  @group rounding
-   */
+    *
+    *  @param  x a floating-point value to be rounded to a `Int`.
+    *  @return the value of the argument rounded to the nearest `Int` value.
+    *  @group rounding
+    */
   def round(x: Float): Int = java.lang.Math.round(x)
 
   /** Returns the closest `Long` to the argument.
-   *
-   *  @param  x a floating-point value to be rounded to a `Long`.
-   *  @return the value of the argument rounded to the nearest`long` value.
-   *  @group rounding
-   */
+    *
+    *  @param  x a floating-point value to be rounded to a `Long`.
+    *  @return the value of the argument rounded to the nearest`long` value.
+    *  @group rounding
+    */
   def round(x: Double): Long = java.lang.Math.round(x)
 
   /** @group abs */
-  def abs(x: Int): Int       = java.lang.Math.abs(x)
+  def abs(x: Int): Int = java.lang.Math.abs(x)
+
   /** @group abs */
-  def abs(x: Long): Long     = java.lang.Math.abs(x)
+  def abs(x: Long): Long = java.lang.Math.abs(x)
+
   /** @group abs */
-  def abs(x: Float): Float   = java.lang.Math.abs(x)
+  def abs(x: Float): Float = java.lang.Math.abs(x)
+
   /** @group abs */
   def abs(x: Double): Double = java.lang.Math.abs(x)
 
   /** @group minmax */
-  def max(x: Int, y: Int): Int          = java.lang.Math.max(x, y)
+  def max(x: Int, y: Int): Int = java.lang.Math.max(x, y)
+
   /** @group minmax */
-  def max(x: Long, y: Long): Long       = java.lang.Math.max(x, y)
+  def max(x: Long, y: Long): Long = java.lang.Math.max(x, y)
+
   /** @group minmax */
-  def max(x: Float, y: Float): Float    = java.lang.Math.max(x, y)
+  def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
+
   /** @group minmax */
   def max(x: Double, y: Double): Double = java.lang.Math.max(x, y)
 
   /** @group minmax */
-  def min(x: Int, y: Int): Int          = java.lang.Math.min(x, y)
+  def min(x: Int, y: Int): Int = java.lang.Math.min(x, y)
+
   /** @group minmax */
-  def min(x: Long, y: Long): Long       = java.lang.Math.min(x, y)
+  def min(x: Long, y: Long): Long = java.lang.Math.min(x, y)
+
   /** @group minmax */
-  def min(x: Float, y: Float): Float    = java.lang.Math.min(x, y)
+  def min(x: Float, y: Float): Float = java.lang.Math.min(x, y)
+
   /** @group minmax */
   def min(x: Double, y: Double): Double = java.lang.Math.min(x, y)
 
   /** @group signs
     * @note Forwards to [[java.lang.Integer]]
     */
-  def signum(x: Int): Int       = java.lang.Integer.signum(x)
+  def signum(x: Int): Int = java.lang.Integer.signum(x)
+
   /** @group signs
     * @note Forwards to [[java.lang.Long]]
     */
-  def signum(x: Long): Long     = java.lang.Long.signum(x)
+  def signum(x: Long): Long = java.lang.Long.signum(x)
+
   /** @group signs */
-  def signum(x: Float): Float   = java.lang.Math.signum(x)
+  def signum(x: Float): Float = java.lang.Math.signum(x)
+
   /** @group signs */
   def signum(x: Double): Double = java.lang.Math.signum(x)
 
@@ -251,16 +272,20 @@ package object math {
   def floorMod(x: Long, y: Long): Long = java.lang.Math.floorMod(x, y)
 
   /** @group signs */
-  def copySign(magnitude: Double, sign: Double): Double = java.lang.Math.copySign(magnitude, sign)
+  def copySign(magnitude: Double, sign: Double): Double =
+    java.lang.Math.copySign(magnitude, sign)
 
   /** @group signs */
-  def copySign(magnitude: Float, sign: Float): Float = java.lang.Math.copySign(magnitude, sign)
+  def copySign(magnitude: Float, sign: Float): Float =
+    java.lang.Math.copySign(magnitude, sign)
 
   /** @group adjacent-float */
-  def nextAfter(start: Double, direction: Double): Double = java.lang.Math.nextAfter(start, direction)
+  def nextAfter(start: Double, direction: Double): Double =
+    java.lang.Math.nextAfter(start, direction)
 
   /** @group adjacent-float */
-  def nextAfter(start: Float, direction: Double): Float = java.lang.Math.nextAfter(start, direction)
+  def nextAfter(start: Float, direction: Double): Float =
+    java.lang.Math.nextAfter(start, direction)
 
   /** @group adjacent-float */
   def nextUp(d: Double): Double = java.lang.Math.nextUp(d)
@@ -275,10 +300,12 @@ package object math {
   def nextDown(f: Float): Float = java.lang.Math.nextDown(f)
 
   /** @group scaling */
-  def scalb(d: Double, scaleFactor: Int): Double = java.lang.Math.scalb(d, scaleFactor)
+  def scalb(d: Double, scaleFactor: Int): Double =
+    java.lang.Math.scalb(d, scaleFactor)
 
   /** @group scaling */
-  def scalb(f: Float, scaleFactor: Int): Float = java.lang.Math.scalb(f, scaleFactor)
+  def scalb(f: Float, scaleFactor: Int): Float =
+    java.lang.Math.scalb(f, scaleFactor)
 
   // -----------------------------------------------------------------------
   // root functions
@@ -373,7 +400,7 @@ package object math {
   /** Returns the hyperbolic tangent of the given `Double` value.
     * @group hyperbolic
     */
-  def tanh(x: Double):Double = java.lang.Math.tanh(x)
+  def tanh(x: Double): Double = java.lang.Math.tanh(x)
 
   // -----------------------------------------------------------------------
   // miscellaneous functions
@@ -390,7 +417,8 @@ package object math {
   def ulp(x: Float): Float = java.lang.Math.ulp(x)
 
   /** @group exact */
-  def IEEEremainder(x: Double, y: Double): Double = java.lang.Math.IEEEremainder(x, y)
+  def IEEEremainder(x: Double, y: Double): Double =
+    java.lang.Math.IEEEremainder(x, y)
 
   // -----------------------------------------------------------------------
   // exact functions
@@ -418,19 +446,19 @@ package object math {
   def incrementExact(x: Int): Int = java.lang.Math.incrementExact(x)
 
   /** @group exact */
-  def incrementExact(x: Long) =  java.lang.Math.incrementExact(x)
+  def incrementExact(x: Long) = java.lang.Math.incrementExact(x)
 
   /** @group exact */
-  def decrementExact(x: Int) =  java.lang.Math.decrementExact(x)
+  def decrementExact(x: Int) = java.lang.Math.decrementExact(x)
 
   /** @group exact */
-  def decrementExact(x: Long) =  java.lang.Math.decrementExact(x)
+  def decrementExact(x: Long) = java.lang.Math.decrementExact(x)
 
   /** @group exact */
-  def negateExact(x: Int) =  java.lang.Math.negateExact(x)
+  def negateExact(x: Int) = java.lang.Math.negateExact(x)
 
   /** @group exact */
-  def negateExact(x: Long) =  java.lang.Math.negateExact(x)
+  def negateExact(x: Long) = java.lang.Math.negateExact(x)
 
   /** @group exact */
   def toIntExact(x: Long): Int = java.lang.Math.toIntExact(x)

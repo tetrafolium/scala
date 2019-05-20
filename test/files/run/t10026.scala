@@ -8,4 +8,3 @@ object Test {
     println(toolbox.compile(toolbox.parse("Array(1, 2, 3).toList")).apply())
   }
 }
-

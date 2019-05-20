@@ -16,9 +16,9 @@ package symtab
 import scala.tools.nsc.io.AbstractFile
 
 /** A subclass of SymbolLoaders that implements browsing behavior.
- *  This class should be used whenever file dependencies and recompile sets
- *  are managed automatically.
- */
+  *  This class should be used whenever file dependencies and recompile sets
+  *  are managed automatically.
+  */
 abstract class BrowsingLoaders extends GlobalSymbolLoaders {
   val global: Global
 
@@ -26,16 +26,19 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
   import syntaxAnalyzer.{OutlineParser, MalformedInput}
 
   /** In browse mode, it can happen that an encountered symbol is already
-   *  present. For instance, if the source file has a name different from
-   *  the classes and objects it contains, the symbol loader will always
-   *  reparse the source file. The symbols it encounters might already be loaded
-   *  as class files. In this case we return the one which has a sourcefile
-   *  (and the other has not), and issue an error if both have sourcefiles.
-   */
-  override protected def enterIfNew(owner: Symbol, member: Symbol, completer: SymbolLoader): Symbol = {
+    *  present. For instance, if the source file has a name different from
+    *  the classes and objects it contains, the symbol loader will always
+    *  reparse the source file. The symbols it encounters might already be loaded
+    *  as class files. In this case we return the one which has a sourcefile
+    *  (and the other has not), and issue an error if both have sourcefiles.
+    */
+  override protected def enterIfNew(owner: Symbol,
+                                    member: Symbol,
+                                    completer: SymbolLoader): Symbol = {
     completer.sourcefile match {
       case Some(src) =>
-        (if (member.isModule) member.moduleClass else member).associatedFile = src
+        (if (member.isModule) member.moduleClass else member).associatedFile =
+          src
       case _ =>
     }
     val decls = owner.info.decls
@@ -53,9 +56,10 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
         val memberSourceFile = member.sourceFile
         if (memberSourceFile != null) {
           if (existingSourceFile != memberSourceFile)
-            error(""+member+"is defined twice,"+
-              "\n in "+existingSourceFile+
-              "\n and also in "+memberSourceFile)
+            error(
+              "" + member + "is defined twice," +
+                "\n in " + existingSourceFile +
+                "\n and also in " + memberSourceFile)
         }
         existing
       }
@@ -63,8 +67,8 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
   }
 
   /** Browse the top-level of given abstract file `src` and enter
-   *  any encountered top-level classes and modules in `root`
-   */
+    *  any encountered top-level classes and modules in `root`
+    */
   def browseTopLevel(root: Symbol, src: AbstractFile): Unit = {
 
     class BrowserTraverser extends Traverser {
@@ -80,7 +84,9 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
             packagePrefix += name
           }
         case _ =>
-          throw new MalformedInput(pkg.pos.point, "illegal tree node in package prefix: "+pkg)
+          throw new MalformedInput(
+            pkg.pos.point,
+            "illegal tree node in package prefix: " + pkg)
       }
 
       private def inPackagePrefix(pkg: Tree)(op: => Unit): Unit = {
@@ -98,16 +104,17 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
           if (packagePrefix == root.fullName) {
             enterClass(root, name.toString, new SourcefileLoader(src))
             entered += 1
-          } else log("prefixes differ: "+packagePrefix+","+root.fullName)
+          } else log("prefixes differ: " + packagePrefix + "," + root.fullName)
         case ModuleDef(_, name, _) =>
           if (packagePrefix == root.fullName) {
-            val module = enterModule(root, name.toString, new SourcefileLoader(src))
+            val module =
+              enterModule(root, name.toString, new SourcefileLoader(src))
             entered += 1
             if (name == nme.PACKAGEkw) {
-              log("open package module: "+module)
+              log("open package module: " + module)
               openPackageModule(module, root)
             }
-          } else log("prefixes differ: "+packagePrefix+","+root.fullName)
+          } else log("prefixes differ: " + packagePrefix + "," + root.fullName)
         case _ =>
       }
     }
@@ -119,12 +126,15 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
     val browser = new BrowserTraverser
     browser.traverse(body)
     if (browser.entered == 0)
-      warning("No classes or objects found in "+source+" that go in "+root)
+      warning(
+        "No classes or objects found in " + source + " that go in " + root)
   }
 
   /** Enter top-level symbols from a source file
-   */
-  override def enterToplevelsFromSource(root: Symbol, name: String, src: AbstractFile): Unit = {
+    */
+  override def enterToplevelsFromSource(root: Symbol,
+                                        name: String,
+                                        src: AbstractFile): Unit = {
     try {
       if (root.isEffectiveRoot || !src.name.endsWith(".scala")) // RootClass or EmptyPackageClass
         super.enterToplevelsFromSource(root, name, src)
@@ -132,7 +142,8 @@ abstract class BrowsingLoaders extends GlobalSymbolLoaders {
         browseTopLevel(root, src)
     } catch {
       case ex: syntaxAnalyzer.MalformedInput =>
-        log(s"[$src] caught malformed input exception at offset ${ex.offset}: ${ex.msg}")
+        log(
+          s"[$src] caught malformed input exception at offset ${ex.offset}: ${ex.msg}")
         super.enterToplevelsFromSource(root, name, src)
     }
   }

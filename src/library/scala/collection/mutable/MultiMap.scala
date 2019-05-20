@@ -12,7 +12,6 @@
 
 package scala.collection.mutable
 
-
 /** A trait for mutable maps with multiple values assigned to a key.
   *
   *  This class is typically used as a mixin. It turns maps which map `K`
@@ -54,6 +53,7 @@ package scala.collection.mutable
   *  @since   1
   */
 trait MultiMap[K, V] extends Map[K, Set[V]] {
+
   /** Creates a new set.
     *
     *  Classes that use this trait as a mixin can override this method
@@ -111,7 +111,7 @@ trait MultiMap[K, V] extends Map[K, Set[V]] {
     *  @return      A boolean if such a binding exists
     */
   def entryExists(key: K, p: V => Boolean): Boolean = get(key) match {
-    case None => false
+    case None      => false
     case Some(set) => set exists p
   }
 }

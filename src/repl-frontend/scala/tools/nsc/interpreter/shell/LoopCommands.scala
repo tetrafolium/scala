@@ -22,12 +22,13 @@ class ProcessResult(val line: String) {
   import scala.sys.process._
   private val buffer = new ListBuffer[String]
 
-  val builder  = Process(line)
-  val logger   = ProcessLogger(buffer += _)
+  val builder = Process(line)
+  val logger = ProcessLogger(buffer += _)
   val exitCode = builder ! logger
-  def lines    = buffer.toList
+  def lines = buffer.toList
 
-  override def toString = "`%s` (%d lines, exit %d)".format(line, buffer.size, exitCode)
+  override def toString =
+    "`%s` (%d lines, exit %d)".format(line, buffer.size, exitCode)
 }
 
 trait LoopCommands {
@@ -41,14 +42,12 @@ trait LoopCommands {
   def commands: List[LoopCommand]
 
   // a single interpreter command
-  abstract class LoopCommand(
-      val name: String,
-      val help: String,
-      val detailedHelp: Option[String]) extends (String => Result) {
+  abstract class LoopCommand(val name: String,
+                             val help: String,
+                             val detailedHelp: Option[String])
+      extends (String => Result) {
     def usage: String = ""
-    def usageMsg: String = s":$name${
-      if (usage == "") "" else " " + usage
-    }"
+    def usageMsg: String = s":$name${if (usage == "") "" else " " + usage}"
     def apply(line: String): Result
 
     // called if no args are given
@@ -64,14 +63,25 @@ trait LoopCommands {
     def nullary(name: String, help: String, f: () => Result): LoopCommand =
       nullary(name, help, None, f)
 
-    def nullary(name: String, help: String, detailedHelp: Option[String], f: () => Result): LoopCommand =
+    def nullary(name: String,
+                help: String,
+                detailedHelp: Option[String],
+                f: () => Result): LoopCommand =
       new NullaryCmd(name, help, detailedHelp, _ => f())
 
-    def cmd(name: String, usage: String, help: String, f: String => Result, completion: Completion = NoCompletion): LoopCommand =
+    def cmd(name: String,
+            usage: String,
+            help: String,
+            f: String => Result,
+            completion: Completion = NoCompletion): LoopCommand =
       cmdWithHelp(name, usage, help, None, f, completion)
 
-    def cmdWithHelp(name: String, usage: String, help: String, detailedHelp: Option[String],
-      f: String => Result, completion: Completion = NoCompletion): LoopCommand =
+    def cmdWithHelp(name: String,
+                    usage: String,
+                    help: String,
+                    detailedHelp: Option[String],
+                    f: String => Result,
+                    completion: Completion = NoCompletion): LoopCommand =
       if (usage == "") new NullaryCmd(name, help, detailedHelp, f)
       else new LineCmd(name, usage, help, detailedHelp, f, completion)
   }
@@ -85,7 +95,7 @@ trait LoopCommands {
 
   def helpSummary() = {
     val usageWidth = commands.map(_.usageMsg.length).max
-    val formatStr  = s"%-${usageWidth}s %s"
+    val formatStr = s"%-${usageWidth}s %s"
 
     echo("All commands can be abbreviated, e.g., :he instead of :help.")
 
@@ -93,14 +103,19 @@ trait LoopCommands {
   }
   def ambiguousError(cmd: String): Result = {
     matchingCommands(cmd) match {
-      case Nil  => echo(s"No such command '$cmd'.  Type :help for help.")
-      case xs   => echo(cmd + " is ambiguous: did you mean " + xs.map(":" + _.name).mkString(" or ") + "?")
+      case Nil => echo(s"No such command '$cmd'.  Type :help for help.")
+      case xs =>
+        echo(
+          cmd + " is ambiguous: did you mean " + xs
+            .map(":" + _.name)
+            .mkString(" or ") + "?")
     }
     Result(keepRunning = true, None)
   }
 
   // all commands with given prefix
-  private def matchingCommands(cmd: String) = commands.filter(_.name.startsWith(cmd.stripPrefix(":")))
+  private def matchingCommands(cmd: String) =
+    commands.filter(_.name.startsWith(cmd.stripPrefix(":")))
 
   // extract unique command from partial name, or prefer exact match if multiple matches
   private object CommandMatch {
@@ -134,33 +149,49 @@ trait LoopCommands {
           case cmd :: Nil if !cursorAtName    => cmd.completion
           case cmd :: Nil if cmd.name == name => NoCompletion
           case cmd :: Nil =>
-            val completion = if (cmd.isInstanceOf[NullaryCmd] || cursor < line.length) cmd.name else cmd.name + " "
+            val completion =
+              if (cmd.isInstanceOf[NullaryCmd] || cursor < line.length) cmd.name
+              else cmd.name + " "
             new Completion {
               def resetVerbosity(): Unit = ()
-              def complete(buffer: String, cursor: Int) = CompletionResult(cursor = 1, List(completion))
+              def complete(buffer: String, cursor: Int) =
+                CompletionResult(cursor = 1, List(completion))
             }
           case cmd :: rest =>
             new Completion {
               def resetVerbosity(): Unit = ()
-              def complete(buffer: String, cursor: Int) = CompletionResult(cursor = 1, cmds.map(_.name))
+              def complete(buffer: String, cursor: Int) =
+                CompletionResult(cursor = 1, cmds.map(_.name))
             }
         }
-      case _       => NoCompletion
+      case _ => NoCompletion
     }
 
-  class NullaryCmd(name: String, help: String, detailedHelp: Option[String],
-    f: String => Result) extends LoopCommand(name, help, detailedHelp) {
+  class NullaryCmd(name: String,
+                   help: String,
+                   detailedHelp: Option[String],
+                   f: String => Result)
+      extends LoopCommand(name, help, detailedHelp) {
     def apply(line: String): Result = f(line)
   }
 
-  class LineCmd(name: String, argWord: String, help: String, detailedHelp: Option[String],
-    f: String => Result, override val completion: Completion) extends LoopCommand(name, help, detailedHelp) {
+  class LineCmd(name: String,
+                argWord: String,
+                help: String,
+                detailedHelp: Option[String],
+                f: String => Result,
+                override val completion: Completion)
+      extends LoopCommand(name, help, detailedHelp) {
     override def usage = argWord
     def apply(line: String): Result = f(line)
   }
 
-  class VarArgsCmd(name: String, argWord: String, help: String, detailedHelp: Option[String],
-      f: List[String] => Result) extends LoopCommand(name, help, detailedHelp) {
+  class VarArgsCmd(name: String,
+                   argWord: String,
+                   help: String,
+                   detailedHelp: Option[String],
+                   f: List[String] => Result)
+      extends LoopCommand(name, help, detailedHelp) {
     override def usage = argWord
     def apply(line: String): Result = apply(words(line))
     def apply(args: List[String]) = f(args)

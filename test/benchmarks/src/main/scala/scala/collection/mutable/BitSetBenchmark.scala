@@ -33,7 +33,7 @@ class BitSetBenchmark {
   }
 
   @Benchmark def addAll(bh: Blackhole): Unit = {
-    clones.foreach{ c =>
+    clones.foreach { c =>
       bh consume c.addAll(range)
     }
   }

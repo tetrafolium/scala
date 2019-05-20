@@ -128,7 +128,8 @@ class HashMapTest {
 
     val insertIfAbesent: Option[String] => Option[String] = _.orElse(Some("b"))
     assertEquals(hashMap.updatedWith(1)(insertIfAbesent), HashMap(1 -> "a"))
-    assertEquals(hashMap.updatedWith(2)(insertIfAbesent), HashMap(1 -> "a", 2 -> "b"))
+    assertEquals(hashMap.updatedWith(2)(insertIfAbesent),
+                 HashMap(1 -> "a", 2 -> "b"))
 
     val noneAnytime: Option[String] => Option[String] = _ => None
     assertEquals(hashMap.updatedWith(1)(noneAnytime), HashMap())

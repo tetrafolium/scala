@@ -38,7 +38,7 @@ import scala.collection.generic.DefaultSerializable
   *  @define willNotTerminateInf
   */
 class ArrayBuffer[A] private (initialElements: Array[AnyRef], initialSize: Int)
-  extends AbstractBuffer[A]
+    extends AbstractBuffer[A]
     with IndexedBuffer[A]
     with IndexedSeqOps[A, ArrayBuffer, ArrayBuffer[A]]
     with StrictOptimizedSeqOps[A, ArrayBuffer, ArrayBuffer[A]]
@@ -56,7 +56,7 @@ class ArrayBuffer[A] private (initialElements: Array[AnyRef], initialSize: Int)
     array = RefArrayUtils.ensureSize(array, size0, n)
 
   def sizeHint(size: Int): Unit =
-    if(size > length && size >= 1) ensureSize(size)
+    if (size > length && size >= 1) ensureSize(size)
 
   /** Reduce length to `n`, nulling out all dropped elements */
   private def reduceToSize(n: Int): Unit = {
@@ -65,8 +65,12 @@ class ArrayBuffer[A] private (initialElements: Array[AnyRef], initialSize: Int)
   }
 
   @inline private def checkWithinBounds(lo: Int, hi: Int) = {
-    if (lo < 0) throw new IndexOutOfBoundsException(s"$lo is out of bounds (min 0, max ${size0-1})")
-    if (hi > size0) throw new IndexOutOfBoundsException(s"$hi is out of bounds (min 0, max ${size0 - 1})")
+    if (lo < 0)
+      throw new IndexOutOfBoundsException(
+        s"$lo is out of bounds (min 0, max ${size0 - 1})")
+    if (hi > size0)
+      throw new IndexOutOfBoundsException(
+        s"$hi is out of bounds (min 0, max ${size0 - 1})")
   }
 
   def apply(n: Int) = {
@@ -120,7 +124,8 @@ class ArrayBuffer[A] private (initialElements: Array[AnyRef], initialSize: Int)
     this
   }
 
-  def insertAll(@deprecatedName("n", "2.13.0") index: Int, elems: IterableOnce[A]): Unit = {
+  def insertAll(@deprecatedName("n", "2.13.0") index: Int,
+                elems: IterableOnce[A]): Unit = {
     checkWithinBounds(index, index)
     elems match {
       case elems: collection.Iterable[A] =>
@@ -158,25 +163,33 @@ class ArrayBuffer[A] private (initialElements: Array[AnyRef], initialSize: Int)
       Array.copy(array, index + count, array, index, size0 - (index + count))
       reduceToSize(size0 - count)
     } else if (count < 0) {
-      throw new IllegalArgumentException("removing negative number of elements: " + count)
+      throw new IllegalArgumentException(
+        "removing negative number of elements: " + count)
     }
 
   @deprecated("Use 'this' instance instead", "2.13.0")
-  @deprecatedOverriding("ArrayBuffer[A] no longer extends Builder[A, ArrayBuffer[A]]", "2.13.0")
+  @deprecatedOverriding(
+    "ArrayBuffer[A] no longer extends Builder[A, ArrayBuffer[A]]",
+    "2.13.0")
   @inline def result(): this.type = this
 
   @deprecated("Use 'new GrowableBuilder(this).mapResult(f)' instead", "2.13.0")
-  @deprecatedOverriding("ArrayBuffer[A] no longer extends Builder[A, ArrayBuffer[A]]", "2.13.0")
-  @inline def mapResult[NewTo](f: (ArrayBuffer[A]) => NewTo): Builder[A, NewTo] = new GrowableBuilder[A, ArrayBuffer[A]](this).mapResult(f)
+  @deprecatedOverriding(
+    "ArrayBuffer[A] no longer extends Builder[A, ArrayBuffer[A]]",
+    "2.13.0")
+  @inline def mapResult[NewTo](
+      f: (ArrayBuffer[A]) => NewTo): Builder[A, NewTo] =
+    new GrowableBuilder[A, ArrayBuffer[A]](this).mapResult(f)
 
-  @deprecatedOverriding("Compatibility override", since="2.13.0")
+  @deprecatedOverriding("Compatibility override", since = "2.13.0")
   override protected[this] def stringPrefix = "ArrayBuffer"
 
-  override def copyToArray[B >: A](xs: Array[B], start: Int): Int = copyToArray[B](xs, start, length)
+  override def copyToArray[B >: A](xs: Array[B], start: Int): Int =
+    copyToArray[B](xs, start, length)
 
   override def copyToArray[B >: A](xs: Array[B], start: Int, len: Int): Int = {
     val copied = IterableOnce.elemsToCopyToArray(length, xs.length, start, len)
-    if(copied > 0) {
+    if (copied > 0) {
       Array.copy(array, 0, xs, start, copied)
     }
     copied
@@ -212,8 +225,7 @@ object ArrayBuffer extends StrictOptimizedSeqFactory[ArrayBuffer] {
       val it = coll.iterator
       for (i <- 0 until array.length) array(i) = it.next().asInstanceOf[AnyRef]
       new ArrayBuffer[B](array, array.length)
-    }
-    else new ArrayBuffer[B] ++= coll
+    } else new ArrayBuffer[B] ++= coll
 
   def newBuilder[A]: Builder[A, ArrayBuffer[A]] =
     new GrowableBuilder[A, ArrayBuffer[A]](empty) {
@@ -223,9 +235,14 @@ object ArrayBuffer extends StrictOptimizedSeqFactory[ArrayBuffer] {
   def empty[A]: ArrayBuffer[A] = new ArrayBuffer[A]()
 }
 
-final class ArrayBufferView[A](val array: Array[AnyRef], val length: Int) extends AbstractIndexedSeqView[A] {
+final class ArrayBufferView[A](val array: Array[AnyRef], val length: Int)
+    extends AbstractIndexedSeqView[A] {
   @throws[ArrayIndexOutOfBoundsException]
-  def apply(n: Int) = if (n < length) array(n).asInstanceOf[A] else throw new IndexOutOfBoundsException(s"$n is out of bounds (min 0, max ${length - 1})")
+  def apply(n: Int) =
+    if (n < length) array(n).asInstanceOf[A]
+    else
+      throw new IndexOutOfBoundsException(
+        s"$n is out of bounds (min 0, max ${length - 1})")
   override protected[this] def className = "ArrayBufferView"
 }
 
@@ -237,11 +254,12 @@ object RefArrayUtils {
     val arrayLength: Long = array.length
     def growArray = {
       var newSize: Long = math.max(arrayLength * 2, 8)
-      while (n > newSize)
-        newSize = newSize * 2
+      while (n > newSize) newSize = newSize * 2
       // Clamp newSize to Int.MaxValue
       if (newSize > Int.MaxValue) {
-        if (end == Int.MaxValue) throw new Exception(s"Collections can not have more than ${Int.MaxValue} elements")
+        if (end == Int.MaxValue)
+          throw new Exception(
+            s"Collections can not have more than ${Int.MaxValue} elements")
         newSize = Int.MaxValue
       }
 
@@ -253,7 +271,7 @@ object RefArrayUtils {
   }
 
   /** Remove elements of this array at indices after `sz`.
-   */
+    */
   def nullElems(array: Array[AnyRef], start: Int, end: Int): Unit = {
     // Maybe use `fill` instead?
     var i = start

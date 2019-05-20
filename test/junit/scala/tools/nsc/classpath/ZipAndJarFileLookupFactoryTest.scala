@@ -15,7 +15,10 @@ class ZipAndJarFileLookupFactoryTest {
     val g = new scala.tools.nsc.Global(new scala.tools.nsc.Settings())
     assert(!g.settings.YdisableFlatCpCaching.value) // we're testing with our JAR metadata caching enabled.
     val closeableRegistry = new CloseableRegistry
-    def createCp = ZipAndJarClassPathFactory.create(AbstractFile.getFile(f.toFile), g.settings, closeableRegistry)
+    def createCp =
+      ZipAndJarClassPathFactory.create(AbstractFile.getFile(f.toFile),
+                                       g.settings,
+                                       closeableRegistry)
     try {
       createZip(f, Array(), "p1/C.class")
       createZip(f, Array(), "p2/X.class")
@@ -34,11 +37,13 @@ class ZipAndJarFileLookupFactoryTest {
       // Create a new zip at the same path with different contents and last modified
       Files.delete(f)
       createZip(f, Array(), "p1/D.class")
-      Files.setLastModifiedTime(f, FileTime.fromMillis(lastMod1.toMillis + 2000))
+      Files.setLastModifiedTime(f,
+                                FileTime.fromMillis(lastMod1.toMillis + 2000))
 
       // Our classpath cache should create a new instance
       val cp3 = createCp
-      assert(cp1 ne cp3, (System.identityHashCode(cp1), System.identityHashCode(cp3)))
+      assert(cp1 ne cp3,
+             (System.identityHashCode(cp1), System.identityHashCode(cp3)))
       // And that instance should see D, not C, in package p1.
       assert(cp3.findClass("p1.C").isEmpty)
       assert(cp3.findClass("p1.D").isDefined)
@@ -48,11 +53,14 @@ class ZipAndJarFileLookupFactoryTest {
     }
   }
 
-  def createZip(zipLocation: Path, content: Array[Byte], internalPath: String): Unit = {
+  def createZip(zipLocation: Path,
+                content: Array[Byte],
+                internalPath: String): Unit = {
     val env = new java.util.HashMap[String, String]()
     env.put("create", String.valueOf(Files.notExists(zipLocation)))
     val fileUri = zipLocation.toUri
-    val zipUri = new java.net.URI("jar:" + fileUri.getScheme, fileUri.getPath, null)
+    val zipUri =
+      new java.net.URI("jar:" + fileUri.getScheme, fileUri.getPath, null)
     val zipfs = FileSystems.newFileSystem(zipUri, env)
     try {
       try {
@@ -67,4 +75,3 @@ class ZipAndJarFileLookupFactoryTest {
     }
   }
 }
-

@@ -13,9 +13,10 @@
 package scala
 package util.hashing
 
-import java.lang.Integer.{ rotateLeft => rotl }
+import java.lang.Integer.{rotateLeft => rotl}
 
 private[hashing] class MurmurHash3 {
+
   /** Mix in a block of data into an intermediate hash value. */
   final def mix(hash: Int, data: Int): Int = {
     var h = mixLast(hash, data)
@@ -24,8 +25,8 @@ private[hashing] class MurmurHash3 {
   }
 
   /** May optionally be used as the last mixing step. Is a little bit faster than mix,
-   *  as it does no further mixing of the resulting hash. For the last element this is not
-   *  necessary as the hash is thoroughly mixed during finalization anyway. */
+    *  as it does no further mixing of the resulting hash. For the last element this is not
+    *  necessary as the hash is thoroughly mixed during finalization anyway. */
   final def mixLast(hash: Int, data: Int): Int = {
     var k = data
 
@@ -53,7 +54,9 @@ private[hashing] class MurmurHash3 {
   }
 
   /** Compute the hash of a product */
-  final def productHash(x: Product, seed: Int, ignorePrefix: Boolean = false): Int = {
+  final def productHash(x: Product,
+                        seed: Int,
+                        ignorePrefix: Boolean = false): Int = {
     val arr = x.productArity
     // Case objects have the hashCode inlined directly into the
     // synthetic hashCode method, but this method should still give
@@ -86,9 +89,9 @@ private[hashing] class MurmurHash3 {
   }
 
   /** Compute a hash that is symmetric in its arguments - that is a hash
-   *  where the order of appearance of elements does not matter.
-   *  This is useful for hashing sets, for example.
-   */
+    *  where the order of appearance of elements does not matter.
+    *  This is useful for hashing sets, for example.
+    */
   final def unorderedHash(xs: IterableOnce[Any], seed: Int): Int = {
     var a, b, n = 0
     var c = 1
@@ -112,9 +115,9 @@ private[hashing] class MurmurHash3 {
   final def orderedHash(xs: IterableOnce[Any], seed: Int): Int = {
     val it = xs.iterator
     var h = seed
-    if(!it.hasNext) return finalizeHash(h, 0)
+    if (!it.hasNext) return finalizeHash(h, 0)
     val x0 = it.next()
-    if(!it.hasNext) return finalizeHash(mix(h, x0.##), 1)
+    if (!it.hasNext) return finalizeHash(mix(h, x0.##), 1)
     val x1 = it.next()
 
     val initial = x0.##
@@ -126,7 +129,7 @@ private[hashing] class MurmurHash3 {
     while (it.hasNext) {
       h = mix(h, prev)
       val hash = it.next().##
-      if(rangeDiff != hash - prev) {
+      if (rangeDiff != hash - prev) {
         h = mix(h, hash)
         i += 1
         while (it.hasNext) {
@@ -163,7 +166,7 @@ private[hashing] class MurmurHash3 {
         while (i < l) {
           h = mix(h, prev)
           val hash = a(i).##
-          if(rangeDiff != hash - prev) {
+          if (rangeDiff != hash - prev) {
             h = mix(h, hash)
             i += 1
             while (i < l) {
@@ -187,16 +190,16 @@ private[hashing] class MurmurHash3 {
     avalanche(mix(mix(mix(seed, start), step), last))
 
   /** Compute the hash of a byte array. Faster than arrayHash, because
-   *  it hashes 4 bytes at once. Note that the result is not compatible with
-   *  arrayHash!
-   */
+    *  it hashes 4 bytes at once. Note that the result is not compatible with
+    *  arrayHash!
+    */
   final def bytesHash(data: Array[Byte], seed: Int): Int = {
     var len = data.length
     var h = seed
 
     // Body
     var i = 0
-    while(len >= 4) {
+    while (len >= 4) {
       var k = data(i + 0) & 0xFF
       k |= (data(i + 1) & 0xFF) << 8
       k |= (data(i + 2) & 0xFF) << 16
@@ -210,9 +213,9 @@ private[hashing] class MurmurHash3 {
 
     // Tail
     var k = 0
-    if(len == 3) k ^= (data(i + 2) & 0xFF) << 16
-    if(len >= 2) k ^= (data(i + 1) & 0xFF) << 8
-    if(len >= 1) {
+    if (len == 3) k ^= (data(i + 2) & 0xFF) << 16
+    if (len >= 2) k ^= (data(i + 1) & 0xFF) << 8
+    if (len >= 1) {
       k ^= (data(i + 0) & 0xFF)
       h = mixLast(h, k)
     }
@@ -224,7 +227,8 @@ private[hashing] class MurmurHash3 {
   /** Compute the hash of an IndexedSeq. Potential range hashes are recognized to produce a
     * hash that is compatible with rangeHash.
     */
-  final def indexedSeqHash(a: scala.collection.IndexedSeq[Any], seed: Int): Int = {
+  final def indexedSeqHash(a: scala.collection.IndexedSeq[Any],
+                           seed: Int): Int = {
     var h = seed
     val l = a.length
     l match {
@@ -242,7 +246,7 @@ private[hashing] class MurmurHash3 {
         while (i < l) {
           h = mix(h, prev)
           val hash = a(i).##
-          if(rangeDiff != hash - prev) {
+          if (rangeDiff != hash - prev) {
             h = mix(h, hash)
             i += 1
             while (i < l) {
@@ -282,69 +286,72 @@ private[hashing] class MurmurHash3 {
           rangeDiff = hash - prev
           rangeState = 2
         case 2 =>
-          if(rangeDiff != hash - prev) rangeState = 3
+          if (rangeDiff != hash - prev) rangeState = 3
         case _ =>
       }
       prev = hash
       n += 1
       elems = tail
     }
-    if(rangeState == 2) rangeHash(initial, rangeDiff, prev, seed)
+    if (rangeState == 2) rangeHash(initial, rangeDiff, prev, seed)
     else finalizeHash(h, n)
   }
 }
 
 /**
- * An implementation of Austin Appleby's MurmurHash 3 algorithm
- * (MurmurHash3_x86_32). This object contains methods that hash
- * values of various types as well as means to construct `Hashing`
- * objects.
- *
- * This algorithm is designed to generate well-distributed non-cryptographic
- * hashes. It is designed to hash data in 32 bit chunks (ints).
- *
- * The mix method needs to be called at each step to update the intermediate
- * hash value. For the last chunk to incorporate into the hash mixLast may
- * be used instead, which is slightly faster. Finally finalizeHash needs to
- * be called to compute the final hash value.
- *
- * This is based on the earlier MurmurHash3 code by Rex Kerr, but the
- * MurmurHash3 algorithm was since changed by its creator Austin Appleby
- * to remedy some weaknesses and improve performance. This represents the
- * latest and supposedly final version of the algorithm (revision 136).
- *
- * @see [[https://github.com/aappleby/smhasher]]
- */
+  * An implementation of Austin Appleby's MurmurHash 3 algorithm
+  * (MurmurHash3_x86_32). This object contains methods that hash
+  * values of various types as well as means to construct `Hashing`
+  * objects.
+  *
+  * This algorithm is designed to generate well-distributed non-cryptographic
+  * hashes. It is designed to hash data in 32 bit chunks (ints).
+  *
+  * The mix method needs to be called at each step to update the intermediate
+  * hash value. For the last chunk to incorporate into the hash mixLast may
+  * be used instead, which is slightly faster. Finally finalizeHash needs to
+  * be called to compute the final hash value.
+  *
+  * This is based on the earlier MurmurHash3 code by Rex Kerr, but the
+  * MurmurHash3 algorithm was since changed by its creator Austin Appleby
+  * to remedy some weaknesses and improve performance. This represents the
+  * latest and supposedly final version of the algorithm (revision 136).
+  *
+  * @see [[https://github.com/aappleby/smhasher]]
+  */
 object MurmurHash3 extends MurmurHash3 {
-  final val arraySeed       = 0x3c074a61
-  final val stringSeed      = 0xf7ca7fd2
-  final val productSeed     = 0xcafebabe
-  final val symmetricSeed   = 0xb592f7ae
+  final val arraySeed = 0x3c074a61
+  final val stringSeed = 0xf7ca7fd2
+  final val productSeed = 0xcafebabe
+  final val symmetricSeed = 0xb592f7ae
   final val traversableSeed = 0xe73a8b15
-  final val seqSeed         = "Seq".hashCode
-  final val mapSeed         = "Map".hashCode
-  final val setSeed         = "Set".hashCode
+  final val seqSeed = "Seq".hashCode
+  final val mapSeed = "Map".hashCode
+  final val setSeed = "Set".hashCode
 
   def arrayHash[@specialized T](a: Array[T]): Int = arrayHash(a, arraySeed)
-  def bytesHash(data: Array[Byte]): Int           = bytesHash(data, arraySeed)
-  def orderedHash(xs: IterableOnce[Any]): Int     = orderedHash(xs, symmetricSeed)
-  def productHash(x: Product): Int                = productHash(x, productSeed)
-  def stringHash(x: String): Int                  = stringHash(x, stringSeed)
-  def unorderedHash(xs: IterableOnce[Any]): Int   = unorderedHash(xs, traversableSeed)
-  def rangeHash(start: Int, step: Int, last: Int): Int = rangeHash(start, step, last, seqSeed)
+  def bytesHash(data: Array[Byte]): Int = bytesHash(data, arraySeed)
+  def orderedHash(xs: IterableOnce[Any]): Int = orderedHash(xs, symmetricSeed)
+  def productHash(x: Product): Int = productHash(x, productSeed)
+  def stringHash(x: String): Int = stringHash(x, stringSeed)
+  def unorderedHash(xs: IterableOnce[Any]): Int =
+    unorderedHash(xs, traversableSeed)
+  def rangeHash(start: Int, step: Int, last: Int): Int =
+    rangeHash(start, step, last, seqSeed)
 
-  private[scala] def arraySeqHash[@specialized T](a: Array[T]): Int = arrayHash(a, seqSeed)
+  private[scala] def arraySeqHash[@specialized T](a: Array[T]): Int =
+    arrayHash(a, seqSeed)
 
   /** To offer some potential for optimization.
-   */
-  def seqHash(xs: scala.collection.Seq[_]): Int    = xs match {
+    */
+  def seqHash(xs: scala.collection.Seq[_]): Int = xs match {
     case xs: scala.collection.IndexedSeq[_] => indexedSeqHash(xs, seqSeed)
-    case xs: List[_] => listHash(xs, seqSeed)
-    case xs => orderedHash(xs, seqSeed)
+    case xs: List[_]                        => listHash(xs, seqSeed)
+    case xs                                 => orderedHash(xs, seqSeed)
   }
 
   def mapHash(xs: scala.collection.Map[_, _]): Int = unorderedHash(xs, mapSeed)
-  def setHash(xs: scala.collection.Set[_]): Int    = unorderedHash(xs, setSeed)
+  def setHash(xs: scala.collection.Set[_]): Int = unorderedHash(xs, setSeed)
 
   class ArrayHashing[@specialized T] extends Hashing[Array[T]] {
     def hash(a: Array[T]) = arrayHash(a)
@@ -373,8 +380,8 @@ object MurmurHash3 extends MurmurHash3 {
   }
 
   /** All this trouble and foreach still appears faster.
-   *  Leaving in place in case someone would like to investigate further.
-   */
+    *  Leaving in place in case someone would like to investigate further.
+    */
   /**
   def linearSeqHash(xs: scala.collection.LinearSeq[_], seed: Int): Int = {
     var n = 0

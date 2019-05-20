@@ -21,20 +21,22 @@ trait MemberLookup extends base.MemberLookupBase {
   thisFactory: ModelFactory =>
 
   import global._
-  import definitions.{ NothingClass, AnyClass, AnyValClass, AnyRefClass }
+  import definitions.{NothingClass, AnyClass, AnyValClass, AnyRefClass}
 
   override def internalLink(sym: Symbol, site: Symbol): Option[LinkTo] =
     findTemplateMaybe(sym) match {
       case Some(tpl) => Some(LinkToTpl(tpl))
       case None =>
         findTemplateMaybe(site) flatMap { inTpl =>
-          inTpl.members find (_.asInstanceOf[EntityImpl].sym == sym) map (LinkToMember(_, inTpl))
+          inTpl.members find (_.asInstanceOf[EntityImpl].sym == sym) map (LinkToMember(
+            _,
+            inTpl))
         }
     }
 
   override def chooseLink(links: List[LinkTo]): LinkTo = {
     val mbrs = links.collect {
-      case lm@LinkToMember(mbr: MemberEntity, _) => (mbr, lm)
+      case lm @ LinkToMember(mbr: MemberEntity, _) => (mbr, lm)
     }
     if (mbrs.isEmpty)
       links.head
@@ -60,21 +62,22 @@ trait MemberLookup extends base.MemberLookupBase {
     def classpathEntryFor(s: Symbol): Option[String] = {
       Option(s.associatedFile).flatMap(_.underlyingSource).map { src =>
         val path = src.canonicalPath
-        if(path.endsWith(".class")) { // Individual class file -> Classpath entry is root dir
+        if (path.endsWith(".class")) { // Individual class file -> Classpath entry is root dir
           val nesting = s.ownerChain.count(_.hasPackageFlag)
-          if(nesting > 0) {
+          if (nesting > 0) {
             val p = 0.until(nesting).foldLeft(src) {
               case (null, _) => null
-              case (f, _) => f.container
+              case (f, _)    => f.container
             }
-            if(p eq null) path else p.canonicalPath
+            if (p eq null) path else p.canonicalPath
           } else path
         } else path // JAR file (and fallback option)
       }
     }
     classpathEntryFor(sym1) flatMap { path =>
-      settings.extUrlMapping get path map { url => {
-         LinkToExternalTpl(name, url, makeTemplate(sym))
+      settings.extUrlMapping get path map { url =>
+        {
+          LinkToExternalTpl(name, url, makeTemplate(sym))
         }
       }
     }

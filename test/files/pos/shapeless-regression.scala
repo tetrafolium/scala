@@ -13,4 +13,3 @@ object RightAssoc {
 object Boom {
   W("fooo").v ra_: RightAssoc
 }
-

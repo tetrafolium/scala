@@ -1,4 +1,3 @@
-
 // scalac: -Xfatal-warnings -Xlint:unused
 //
 import language.higherKinds
@@ -14,4 +13,3 @@ sealed trait Is[A, B] { ab =>
     subst[f](refl)
   }
 }
-

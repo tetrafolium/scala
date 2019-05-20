@@ -6,8 +6,8 @@
 package scala.man1
 
 /**
- *  @author Stephane Micheloud
- */
+  *  @author Stephane Micheloud
+  */
 trait Command {
   import _root_.scala.tools.docutil.ManPage._
 
@@ -38,21 +38,28 @@ trait Command {
   protected def Argument(arg: String): AbstractText =
     "<" & Italic(arg) & ">"
 
-  def authors = Section("AUTHOR",
+  def authors =
+    Section(
+      "AUTHOR",
+      "Written by Martin Odersky and other members of the " &
+        Link(
+          "Scala team",
+          "http://www.scala-lang.org/news/2014/01/22/10-years-of-scala.html") & "."
+    )
 
-    "Written by Martin Odersky and other members of the " &
-    Link("Scala team", "http://www.scala-lang.org/news/2014/01/22/10-years-of-scala.html") & ".")
+  def copyright =
+    Section(
+      "COPYRIGHT",
+      "This is open-source software, available to you under the Apache License 2.0. " &
+        "See accompanying \"copyright\" or \"LICENSE\" file for copying conditions. " &
+        "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A " &
+        "PARTICULAR PURPOSE."
+    )
 
-  def copyright = Section("COPYRIGHT",
-
-    "This is open-source software, available to you under the Apache License 2.0. " &
-    "See accompanying \"copyright\" or \"LICENSE\" file for copying conditions. " &
-    "There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A " &
-    "PARTICULAR PURPOSE.")
-
-  def bugs = Section("REPORTING BUGS",
-
-    "Report bugs to " & Mono("https://github.com/scala/bug/issues") & ".")
+  def bugs =
+    Section(
+      "REPORTING BUGS",
+      "Report bugs to " & Mono("https://github.com/scala/bug/issues") & ".")
 
   def manpage: Document
 }

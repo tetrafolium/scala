@@ -18,7 +18,8 @@ trait PresentationCompilerTestDef {
 
   private[tests] def runTest(): Unit
 
-  protected def withResponseDelimiter(block: => Unit)(implicit reporter: Reporter): Unit = {
+  protected def withResponseDelimiter(block: => Unit)(
+      implicit reporter: Reporter): Unit = {
     def printDelimiter() = reporter.println("=" * 80)
     printDelimiter()
     block
@@ -26,5 +27,6 @@ trait PresentationCompilerTestDef {
   }
 
   protected def format(pos: Position): String =
-    (if(pos.isDefined) "(%d,%d)".format(pos.line, pos.column) else "<no position>")
+    (if (pos.isDefined) "(%d,%d)".format(pos.line, pos.column)
+     else "<no position>")
 }

@@ -16,9 +16,9 @@ case class B(a: Int, index: Int) {
 object Test extends App {
   implicit def ev: Int = 8000
   val a = A(5, 1)
-  a(1) = 10         // OK
-  a(1) += 20        // OK
-  a(1)(9000) += 20  // Not OK
+  a(1) = 10 // OK
+  a(1) += 20 // OK
+  a(1)(9000) += 20 // Not OK
   val b = B(5, 1)
-  b(1)(5) += 20     // Not OK
+  b(1)(5) += 20 // Not OK
 }

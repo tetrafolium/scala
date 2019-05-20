@@ -12,10 +12,8 @@ trait ArgumentExprs1 {
 
   // test arg exprs in the presence of varargs
   def g(x: Int, y: Int*) = 1
-  g(1,2,
-  )
-  g(1,List(2, 3): _*,
-  )
+  g(1, 2, )
+  g(1, List(2, 3): _*, )
 }
 
 trait ArgumentExprs2 {
@@ -31,8 +29,8 @@ trait ArgumentExprs2 {
 
 trait Params {
   def f(
-    foo: Int,
-    bar: String,
+      foo: Int,
+      bar: String,
   )(implicit
     ev0: Ev0,
     ev1: Ev1,
@@ -41,16 +39,15 @@ trait Params {
 
 trait ClassParams {
   class C(
-    foo: Int,
-    bar: String,
+      foo: Int,
+      bar: String,
   )(implicit
     ev0: Ev0,
     ev1: Ev1,
   )
 
   // test class params in the precense of varargs
-  case class D(i: Int*,
-  )
+  case class D(i: Int*, )
 }
 
 trait SimpleExpr1 {
@@ -75,22 +72,22 @@ trait TypeArgs {
 
 trait TypeParamClause {
   class C[
-    A,
-    B,
+      A,
+      B,
   ]
 }
 
 trait FunTypeParamClause {
   def f[
-    A,
-    B,
+      A,
+      B,
   ]: Unit
 }
 
 trait SimpleType {
   def f: (
-    Int,
-    String,
+      Int,
+      String,
   )
 
   // the Tuple1 type case, the trailing comma is ignored so the type is Int and the value 23
@@ -101,8 +98,8 @@ trait SimpleType {
 
 trait FunctionArgTypes {
   def f: (
-    Int,
-    String,
+      Int,
+      String,
   ) => Boolean
 }
 
@@ -114,35 +111,30 @@ trait SimplePattern {
 
   // test '@' syntax in patterns
   Some(1) match {
-    case Some(x @ 1,
-    ) => x
+    case Some(x @ 1, ) => x
   }
 
   // test ': _*' syntax in patterns
   List(1, 2, 3) match {
-    case List(1, 2, _ @ _*,
-    ) => 1
+    case List(1, 2, _ @_*, ) => 1
   }
 
   // test varargs in patterns
-  val List(x, y, _*,
-  ) = 42 :: 17 :: Nil
+  val List(x, y, _*, ) = 42 :: 17 :: Nil
 }
 
 trait ImportSelectors {
-  import foo.{
-    Ev0,
-    Ev1,
-  }
+  import foo.{Ev0, Ev1,}
 }
 
 trait Bindings {
   def g(f: (Int, String) => Boolean): Unit
 
-  g((
-    foo,
-    bar,
-  ) => true)
+  g(
+    (
+        foo,
+        bar,
+    ) => true)
 }
 
 // Import, ids, ValDcl, VarDcl, VarDef, PatDef use commas, but not inside paren, bracket or brace,

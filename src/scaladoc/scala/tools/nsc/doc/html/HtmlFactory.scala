@@ -15,8 +15,8 @@ package doc
 package html
 
 import model._
-import java.io.{ File => JFile }
-import io.{ Streamable, Directory }
+import java.io.{File => JFile}
+import io.{Streamable, Directory}
 import scala.collection._
 import page.diagram._
 import scala.reflect.internal.Reporter
@@ -73,23 +73,19 @@ class HtmlFactory(val universe: doc.Universe, val reporter: Reporter) {
     "MaterialIcons-Regular.eot",
     "MaterialIcons-Regular.ttf",
     "MaterialIcons-Regular.woff",
-
     "index.js",
     "jquery.js",
     "scheduler.js",
     "template.js",
     "tools.tooltip.js",
-
     "index.css",
     "ref-index.css",
     "template.css",
     "diagrams.css",
-
     "class_diagram.png",
     "object_diagram.png",
     "trait_diagram.png",
     "type_diagram.png",
-
     "ownderbg2.gif",
     "ownerbg.gif",
     "ownerbg2.gif"
@@ -130,7 +126,8 @@ class HtmlFactory(val universe: doc.Universe, val reporter: Reporter) {
 
     def writeTemplate(tpl: DocTemplateEntity): Unit = {
       if (!(written contains tpl)) {
-        val diagramGenerator: DiagramGenerator = new DotDiagramGenerator(universe.settings)
+        val diagramGenerator: DiagramGenerator = new DotDiagramGenerator(
+          universe.settings)
         writeForThis(page.EntityPage(universe, diagramGenerator, tpl, reporter))
         written += tpl
         tpl.templates collect { case d: DocTemplateEntity => d } map writeTemplate

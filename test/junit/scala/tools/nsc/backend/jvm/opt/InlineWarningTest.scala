@@ -16,7 +16,9 @@ class InlineWarningTest extends BytecodeTesting {
 
   import compiler._
 
-  val compilerWarnAll = cached("compilerWarnAll", () => newCompiler(extraArgs = s"$optInline -opt-warnings:_"))
+  val compilerWarnAll = cached(
+    "compilerWarnAll",
+    () => newCompiler(extraArgs = s"$optInline -opt-warnings:_"))
 
   @Test
   def nonFinal(): Unit = {
@@ -37,8 +39,11 @@ class InlineWarningTest extends BytecodeTesting {
     val warns = Set(
       "C::m1()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden.",
       "T::m2()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden.",
-      "D::m2()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden.")
-    compileToBytes(code, allowMessage = i => {count += 1; warns.exists(i.msg contains _)})
+      "D::m2()I is annotated @inline but could not be inlined:\nThe method is not final and may be overridden."
+    )
+    compileToBytes(code, allowMessage = i => {
+      count += 1; warns.exists(i.msg contains _)
+    })
     assert(count == 4, count)
   }
 
@@ -53,7 +58,10 @@ class InlineWarningTest extends BytecodeTesting {
       """.stripMargin
 
     var c = 0
-    compileToBytes(code, allowMessage = i => {c += 1; i.msg contains "operand stack at the callsite in C::t1()V contains more values"})
+    compileToBytes(code, allowMessage = i => {
+      c += 1;
+      i.msg contains "operand stack at the callsite in C::t1()V contains more values"
+    })
     assert(c == 1, c)
   }
 
@@ -76,21 +84,31 @@ class InlineWarningTest extends BytecodeTesting {
       """failed to determine if bar should be inlined:
         |The method bar()I could not be found in the class A or any of its parents.
         |Note that class A is defined in a Java source (mixed compilation), no bytecode is available.""".stripMargin,
-
       """B::flop()I is annotated @inline but could not be inlined:
         |Failed to check if B::flop()I can be safely inlined to B without causing an IllegalAccessError. Checking instruction INVOKESTATIC A.bar ()I failed:
         |The method bar()I could not be found in the class A or any of its parents.
-        |Note that class A is defined in a Java source (mixed compilation), no bytecode is available.""".stripMargin)
+        |Note that class A is defined in a Java source (mixed compilation), no bytecode is available.""".stripMargin
+    )
 
     var c = 0
-    val List(b) = compileToBytes(scalaCode, List((javaCode, "A.java")), allowMessage = i => {c += 1; warns.tail.exists(i.msg contains _)})
+    val List(b) = compileToBytes(scalaCode,
+                                 List((javaCode, "A.java")),
+                                 allowMessage = i => {
+                                   c += 1; warns.tail.exists(i.msg contains _)
+                                 })
     assert(c == 1, c)
 
     // no warnings here
-    newCompiler(extraArgs = s"$optInline -opt-warnings:none").compileToBytes(scalaCode, List((javaCode, "A.java")))
+    newCompiler(extraArgs = s"$optInline -opt-warnings:none")
+      .compileToBytes(scalaCode, List((javaCode, "A.java")))
 
     c = 0
-    newCompiler(extraArgs = s"$optInline -opt-warnings:no-inline-mixed").compileToBytes(scalaCode, List((javaCode, "A.java")), allowMessage = i => {c += 1; warns.exists(i.msg contains _)})
+    newCompiler(extraArgs = s"$optInline -opt-warnings:no-inline-mixed")
+      .compileToBytes(scalaCode,
+                      List((javaCode, "A.java")),
+                      allowMessage = i => {
+                        c += 1; warns.exists(i.msg contains _)
+                      })
     assert(c == 2, c)
   }
 
@@ -144,7 +162,9 @@ class InlineWarningTest extends BytecodeTesting {
         |that would cause an IllegalAccessError when inlined into class B""".stripMargin
 
     var c = 0
-    compilerWarnAll.compileToBytes(code, allowMessage = i => { c += 1; i.msg contains warn })
+    compilerWarnAll.compileToBytes(code, allowMessage = i => {
+      c += 1; i.msg contains warn
+    })
     assert(c == 1, c)
   }
 
@@ -191,16 +211,18 @@ class InlineWarningTest extends BytecodeTesting {
         |Failed to check if C::foo()I can be safely inlined to C without causing an IllegalAccessError. Checking instruction INVOKESTATIC A.bar ()I failed:
         |The method bar()I could not be found in the class A or any of its parents.
         |Note that class A is defined in a Java source (mixed compilation), no bytecode is available.""".stripMargin,
-
       """C::fii(LA;)I is annotated @inline but could not be inlined:
         |Failed to check if C::fii(LA;)I can be safely inlined to C without causing an IllegalAccessError. Checking instruction INVOKEVIRTUAL A.baz ()I failed:
         |The method baz()I could not be found in the class A or any of its parents.
         |Note that class A is defined in a Java source (mixed compilation), no bytecode is available.""".stripMargin
     )
     var c = 0
-    compileClasses(sCode, javaCode = List((jCode, "A.java")), allowMessage = i => { c += 1;
-      warns.exists(i.msg.contains)
-    })
+    compileClasses(sCode,
+                   javaCode = List((jCode, "A.java")),
+                   allowMessage = i => {
+                     c += 1;
+                     warns.exists(i.msg.contains)
+                   })
     assert(c == 2)
   }
 }

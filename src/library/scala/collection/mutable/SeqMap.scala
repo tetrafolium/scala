@@ -30,8 +30,8 @@ package mutable
   * @define coll mutable Seq map
   * @define Coll `mutable.SeqMap`
   */
-
-trait SeqMap[K, V] extends AbstractMap[K, V]
-  with MapOps[K, V, SeqMap, SeqMap[K, V]]
+trait SeqMap[K, V]
+    extends AbstractMap[K, V]
+    with MapOps[K, V, SeqMap, SeqMap[K, V]]
 
 object SeqMap extends MapFactory.Delegate[SeqMap](LinkedHashMap)

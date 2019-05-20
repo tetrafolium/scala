@@ -1,4 +1,3 @@
-
 // scalac: -opt:l:inline -opt-inline-from:**
 //
 class Crashy {
@@ -13,4 +12,3 @@ class Crashy {
     }
   }
 }
-

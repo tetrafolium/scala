@@ -91,11 +91,13 @@ class ViewTest {
 
   @Test
   def updated: Unit = {
-    def checkThrows[U](f: => U) = try { f; assertTrue(false) } catch { case _: IndexOutOfBoundsException => }
+    def checkThrows[U](f: => U) = try { f; assertTrue(false) } catch {
+      case _: IndexOutOfBoundsException =>
+    }
     // View.Updated can update the last element but not the one after:
     val v1 = new View.Updated(0 until 5, 4, 0)
     val v2 = new View.Updated(0 until 5, 5, 0)
-    assertEquals(List(0,1,2,3,0), v1.toList)
+    assertEquals(List(0, 1, 2, 3, 0), v1.toList)
     checkThrows(v2.toList)
     // Seq.updated throws immediately for strict collections:
     checkThrows(ArrayBuffer.from(0 until 5).updated(5, 0))

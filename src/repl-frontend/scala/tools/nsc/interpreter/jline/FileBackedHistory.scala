@@ -23,7 +23,6 @@ import scala.io.Codec
 import scala.reflect.internal.util.OwnerOnlyChmod
 import scala.util.control.NonFatal
 
-
 /** TODO: file locking.
   */
 trait FileBackedHistory extends JLineHistory with PersistentHistory {
@@ -42,21 +41,28 @@ trait FileBackedHistory extends JLineHistory with PersistentHistory {
     // This would really have been sufficient for our property getting infrastructure
     def prop(p: String) = Option(System.getProperty(p))
 
-    (prop("scala.shell.histfile").map(fs.getPath(_)).map{ p => if (!Files.exists(p)) secure(p); p } orElse
-      prop("user.home").map(n => fs.getPath(n + s"${fs.getSeparator}${FileBackedHistory.defaultFileName}")).map(secure)
-      ).getOrElse(throw new IllegalStateException("Cannot determine path for history file."))
+    (prop("scala.shell.histfile").map(fs.getPath(_)).map { p =>
+      if (!Files.exists(p)) secure(p); p
+    } orElse
+      prop("user.home")
+        .map(n =>
+          fs.getPath(
+            n + s"${fs.getSeparator}${FileBackedHistory.defaultFileName}"))
+        .map(secure)).getOrElse(throw new IllegalStateException(
+      "Cannot determine path for history file."))
   }
 
   private def secure(p: Path): Path = {
     try OwnerOnlyChmod.chmodFileOrCreateEmpty(p)
-    catch { case NonFatal(e) =>
-      e.printStackTrace(Console.err)
-      Console.err.println(s"Warning: history file ${p}'s permissions could not be restricted to owner-only.")
+    catch {
+      case NonFatal(e) =>
+        e.printStackTrace(Console.err)
+        Console.err.println(
+          s"Warning: history file ${p}'s permissions could not be restricted to owner-only.")
     }
 
     p
   }
-
 
   protected lazy val lines: List[String] = {
     try Files.readAllLines(historyPath, charSet).asScala.toList
@@ -65,7 +71,10 @@ trait FileBackedHistory extends JLineHistory with PersistentHistory {
       // with the default codec can lead to nio spewing exceptions.  Rather
       // than abandon hope we'll try to read it as ISO-8859-1
       case _: IOException =>
-        try Files.readAllLines(historyPath, Codec.ISO8859.charSet).asScala.toList
+        try Files
+          .readAllLines(historyPath, Codec.ISO8859.charSet)
+          .asScala
+          .toList
         catch {
           case _: IOException => Nil
         }
@@ -98,21 +107,22 @@ trait FileBackedHistory extends JLineHistory with PersistentHistory {
   protected def append(newLines: String*): Unit =
     Files.write(historyPath, newLines.asJava, charSet, APPEND)
 
-  def load(): Unit = try {
-    // avoid writing to the history file
-    withoutSaving(lines takeRight maxSize foreach add)
+  def load(): Unit =
+    try {
+      // avoid writing to the history file
+      withoutSaving(lines takeRight maxSize foreach add)
 
-    // truncate the history file if it's too big.
-    if (lines.size > maxSize) {
-      sync()
+      // truncate the history file if it's too big.
+      if (lines.size > maxSize) {
+        sync()
+      }
+
+      moveToEnd()
+    } catch {
+      case _: IOException | _: IllegalStateException =>
+        Console.err.println("Could not load history.")
+        isPersistent = false
     }
-
-    moveToEnd()
-  } catch {
-    case _: IOException | _: IllegalStateException =>
-      Console.err.println("Could not load history.")
-      isPersistent = false
-  }
 
   def flush(): Unit = ()
 

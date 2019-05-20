@@ -39,7 +39,7 @@ class RegexUnapplyBenchmark {
   @Benchmark def t8787nullMatch(bh: Blackhole) = {
     val r = t8022MatchRegex
     val s: String = null
-    val x = s match { case r() => 1 ; case _ => 2 }
+    val x = s match { case r() => 1; case _ => 2 }
     bh.consume(x)
   }
 

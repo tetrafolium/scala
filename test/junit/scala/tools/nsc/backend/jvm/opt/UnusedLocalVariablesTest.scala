@@ -19,7 +19,8 @@ class UnusedLocalVariablesTest extends BytecodeTesting {
 
   @Test
   def removeUnusedVar(): Unit = {
-    val code = """def f(a: Long, b: String, c: Double): Unit = { return; var x = a; var y = x + 10 }"""
+    val code =
+      """def f(a: Long, b: String, c: Double): Unit = { return; var x = a; var y = x + 10 }"""
     assertLocalVarCount(code, 4) // `this, a, b, c`
 
     val code2 = """def f(): Unit = { var x = if (true) return else () }"""
@@ -31,10 +32,12 @@ class UnusedLocalVariablesTest extends BytecodeTesting {
 
   @Test
   def keepUsedVar(): Unit = {
-    val code = """def f(a: Long, b: String, c: Double): Unit = { val x = 10 + a; val y = x + 10 }"""
+    val code =
+      """def f(a: Long, b: String, c: Double): Unit = { val x = 10 + a; val y = x + 10 }"""
     assertLocalVarCount(code, 6)
 
-    val code2 = """def f(a: Long): Unit = { var x = if (a == 0L) return else () }"""
+    val code2 =
+      """def f(a: Long): Unit = { var x = if (a == 0L) return else () }"""
     assertLocalVarCount(code2, 3) // remains
   }
 
@@ -51,7 +54,6 @@ class UnusedLocalVariablesTest extends BytecodeTesting {
     val cls = compileClass(code)
     val m = convertMethod(cls.methods.asScala.toList.find(_.desc == "(I)V").get)
     assertTrue(m.localVars.length == 2) // this, a, but not y
-
 
     val code2 =
       """class C {

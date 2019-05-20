@@ -5,7 +5,8 @@ trait T[A] {
 }
 
 class C[@specialized(Int) A](val a: A) extends T[A] {
-  override def sum[@specialized(Int) B >: A](zero: B): B = foldLeft(zero, (x: B, y: B) => x)
+  override def sum[@specialized(Int) B >: A](zero: B): B =
+    foldLeft(zero, (x: B, y: B) => x)
 }
 
 object Test extends App {

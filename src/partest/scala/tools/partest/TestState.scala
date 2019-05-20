@@ -18,17 +18,17 @@ sealed abstract class TestState {
   def reason: String
   def transcript: Array[String]
 
-  def isOk             = false
-  def isSkipped        = false
-  def testIdent        = testFile.testIdent
+  def isOk = false
+  def isSkipped = false
+  def testIdent = testFile.testIdent
   def transcriptString = transcript mkString EOL
 
   def identAndReason = testIdent + reasonString
-  def status         = s"$what - $identAndReason"
-  def longStatus     = status + transcriptString
-  def reasonString   = if (reason == "") "" else s"  [$reason]"
+  def status = s"$what - $identAndReason"
+  def longStatus = status + transcriptString
+  def reasonString = if (reason == "") "" else s"  [$reason]"
 
-  def shortStatus    = if (isOk) "ok" else "!!"
+  def shortStatus = if (isOk) "ok" else "!!"
 
   final def andAlso(next: => TestState): TestState = if (isOk) next else this
 
@@ -62,10 +62,16 @@ object TestState {
     def transcript: Array[String] = Array.empty[String]
     override def shortStatus = "--"
   }
-  case class Fail(testFile: java.io.File, reason: String, transcript: Array[String]) extends TestState {
+  case class Fail(testFile: java.io.File,
+                  reason: String,
+                  transcript: Array[String])
+      extends TestState {
     def what = "fail"
   }
-  case class Crash(testFile: java.io.File, caught: Throwable, transcript: Array[String]) extends TestState {
+  case class Crash(testFile: java.io.File,
+                   caught: Throwable,
+                   transcript: Array[String])
+      extends TestState {
     def what = "crash"
     def reason = s"caught $caught_s - ${caught.getMessage}"
     override def shortStatus = "?!"

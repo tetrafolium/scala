@@ -1,9 +1,8 @@
-
 import scala.tools.partest.SessionTest
 
 object Test extends SessionTest {
   override def session =
-s"""|
+    s"""|
     |scala> :paste $pastie
     |Pasting file $pastie...
     |defined class Foo
@@ -19,4 +18,3 @@ s"""|
 
   override def show() = checkSession()
 }
-

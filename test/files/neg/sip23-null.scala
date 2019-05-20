@@ -3,4 +3,3 @@ object Test {
   def foo(x: AnyVal): x.type = null
   def baz(x: AnyRef): x.type = null // ok
 }
-

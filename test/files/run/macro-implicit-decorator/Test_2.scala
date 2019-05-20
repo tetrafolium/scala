@@ -6,8 +6,10 @@ trait MyTC[A]
 
 object MyTC {
   implicit val forInt = new MyTC[Int] {}
-  implicit def forList[A](implicit a: Derivation[MyTC[A]]) = new MyTC[List[A]] {}
-  implicit def forCustomClass(implicit a: Derivation[MyTC[List[Boolean]]]) = new MyTC[CustomClass] {}
+  implicit def forList[A](implicit a: Derivation[MyTC[A]]) =
+    new MyTC[List[A]] {}
+  implicit def forCustomClass(implicit a: Derivation[MyTC[List[Boolean]]]) =
+    new MyTC[CustomClass] {}
 }
 
 object Test extends App {

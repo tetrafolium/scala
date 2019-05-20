@@ -3,7 +3,8 @@ import java.io.{Console => _, _}
 
 object Test extends DirectTest {
 
-  override def extraSettings: String = "-usejavacp -Xprint:patmat,posterasure -Ystop-after:posterasure"
+  override def extraSettings: String =
+    "-usejavacp -Xprint:patmat,posterasure -Ystop-after:posterasure"
 
   override def code =
     """object A {

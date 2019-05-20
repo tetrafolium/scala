@@ -13,7 +13,11 @@
 package scala
 package collection.mutable
 
-import collection.{SortedIterableFactory, StrictOptimizedIterableOps, StrictOptimizedSortedSetOps}
+import collection.{
+  SortedIterableFactory,
+  StrictOptimizedIterableOps,
+  StrictOptimizedSortedSetOps
+}
 import collection.mutable.{RedBlackTree => RB}
 
 import java.lang.String
@@ -33,8 +37,9 @@ import scala.collection.generic.DefaultSerializable
   * @define coll mutable tree set
   */
 // Original API designed in part by Lucien Pereira
-sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: Ordering[A])
-  extends AbstractSet[A]
+sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(
+    implicit val ordering: Ordering[A])
+    extends AbstractSet[A]
     with SortedSet[A]
     with SortedSetOps[A, TreeSet, TreeSet[A]]
     with StrictOptimizedIterableOps[A, Set, TreeSet[A]]
@@ -55,7 +60,8 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
 
   override def sortedIterableFactory: SortedIterableFactory[TreeSet] = TreeSet
 
-  def iteratorFrom(start: A): collection.Iterator[A] = RB.keysIterator(tree, Some(start))
+  def iteratorFrom(start: A): collection.Iterator[A] =
+    RB.keysIterator(tree, Some(start))
 
   def addOne(elem: A): this.type = {
     RB.insert(tree, elem, null)
@@ -73,7 +79,8 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
 
   def unconstrained: collection.Set[A] = this
 
-  def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] = new TreeSetProjection(from, until)
+  def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] =
+    new TreeSetProjection(from, until)
 
   override protected[this] def className: String = "TreeSet"
 
@@ -91,7 +98,6 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
 
   override def foreach[U](f: A => U): Unit = RB.foreachKey(tree, f)
 
-
   /**
     * A ranged projection of a [[TreeSet]]. Mutations on this set affect the original set and vice versa.
     *
@@ -105,25 +111,28 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
     * @param until the upper bound (exclusive) of this projection wrapped in a `Some`, or `None` if there is no upper
     *              bound.
     */
-  private[this] final class TreeSetProjection(from: Option[A], until: Option[A]) extends TreeSet[A](tree) {
+  private[this] final class TreeSetProjection(from: Option[A], until: Option[A])
+      extends TreeSet[A](tree) {
 
     /**
       * Given a possible new lower bound, chooses and returns the most constraining one (the maximum).
       */
-    private[this] def pickLowerBound(newFrom: Option[A]): Option[A] = (from, newFrom) match {
-      case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
-      case (None, _) => newFrom
-      case _ => from
-    }
+    private[this] def pickLowerBound(newFrom: Option[A]): Option[A] =
+      (from, newFrom) match {
+        case (Some(fr), Some(newFr)) => Some(ordering.max(fr, newFr))
+        case (None, _)               => newFrom
+        case _                       => from
+      }
 
     /**
       * Given a possible new upper bound, chooses and returns the most constraining one (the minimum).
       */
-    private[this] def pickUpperBound(newUntil: Option[A]): Option[A] = (until, newUntil) match {
-      case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
-      case (None, _) => newUntil
-      case _ => until
-    }
+    private[this] def pickUpperBound(newUntil: Option[A]): Option[A] =
+      (until, newUntil) match {
+        case (Some(unt), Some(newUnt)) => Some(ordering.min(unt, newUnt))
+        case (None, _)                 => newUntil
+        case _                         => until
+      }
 
     /**
       * Returns true if the argument is inside the view bounds (between `from` and `until`).
@@ -137,10 +146,12 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
     override def rangeImpl(from: Option[A], until: Option[A]): TreeSet[A] =
       new TreeSetProjection(pickLowerBound(from), pickUpperBound(until))
 
-    override def contains(key: A) = isInsideViewBounds(key) && RB.contains(tree, key)
+    override def contains(key: A) =
+      isInsideViewBounds(key) && RB.contains(tree, key)
 
     override def iterator = RB.keysIterator(tree, from, until)
-    override def iteratorFrom(start: A) = RB.keysIterator(tree, pickLowerBound(Some(start)), until)
+    override def iteratorFrom(start: A) =
+      RB.keysIterator(tree, pickLowerBound(Some(start)), until)
 
     override def size = if (RB.size(tree) == 0) 0 else iterator.length
     override def knownSize: Int = if (RB.size(tree) == 0) 0 else -1
@@ -148,19 +159,22 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
 
     override def head = headOption.get
     override def headOption = {
-      val elem = if (from.isDefined) RB.minKeyAfter(tree, from.get) else RB.minKey(tree)
+      val elem =
+        if (from.isDefined) RB.minKeyAfter(tree, from.get) else RB.minKey(tree)
       (elem, until) match {
         case (Some(e), Some(unt)) if ordering.compare(e, unt) >= 0 => None
-        case _ => elem
+        case _                                                     => elem
       }
     }
 
     override def last = lastOption.get
     override def lastOption = {
-      val elem = if (until.isDefined) RB.maxKeyBefore(tree, until.get) else RB.maxKey(tree)
+      val elem =
+        if (until.isDefined) RB.maxKeyBefore(tree, until.get)
+        else RB.maxKey(tree)
       (elem, from) match {
         case (Some(e), Some(fr)) if ordering.compare(e, fr) < 0 => None
-        case _ => elem
+        case _                                                  => elem
       }
     }
 
@@ -184,10 +198,12 @@ sealed class TreeSet[A] private (tree: RB.Tree[A, Null])(implicit val ordering: 
 @SerialVersionUID(3L)
 object TreeSet extends SortedIterableFactory[TreeSet] {
 
-  def empty[A : Ordering]: TreeSet[A] = new TreeSet[A]()
+  def empty[A: Ordering]: TreeSet[A] = new TreeSet[A]()
 
-  def from[E : Ordering](it: collection.IterableOnce[E]): TreeSet[E] = Growable.from(empty[E], it)
+  def from[E: Ordering](it: collection.IterableOnce[E]): TreeSet[E] =
+    Growable.from(empty[E], it)
 
-  def newBuilder[A: Ordering]: Builder[A, TreeSet[A]] = new GrowableBuilder(empty[A])
+  def newBuilder[A: Ordering]: Builder[A, TreeSet[A]] =
+    new GrowableBuilder(empty[A])
 
 }

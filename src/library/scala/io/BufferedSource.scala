@@ -12,18 +12,21 @@
 
 package scala.io
 
-import java.io.{ InputStream, BufferedReader, InputStreamReader, PushbackReader }
+import java.io.{InputStream, BufferedReader, InputStreamReader, PushbackReader}
 import Source.DefaultBufSize
-import scala.collection.{ Iterator, AbstractIterator }
+import scala.collection.{Iterator, AbstractIterator}
 import scala.collection.mutable.StringBuilder
 
 /** This object provides convenience methods to create an iterable
- *  representation of a source file.
- *
- *  @author  Burak Emir, Paul Phillips
- */
-class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val codec: Codec) extends Source {
-  def this(inputStream: InputStream)(implicit codec: Codec) = this(inputStream, DefaultBufSize)(codec)
+  *  representation of a source file.
+  *
+  *  @author  Burak Emir, Paul Phillips
+  */
+class BufferedSource(inputStream: InputStream, bufferSize: Int)(
+    implicit val codec: Codec)
+    extends Source {
+  def this(inputStream: InputStream)(implicit codec: Codec) =
+    this(inputStream, DefaultBufSize)(codec)
   def reader() = new InputStreamReader(inputStream, codec.decoder)
   def bufferedReader() = new BufferedReader(reader(), bufferSize)
 
@@ -40,9 +43,9 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val cod
 
   override val iter = (
     Iterator
-    continually (codec wrap charReader.read())
-    takeWhile (_ != -1)
-    map (_.toChar)
+      continually (codec wrap charReader.read())
+      takeWhile (_ != -1)
+      map (_.toChar)
   )
 
   private def decachedReader: BufferedReader = {
@@ -61,12 +64,12 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val cod
       val pb = new PushbackReader(charReader)
       pb unread iter.next().toInt
       new BufferedReader(pb, bufferSize)
-    }
-    else charReader
+    } else charReader
   }
 
-
-  class BufferedLineIterator extends AbstractIterator[String] with Iterator[String] {
+  class BufferedLineIterator
+      extends AbstractIterator[String]
+      with Iterator[String] {
     private[this] val lineReader = decachedReader
     var nextLine: String = null
 
@@ -79,7 +82,9 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val cod
     override def next(): String = {
       val result = {
         if (nextLine == null) lineReader.readLine
-        else try nextLine finally nextLine = null
+        else
+          try nextLine
+          finally nextLine = null
       }
       if (result == null) Iterator.empty.next()
       else result
@@ -89,11 +94,14 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val cod
   override def getLines(): Iterator[String] = new BufferedLineIterator
 
   /** Efficiently appends the entire remaining input.
-   *
-   *  Note: This function may temporarily load the entire buffer into
-   *  memory.
-   */
-  override def addString(sb: StringBuilder, start: String, sep: String, end: String): StringBuilder =
+    *
+    *  Note: This function may temporarily load the entire buffer into
+    *  memory.
+    */
+  override def addString(sb: StringBuilder,
+                         start: String,
+                         sep: String,
+                         end: String): StringBuilder =
     if (sep.isEmpty) {
       val allReader = decachedReader
       val buf = new Array[Char](bufferSize)
@@ -107,10 +115,10 @@ class BufferedSource(inputStream: InputStream, bufferSize: Int)(implicit val cod
       }
       if (end.length != 0) jsb.append(end)
       sb
-    // This case is expected to be uncommon, so we're reusing code at
-    // the cost of temporary memory allocations.
-    // mkString will callback into BufferedSource.addString to read
-    // the Buffer into a String, and then we use StringOps.addString
-    // for the interspersing of sep.
+      // This case is expected to be uncommon, so we're reusing code at
+      // the cost of temporary memory allocations.
+      // mkString will callback into BufferedSource.addString to read
+      // the Buffer into a String, and then we use StringOps.addString
+      // for the interspersing of sep.
     } else mkString.addString(sb, start, sep, end)
 }

@@ -34,7 +34,7 @@ import scala.annotation.implicitNotFound
   * @define willNotTerminateInf
   */
 class BitSet(protected[collection] final var elems: Array[Long])
-  extends AbstractSet[Int]
+    extends AbstractSet[Int]
     with SortedSet[Int]
     with SortedSetOps[Int, SortedSet, BitSet]
     with StrictOptimizedIterableOps[Int, Set, BitSet]
@@ -43,7 +43,8 @@ class BitSet(protected[collection] final var elems: Array[Long])
     with collection.BitSetOps[BitSet]
     with Serializable {
 
-  def this(initSize: Int) = this(new Array[Long](math.max((initSize + 63) >> 6, 1)))
+  def this(initSize: Int) =
+    this(new Array[Long](math.max((initSize + 63) >> 6, 1)))
 
   def this() = this(0)
 
@@ -105,7 +106,7 @@ class BitSet(protected[collection] final var elems: Array[Long])
     *  @param   other  the bitset to form the union with.
     *  @return  the bitset itself.
     */
-  def |= (other: collection.BitSet): this.type = {
+  def |=(other: collection.BitSet): this.type = {
     ensureCapacity(other.nwords - 1)
     var i = 0
     val othernwords = other.nwords
@@ -115,12 +116,13 @@ class BitSet(protected[collection] final var elems: Array[Long])
     }
     this
   }
+
   /** Updates this bitset to the intersection with another bitset by performing a bitwise "and".
     *
     *  @param   other  the bitset to form the intersection with.
     *  @return  the bitset itself.
     */
-  def &= (other: collection.BitSet): this.type = {
+  def &=(other: collection.BitSet): this.type = {
     // Different from other operations: no need to ensure capacity because
     // anything beyond the capacity is 0.  Since we use other.word which is 0
     // off the end, we also don't need to make sure we stay in bounds there.
@@ -132,12 +134,13 @@ class BitSet(protected[collection] final var elems: Array[Long])
     }
     this
   }
+
   /** Updates this bitset to the symmetric difference with another bitset by performing a bitwise "xor".
     *
     *  @param   other  the bitset to form the symmetric difference with.
     *  @return  the bitset itself.
     */
-  def ^= (other: collection.BitSet): this.type = {
+  def ^=(other: collection.BitSet): this.type = {
     ensureCapacity(other.nwords - 1)
     var i = 0
     val othernwords = other.nwords
@@ -148,12 +151,13 @@ class BitSet(protected[collection] final var elems: Array[Long])
     }
     this
   }
+
   /** Updates this bitset to the difference with another bitset by performing a bitwise "and-not".
     *
     *  @param   other  the bitset to form the difference with.
     *  @return  the bitset itself.
     */
-  def &~= (other: collection.BitSet): this.type = {
+  def &~=(other: collection.BitSet): this.type = {
     var i = 0
     val max = Math.min(nwords, other.nwords)
     while (i < max) {
@@ -163,24 +167,36 @@ class BitSet(protected[collection] final var elems: Array[Long])
     this
   }
 
-  override def clone(): BitSet = new BitSet(java.util.Arrays.copyOf(elems, elems.length))
+  override def clone(): BitSet =
+    new BitSet(java.util.Arrays.copyOf(elems, elems.length))
 
   def toImmutable: immutable.BitSet = immutable.BitSet.fromBitMask(elems)
 
-  override def map(f: Int => Int): BitSet = strictOptimizedMap(newSpecificBuilder, f)
-  override def map[B](f: Int => B)(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def map(f: Int => Int): BitSet =
+    strictOptimizedMap(newSpecificBuilder, f)
+  override def map[B](f: Int => B)(implicit @implicitNotFound(
+                                     collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].map(f)
 
-  override def flatMap(f: Int => IterableOnce[Int]): BitSet = strictOptimizedFlatMap(newSpecificBuilder, f)
-  override def flatMap[B](f: Int => IterableOnce[B])(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def flatMap(f: Int => IterableOnce[Int]): BitSet =
+    strictOptimizedFlatMap(newSpecificBuilder, f)
+  override def flatMap[B](f: Int => IterableOnce[B])(
+      implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].flatMap(f)
 
-  override def collect(pf: PartialFunction[Int, Int]): BitSet = strictOptimizedCollect(newSpecificBuilder, pf)
-  override def collect[B](pf: scala.PartialFunction[Int, B])(implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B]): SortedSet[B] =
+  override def collect(pf: PartialFunction[Int, Int]): BitSet =
+    strictOptimizedCollect(newSpecificBuilder, pf)
+  override def collect[B](pf: scala.PartialFunction[Int, B])(
+      implicit @implicitNotFound(collection.BitSet.ordMsg) ev: Ordering[B])
+    : SortedSet[B] =
     super[StrictOptimizedSortedSetOps].collect(pf)
 
   // necessary for disambiguation
-  override def zip[B](that: IterableOnce[B])(implicit @implicitNotFound(collection.BitSet.zipOrdMsg) ev: Ordering[(Int, B)]): SortedSet[(Int, B)] =
+  override def zip[B](that: IterableOnce[B])(
+      implicit @implicitNotFound(collection.BitSet.zipOrdMsg) ev: Ordering[
+        (Int, B)]): SortedSet[(Int, B)] =
     super.zip(that)
 
   override def addAll(xs: IterableOnce[Int]): this.type = xs match {
@@ -203,7 +219,8 @@ class BitSet(protected[collection] final var elems: Array[Long])
               elems(startIdx) |= wordMask
               java.util.Arrays.fill(elems, startIdx + 1, endIdx, -1L)
               elems(endIdx) |= -1L >>> (BitSetOps.WordLength - (end - endIdx * BitSetOps.WordLength) - 1)
-            } else elems(endIdx) |= (wordMask & (-1L >>> (BitSetOps.WordLength - (end - wordStart) - 1)))
+            } else
+              elems(endIdx) |= (wordMask & (-1L >>> (BitSetOps.WordLength - (end - wordStart) - 1)))
           } else super.addAll(range)
         } else super.addAll(range)
       }
@@ -258,24 +275,25 @@ class BitSet(protected[collection] final var elems: Array[Long])
 
   override def subtractAll(xs: IterableOnce[Int]): this.type = xs match {
     case bs: collection.BitSet => this &~= bs
-    case other => super.subtractAll(other)
+    case other                 => super.subtractAll(other)
   }
 
-  protected[this] def writeReplace(): AnyRef = new BitSet.SerializationProxy(this)
+  protected[this] def writeReplace(): AnyRef =
+    new BitSet.SerializationProxy(this)
 
   override def diff(that: collection.Set[Int]): BitSet = that match {
     case bs: collection.BitSet =>
       /*
-        * Algorithm:
-        *
-        * We iterate, word-by-word, backwards from the shortest of the two bitsets (this, or bs) i.e. the one with
-        * the fewer words.
-        *
-        * Array Shrinking:
-        * If `this` is not longer than `bs`, then since we must iterate through the full array of words,
-        * we can track the new highest index word which is non-zero, at little additional cost. At the end, the new
-        * Array[Long] allocated for the returned BitSet will only be of size `maxNonZeroIndex + 1`
-        */
+       * Algorithm:
+       *
+       * We iterate, word-by-word, backwards from the shortest of the two bitsets (this, or bs) i.e. the one with
+       * the fewer words.
+       *
+       * Array Shrinking:
+       * If `this` is not longer than `bs`, then since we must iterate through the full array of words,
+       * we can track the new highest index word which is non-zero, at little additional cost. At the end, the new
+       * Array[Long] allocated for the returned BitSet will only be of size `maxNonZeroIndex + 1`
+       */
 
       val bsnwords = bs.nwords
       val thisnwords = nwords
@@ -344,7 +362,8 @@ class BitSet(protected[collection] final var elems: Array[Long])
     val thisnwords = nwords
     var i = 0
     while (i < thisnwords) {
-      elems(i) = BitSetOps.computeWordForFilter(p, isFlipped = false, elems(i), i)
+      elems(i) =
+        BitSetOps.computeWordForFilter(p, isFlipped = false, elems(i), i)
       i += 1
     }
     this
@@ -354,7 +373,8 @@ class BitSet(protected[collection] final var elems: Array[Long])
 @SerialVersionUID(3L)
 object BitSet extends SpecificIterableFactory[Int, BitSet] {
 
-  def fromSpecific(it: scala.collection.IterableOnce[Int]): BitSet = Growable.from(empty, it)
+  def fromSpecific(it: scala.collection.IterableOnce[Int]): BitSet =
+    Growable.from(empty, it)
 
   def empty: BitSet = new BitSet()
 
@@ -380,7 +400,8 @@ object BitSet extends SpecificIterableFactory[Int, BitSet] {
   }
 
   @SerialVersionUID(3L)
-  private final class SerializationProxy(coll: BitSet) extends scala.collection.BitSet.SerializationProxy(coll) {
+  private final class SerializationProxy(coll: BitSet)
+      extends scala.collection.BitSet.SerializationProxy(coll) {
     protected[this] def readResolve(): Any = BitSet.fromBitMaskNoCopy(elems)
   }
 }

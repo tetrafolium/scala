@@ -8,9 +8,9 @@ class Gramps
 
 // sibling classes that extend a case class
 case class Thing(i: Int) extends Gramps
-class ThingOne(x:Int) extends Thing(x)
-class ThingTwo(y:Int) extends Thing(y) with Thingy
-final class ThingThree(z:Int) extends Thing(z)
+class ThingOne(x: Int) extends Thing(x)
+class ThingTwo(y: Int) extends Thing(y) with Thingy
+final class ThingThree(z: Int) extends Thing(z)
 
 // not case cousin
 class Cousin extends Gramps
@@ -40,7 +40,7 @@ class OtherThing extends AnyThing
 // how you inherit caseness doesn't matter
 trait InThing extends SomeThing
 class MyThing extends InThing
-*/
+ */
 
 object Test {
   def main(a: Array[String]): Unit = {
@@ -91,6 +91,6 @@ object Test {
     println(some == mine)
     println(mine == other) // OK, two Anything?
     println(mine == t1) // false
-    */
+   */
   }
 }

@@ -23,7 +23,10 @@ class StringLikeTest {
       // make sure we can match a literal character done by Java's split
       val jSplit = jString.split("\\Q" + c.toString + "\\E")
       val sSplit = s.split(c)
-      assertSameElements(jSplit, sSplit, s"Not same result as Java split for char $c in string $s")
+      assertSameElements(
+        jSplit,
+        sSplit,
+        s"Not same result as Java split for char $c in string $s")
     }
   }
 
@@ -33,7 +36,7 @@ class StringLikeTest {
     val low = 0xDF62.toChar
     val surrogatepair = List(high, low).mkString
     val twopairs = surrogatepair + "_" + surrogatepair
-    
+
     assertSameElements("abcd".split('d'), Array("abc")) // not Array("abc", "")
     assertSameElements("abccc".split('c'), Array("ab")) // not Array("ab", "", "", "")
     assertSameElements("xxx".split('x'), Array[String]()) // not Array("", "", "", "")
@@ -46,8 +49,8 @@ class StringLikeTest {
   @Test
   def testNumericConversion: Unit = {
     val sOne = " \t\n 1 \n\r\t "
-    val sOk  = "2"
-    val sNull:String = null
+    val sOk = "2"
+    val sNull: String = null
 
     assertThrows[java.lang.NumberFormatException](sOne.toInt)
     assertThrows[java.lang.NumberFormatException](sOne.toLong)
@@ -59,15 +62,23 @@ class StringLikeTest {
 
     assertEquals("no trim toInt", 2, sOk.toInt)
     assertEquals("no trim toLong", 2L, sOk.toLong)
-    assertEquals("no trim toShort",  2.toShort, sOk.toShort)
+    assertEquals("no trim toShort", 2.toShort, sOk.toShort)
     assertEquals("no trim toByte", 2.toByte, sOk.toByte)
     assertEquals("no trim toDouble", 2.0d, sOk.toDouble, 0.1d)
     assertEquals("no trim toFloat", 2.0f, sOk.toFloat, 0.1f)
 
-    assertThrows[java.lang.NumberFormatException](sNull.toInt, {s => s == "null"})
-    assertThrows[java.lang.NumberFormatException](sNull.toLong, {s => s == "null"})
-    assertThrows[java.lang.NumberFormatException](sNull.toShort, {s => s == "null"})
-    assertThrows[java.lang.NumberFormatException](sNull.toByte, {s => s == "null"})
+    assertThrows[java.lang.NumberFormatException](sNull.toInt, { s =>
+      s == "null"
+    })
+    assertThrows[java.lang.NumberFormatException](sNull.toLong, { s =>
+      s == "null"
+    })
+    assertThrows[java.lang.NumberFormatException](sNull.toShort, { s =>
+      s == "null"
+    })
+    assertThrows[java.lang.NumberFormatException](sNull.toByte, { s =>
+      s == "null"
+    })
 
     assertThrows[java.lang.NullPointerException](sNull.toDouble)
     assertThrows[java.lang.NullPointerException](sNull.toFloat)
@@ -82,7 +93,7 @@ class StringLikeTest {
   @Test
   def `line split on NL, FF`(): Unit = {
     assertEquals(2, "abc\ndef".linesIterator.size)
-    assertEquals(1, "abc\fdef".linesIterator.size)     // no more form feed splitting
+    assertEquals(1, "abc\fdef".linesIterator.size) // no more form feed splitting
     assertEquals(2, "abc\ndef\n".linesIterator.size)
 
     // previous status quo
@@ -98,7 +109,7 @@ class StringLikeTest {
     assertEquals("abc", "abc\n".stripLineEnd)
     assertEquals("abc\n", "abc\n\n".stripLineEnd)
     assertEquals("abc", "abc\r\n".stripLineEnd)
-    assertEquals("abc\r\n\f", "abc\r\n\f".stripLineEnd)  // no more form feed stripping
+    assertEquals("abc\r\n\f", "abc\r\n\f".stripLineEnd) // no more form feed stripping
     assertEquals("abc\f", "abc\f".stripLineEnd)
   }
 }

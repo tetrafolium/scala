@@ -3,4 +3,3 @@ class Outer {
     def foo: Unit = assert(Outer.this ne null)
   }
 }
-

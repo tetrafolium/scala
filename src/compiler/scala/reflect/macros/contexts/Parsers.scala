@@ -25,12 +25,15 @@ trait Parsers {
     val oldReporter = global.reporter
     try {
       global.reporter = sreporter
-      val parser = newUnitParser(new CompilationUnit(newSourceFile(code, "<macro>")) {
-        override implicit val fresh: FreshNameCreator = currentFreshNameCreator
-      })
+      val parser = newUnitParser(
+        new CompilationUnit(newSourceFile(code, "<macro>")) {
+          override implicit val fresh: FreshNameCreator =
+            currentFreshNameCreator
+        })
       val tree = gen.mkTreeOrBlock(parser.parseStatsOrPackages())
       sreporter.infos.foreach {
-        case sreporter.Info(pos, msg, sreporter.ERROR) => throw ParseException(pos, msg)
+        case sreporter.Info(pos, msg, sreporter.ERROR) =>
+          throw ParseException(pos, msg)
         case _ =>
       }
       tree

@@ -67,7 +67,7 @@ object Test {
   final val literalOne: 1 = 1
   final val alsoCompiles: 2 = literalOne + 1
 
-  final val recFive : 5 = recFive + 0
+  final val recFive: 5 = recFive + 0
 
   val annot0 = 1: @unchecked
   annot0: Int

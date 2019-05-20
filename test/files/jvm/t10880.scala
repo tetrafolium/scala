@@ -8,9 +8,7 @@ class Provides[T] {
 
 object Test extends App {
 
-  val ctor = Class.forName("Provides$$anon$1")
-    .getDeclaredConstructors
-    .head
+  val ctor = Class.forName("Provides$$anon$1").getDeclaredConstructors.head
 
   println(ctor.getParameters.map(_.getParameterizedType).toList)
   println(ctor.getGenericParameterTypes.toList)

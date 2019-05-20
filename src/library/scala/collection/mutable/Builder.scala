@@ -23,8 +23,8 @@ package scala.collection.mutable
 trait Builder[-A, +To] extends Growable[A] { self =>
 
   /** Clears the contents of this builder.
-   *  After execution of this method the builder will contain no elements.
-   */
+    *  After execution of this method the builder will contain no elements.
+    */
   def clear(): Unit
 
   /** Result collection consisting of all elements appended so far. */
@@ -51,7 +51,8 @@ trait Builder[-A, +To] extends Growable[A] { self =>
     *  @param coll  the collection which serves as a hint for the result's size.
     *  @param delta a correction to add to the `coll.size` to produce the size hint.
     */
-  final def sizeHint(coll: scala.collection.IterableOnce[_], delta: Int = 0): Unit = {
+  final def sizeHint(coll: scala.collection.IterableOnce[_],
+                     delta: Int = 0): Unit = {
     val s = coll.knownSize
     if (s != -1) sizeHint(s + delta)
   }
@@ -68,19 +69,24 @@ trait Builder[-A, +To] extends Growable[A] { self =>
     *                       an IndexedSeqLike, then sizes larger
     *                       than collection's size are reduced.
     */
-  final def sizeHintBounded(size: Int, boundingColl: scala.collection.Iterable[_]): Unit = {
+  final def sizeHintBounded(
+      size: Int,
+      boundingColl: scala.collection.Iterable[_]): Unit = {
     if (boundingColl.knownSize != -1) {
       sizeHint(scala.math.min(boundingColl.knownSize, size))
     }
   }
 
   /** A builder resulting from this builder my mapping the result using `f`. */
-  def mapResult[NewTo](f: To => NewTo): Builder[A, NewTo] = new Builder[A, NewTo] {
-    def addOne(x: A): this.type = { self += x; this }
-    def clear(): Unit = self.clear()
-    override def addAll(xs: IterableOnce[A]): this.type = { self ++= xs; this }
-    override def sizeHint(size: Int): Unit = self.sizeHint(size)
-    def result(): NewTo = f(self.result())
-    override def knownSize: Int = self.knownSize
-  }
+  def mapResult[NewTo](f: To => NewTo): Builder[A, NewTo] =
+    new Builder[A, NewTo] {
+      def addOne(x: A): this.type = { self += x; this }
+      def clear(): Unit = self.clear()
+      override def addAll(xs: IterableOnce[A]): this.type = {
+        self ++= xs; this
+      }
+      override def sizeHint(size: Int): Unit = self.sizeHint(size)
+      def result(): NewTo = f(self.result())
+      override def knownSize: Int = self.knownSize
+    }
 }

@@ -3,7 +3,7 @@ abstract class AbsCell {
   val init: T
   private var value: T = init
   def get: T = value
-  def set (x: T): Unit = { value = x }
+  def set(x: T): Unit = { value = x }
 
   class Node {
     val foo = 1

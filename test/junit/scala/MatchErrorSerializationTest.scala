@@ -17,7 +17,10 @@ class MatchErrorSerializationTest {
     val barrayOut = new ByteArrayOutputStream()
     new ObjectOutputStream(barrayOut).writeObject(matchError)
     val barrayIn = new ByteArrayInputStream(barrayOut.toByteArray)
-    val readMessage = new ObjectInputStream(barrayIn).readObject().asInstanceOf[MatchError].getMessage()
+    val readMessage = new ObjectInputStream(barrayIn)
+      .readObject()
+      .asInstanceOf[MatchError]
+      .getMessage()
     assert(readMessage.startsWith("java.lang.Object"))
   }
 }

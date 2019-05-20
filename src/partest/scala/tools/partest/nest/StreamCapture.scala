@@ -18,8 +18,8 @@ import java.nio.charset.Charset
 
 object StreamCapture {
   def savingSystem[T](body: => T): T = {
-    val savedOut  = System.out
-    val savedErr  = System.err
+    val savedOut = System.out
+    val savedErr = System.err
     try body
     finally {
       System setErr savedErr

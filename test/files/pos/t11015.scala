@@ -4,7 +4,9 @@ object ParserInput { implicit def apply(string: String): ParserInput = ??? }
 trait ParserInput
 
 // overloaded with default arg
-class JsonParser(input: ParserInput, settings: String = null) { def this(input: ParserInput) = this(input, null) }
+class JsonParser(input: ParserInput, settings: String = null) {
+  def this(input: ParserInput) = this(input, null)
+}
 
 class Test {
   def append(a: Foo[String]): Unit = ()

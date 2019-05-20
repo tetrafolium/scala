@@ -13,7 +13,7 @@ object MyApp {
 
   (new Quux[r.E, Int]): Int // ok
   (new Quux[r.E, s.E]): Int // fails due to pre-stripping implicits which
-                            // are reachable via different prefixes but not
-                            // dependent on the prefix. Ambiguity not
-                            // reported as such.
+  // are reachable via different prefixes but not
+  // dependent on the prefix. Ambiguity not
+  // reported as such.
 }

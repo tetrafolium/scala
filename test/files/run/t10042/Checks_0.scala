@@ -9,7 +9,7 @@ class Checks[U <: Universe with Singleton](universe: U) {
     val tpe = subj.info
 
     /* grab the fields */
-    val volatile  = tpe.decl(TermName("_volatile"))
+    val volatile = tpe.decl(TermName("_volatile"))
     val transient = tpe.decl(TermName("_transient"))
     val synchronized = tpe.decl(TermName("_synchronized"))
     val native = tpe.decl(TermName("_native"))

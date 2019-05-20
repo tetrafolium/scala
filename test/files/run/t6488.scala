@@ -18,7 +18,7 @@ object Test {
     catch { case _ => () }
     println("Success")
   }
-  */
+   */
 
   // Show that no uncaught exceptions are thrown on spawned I/O threads
   // when the process is destroyed.  The default handler will print
@@ -27,31 +27,34 @@ object Test {
     if (args.nonEmpty && args(0) == "data")
       data()
     else
-      test()          // args(0) == "jvm"
+      test() // args(0) == "jvm"
   }
 
   def java(): File =
-    new File(javaHome, "bin").listFiles.sorted.filter(f => Path(f).stripExtension == "java").find(_.canExecute).getOrElse {
-      // todo signal test runner that test is skipped
-      new File("/bin/ls")  // innocuous
-    }
+    new File(javaHome, "bin").listFiles.sorted
+      .filter(f => Path(f).stripExtension == "java")
+      .find(_.canExecute)
+      .getOrElse {
+        // todo signal test runner that test is skipped
+        new File("/bin/ls") // innocuous
+      }
 
   // fork the data spewer, wait for input, then destroy the process
   def test(): Unit = {
     //Process(f.getAbsolutePath).run(ProcessLogger { _ => () }).destroy
     val reading = new CountDownLatch(1)
-    val count   = new AtomicInteger
+    val count = new AtomicInteger
     def counted = count.get
     // when run in-process, outdir is not absolute path; also, outdir is not listable for some reason.
     //val outdir  = s"$userDir/test/files/run/${System.getProperty("partest.output")}"
-    val outdir  = System.getProperty("partest.output")
+    val outdir = System.getProperty("partest.output")
     val command = java().getAbsolutePath ::
-                  "Test" ::
-                  "data" ::
-                  Nil
-                  // re-adding outdir to classpath only required for in-process exec, which is broken
-                  //"-classpath" ::
-                  //s"${javaClassPath}${pathSeparator}${outdir}" ::
+      "Test" ::
+      "data" ::
+      Nil
+    // re-adding outdir to classpath only required for in-process exec, which is broken
+    //"-classpath" ::
+    //s"${javaClassPath}${pathSeparator}${outdir}" ::
     Try {
       Process(command).run(ProcessLogger { (s: String) =>
         //Console println s"[[$s]]"     // java help

@@ -2,7 +2,7 @@
 //
 
 object X {
-  @deprecated("just to annoy people", since="forever")
+  @deprecated("just to annoy people", since = "forever")
   def x = 42
 
   def f(i: String) = i
@@ -31,4 +31,3 @@ trait T {
 
   def j = f("")
 }
-

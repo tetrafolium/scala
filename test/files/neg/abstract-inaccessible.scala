@@ -1,7 +1,7 @@
 // scalac: -Xfatal-warnings -Xlint:inaccessible
 //
 package foo {
-  private[foo] trait Bippy { }
+  private[foo] trait Bippy {}
 
   trait YourTrait {
     def implementMe(f: Int => (String, Bippy)): Unit

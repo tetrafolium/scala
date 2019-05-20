@@ -25,13 +25,15 @@ class ControlThrowableTest {
   class MyCtl extends ControlThrowable
 
   @Test
-  def stackless(): Unit = assertThrown[MyCtl]((my: MyCtl) => my.getStackTrace.isEmpty)(throw new MyCtl)
+  def stackless(): Unit =
+    assertThrown[MyCtl]((my: MyCtl) => my.getStackTrace.isEmpty)(
+      throw new MyCtl)
 
   @Test
   def fatal(): Unit =
     new MyCtl match {
       case NonFatal(_) => fail("ControlThrowable was NonFatal")
-      case _ => ()
+      case _           => ()
     }
 
   @Test

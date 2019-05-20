@@ -16,4 +16,3 @@ object Test extends ReplTest {
 
   def code = ""
 }
-
