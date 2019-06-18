@@ -80,7 +80,7 @@ for syntactic definitions?",
 
 @Book{rossum:python,
   author	= {Guido van Rossum and Fred L. Drake},
-  title		= {The {P}ython {L}anguage {R}eference {M}anual},
+  title		= {The {P}ython {L}anguage {R}eference {M}annual},
   publisher	= {Network Theory Ltd},
   year		= "2003",
   month		= "sep",

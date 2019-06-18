@@ -312,7 +312,7 @@ trait MapOps[K, +V, +CC[_, _] <: IterableOps[_, AnyConstr, _], +C]
   }
 
   // The implicit dummy parameter is necessary to avoid erased signature clashes
-  // between this `++:` and the overload overriden below.
+  // between this `++:` and the overload overridden below.
   // Note that these clashes only happen in Dotty because it adds mixin
   // forwarders before erasure unlike Scala 2.
   @deprecated("Use ++ instead of ++: for collections of type Iterable", "2.13.0")
