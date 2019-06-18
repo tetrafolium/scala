@@ -7,7 +7,7 @@ inspecode:
   cpd:              ## supports: C C++ C# Go Java JavaScript Objective-C PHP Python Ruby Scala Swift
     options:
       --skip-lexical-errors:
-      --minimum-tokens: 150
+      --minimum-tokens: 250
     machine:
       cpu: 1.0
     thresholds:
@@ -23,7 +23,8 @@ inspecode:
 
   misspell:         ## supports: All Languages
     options:
-      -i: DOUBLELIT
+      -i:
+      - DOUBLELIT
     auto-fix: true
     thresholds:
       num-issues: 1000
