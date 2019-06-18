@@ -1,6 +1,11 @@
 inspecode:
 
   cpd:              ## supports: C C++ C# Go Java JavaScript Objective-C PHP Python Ruby Scala Swift
+    options:
+      --skip-lexical-errors: true
+      --minimum-tokens: 100
+    machine:
+      cpu: 1.0
     thresholds:
       num-issues: 1000
 
