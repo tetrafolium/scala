@@ -18,7 +18,6 @@ import mutable.{Builder, ReusableBuilder}
 import immutable.{RedBlackTree => RB}
 import scala.collection.generic.DefaultSerializable
 
-
 /** This class implements immutable sorted sets using a tree.
   *
   *  @tparam A         the type of the elements contained in this tree set
@@ -37,7 +36,7 @@ import scala.collection.generic.DefaultSerializable
   *  @define willNotTerminateInf
   */
 final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[A, Any])(implicit val ordering: Ordering[A])
-  extends AbstractSet[A]
+    extends AbstractSet[A]
     with SortedSet[A]
     with SortedSetOps[A, TreeSet, TreeSet[A]]
     with StrictOptimizedSortedSetOps[A, TreeSet, TreeSet[A]]
@@ -49,7 +48,7 @@ final class TreeSet[A] private[immutable] (private[immutable] val tree: RB.Tree[
 
   override def sortedIterableFactory = TreeSet
 
-  private[this] def newSetOrSelf(t: RB.Tree[A, Any]) = if(t eq tree) this else new TreeSet[A](t)
+  private[this] def newSetOrSelf(t: RB.Tree[A, Any]) = if (t eq tree) this else new TreeSet[A](t)
 
   override def size: Int = RB.count(tree)
 
@@ -201,10 +200,10 @@ object TreeSet extends SortedIterableFactory[TreeSet] {
       case ss: scala.collection.SortedSet[E] if ordering == ss.ordering =>
         new TreeSet[E](RB.fromOrderedKeys(ss.iterator, ss.size))
       case r: Range if (ordering eq Ordering.Int) || (Ordering.Int isReverseOf ordering) =>
-        val it = if((ordering eq Ordering.Int) == (r.step > 0)) r.iterator else r.reverseIterator
+        val it = if ((ordering eq Ordering.Int) == (r.step > 0)) r.iterator else r.reverseIterator
         val tree = RB.fromOrderedKeys(it.asInstanceOf[Iterator[E]], r.size)
-          // The cast is needed to compile with Dotty:
-          // Dotty doesn't infer that E =:= Int, since instantiation of covariant GADTs is unsound
+        // The cast is needed to compile with Dotty:
+        // Dotty doesn't infer that E =:= Int, since instantiation of covariant GADTs is unsound
         new TreeSet[E](tree)
       case _ =>
         var t: RB.Tree[E, Null] = null
@@ -226,7 +225,7 @@ object TreeSet extends SortedIterableFactory[TreeSet] {
       }
       this
     }
-    def result(): TreeSet[A] = if(tree eq null) TreeSet.empty else new TreeSet[A](tree)
+    def result(): TreeSet[A] = if (tree eq null) TreeSet.empty else new TreeSet[A](tree)
     def clear(): Unit = { tree = null }
   }
 }

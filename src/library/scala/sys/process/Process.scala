@@ -18,50 +18,53 @@ import processInternal._
 import ProcessBuilder._
 import scala.language.implicitConversions
 
-
 /** Represents a process that is running or has finished running.
- *  It may be a compound process with several underlying native processes (such as `a #&& b`).
- *
- *  This trait is often not used directly, though its companion object contains
- *  factories for [[scala.sys.process.ProcessBuilder]], the main component of this
- *  package.
- *
- *  It is used directly when calling the method `run` on a `ProcessBuilder`,
- *  which makes the process run in the background. The methods provided on `Process`
- *  make it possible for one to block until the process exits and get the exit value,
- *  or destroy the process altogether.
- *
- *  @see [[scala.sys.process.ProcessBuilder]]
- */
+  *  It may be a compound process with several underlying native processes (such as `a #&& b`).
+  *
+  *  This trait is often not used directly, though its companion object contains
+  *  factories for [[scala.sys.process.ProcessBuilder]], the main component of this
+  *  package.
+  *
+  *  It is used directly when calling the method `run` on a `ProcessBuilder`,
+  *  which makes the process run in the background. The methods provided on `Process`
+  *  make it possible for one to block until the process exits and get the exit value,
+  *  or destroy the process altogether.
+  *
+  *  @see [[scala.sys.process.ProcessBuilder]]
+  */
 trait Process {
+
   /** Returns this process alive status */
   def isAlive(): Boolean
+
   /** Blocks until this process exits and returns the exit code.*/
   def exitValue(): Int
+
   /** Destroys this process. */
   def destroy(): Unit
 }
 
 /** Methods for constructing simple commands that can then be combined. */
-object Process extends ProcessImpl with ProcessCreation { }
+object Process extends ProcessImpl with ProcessCreation {}
 
 /** Factories for creating [[scala.sys.process.ProcessBuilder]]. They can be
- *  found on and used through [[scala.sys.process.Process]]'s companion object.
- */
+  *  found on and used through [[scala.sys.process.Process]]'s companion object.
+  */
 trait ProcessCreation {
+
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a `String`, including the
     * parameters.
     *
     * @example {{{ apply("cat file.txt") }}}
     */
-  def apply(command: String): ProcessBuilder                         = apply(command, None)
+  def apply(command: String): ProcessBuilder = apply(command, None)
 
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a sequence of `String`,
     * where the head is the command and each element of the tail is a parameter.
     *
     * @example {{{ apply("cat" :: files) }}}
     */
-  def apply(command: scala.collection.Seq[String]): ProcessBuilder   = apply(command, None)
+  def apply(command: scala.collection.Seq[String]): ProcessBuilder = apply(command, None)
 
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a command represented by a `String`,
     * and a sequence of `String` representing the arguments.
@@ -118,18 +121,18 @@ trait ProcessCreation {
     * `ProcessBuilder` can then be used as a `Source` or a `Sink`, so one can
     * pipe things from and to it.
     */
-  def apply(file: File): FileBuilder                  = new FileImpl(file)
+  def apply(file: File): FileBuilder = new FileImpl(file)
 
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a `java.net.URL`. This
     * `ProcessBuilder` can then be used as a `Source`, so that one can pipe things
     * from it.
     */
-  def apply(url: URL): URLBuilder                     = new URLImpl(url)
+  def apply(url: URL): URLBuilder = new URLImpl(url)
 
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a `Boolean`. This can be
     * to force an exit value.
     */
-  def apply(value: Boolean): ProcessBuilder           = apply(value.toString, if (value) 0 else 1)
+  def apply(value: Boolean): ProcessBuilder = apply(value.toString, if (value) 0 else 1)
 
   /** Creates a [[scala.sys.process.ProcessBuilder]] from a `String` name and a
     * `Boolean`. This can be used to force an exit value, with the name being
@@ -198,7 +201,7 @@ trait ProcessImplicits {
     * "ls" #> new java.io.File("dirContents.txt") !
     * }}}
     */
-  implicit def fileToProcess(file: File): FileBuilder                     = apply(file)
+  implicit def fileToProcess(file: File): FileBuilder = apply(file)
 
   /** Implicitly convert a `java.net.URL` into a
     * [[scala.sys.process.ProcessBuilder.URLBuilder]] , which can be used as
@@ -208,10 +211,10 @@ trait ProcessImplicits {
     * Seq("xmllint", "--html", "-") #< new java.net.URL("http://www.scala-lang.org") #> new java.io.File("fixed.html") !
     * }}}
     */
-  implicit def urlToProcess(url: URL): URLBuilder                         = apply(url)
+  implicit def urlToProcess(url: URL): URLBuilder = apply(url)
 
   /** Implicitly convert a `String` into a [[scala.sys.process.ProcessBuilder]]. */
-  implicit def stringToProcess(command: String): ProcessBuilder           = apply(command)
+  implicit def stringToProcess(command: String): ProcessBuilder = apply(command)
 
   /** Implicitly convert a sequence of `String` into a
     * [[scala.sys.process.ProcessBuilder]]. The first argument will be taken to

@@ -17,50 +17,50 @@ package api
 import scala.collection.immutable.ListMap
 
 /**
- *  <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>
- *
- *  This trait provides annotation support for the reflection API.
- *
- *  In Scala, annotations belong to one of the two categories:
- *
- *  <ul>
- *  <li>''Java annotations'': annotations on definitions produced by the Java compiler, i.e., subtypes of [[java.lang.annotation.Annotation]]
- *  attached to program definitions.</li>
- *  <li>''Scala annotations'': annotations on definitions or types produced by the Scala compiler.</li>
- *  </ul>
- *
- *  When a Scala annotation that inherits from [[scala.annotation.StaticAnnotation]] is compiled,
- *  it is stored as special attributes in the corresponding classfile, and not as a Java annotation. Note that subclassing
- *  just [[scala.annotation.Annotation]] is not enough to have the corresponding metadata persisted for runtime reflection.
- *
- *  Both Java and Scala annotations are represented as typed trees carrying constructor invocations corresponding
- *  to the annotation. For instance, the annotation in `@ann(1, 2) class C` is represented as `q"@new ann(1, 2)"`.
- *
- *  Unlike Java reflection, Scala reflection does not support evaluation of constructor invocations stored in annotations
- *  into underlying objects. For instance it's impossible to go from `@ann(1, 2) class C` to `ann(1, 2)`, so one
- *  has to analyze trees representing annotation arguments to manually extract corresponding values. Towards that end,
- *  arguments of an annotation can be obtained via `annotation.tree.children.tail`.
- *
- *  For more information about `Annotation`s, see the [[http://docs.scala-lang.org/overviews/reflection/annotations-names-scopes.html Reflection Guide: Annotations, Names, Scopes, and More]]
- *
- *  @contentDiagram hideNodes "*Api"
- *  @group ReflectionAPI
- */
+  *  <span class="badge badge-red" style="float: right;">EXPERIMENTAL</span>
+  *
+  *  This trait provides annotation support for the reflection API.
+  *
+  *  In Scala, annotations belong to one of the two categories:
+  *
+  *  <ul>
+  *  <li>''Java annotations'': annotations on definitions produced by the Java compiler, i.e., subtypes of [[java.lang.annotation.Annotation]]
+  *  attached to program definitions.</li>
+  *  <li>''Scala annotations'': annotations on definitions or types produced by the Scala compiler.</li>
+  *  </ul>
+  *
+  *  When a Scala annotation that inherits from [[scala.annotation.StaticAnnotation]] is compiled,
+  *  it is stored as special attributes in the corresponding classfile, and not as a Java annotation. Note that subclassing
+  *  just [[scala.annotation.Annotation]] is not enough to have the corresponding metadata persisted for runtime reflection.
+  *
+  *  Both Java and Scala annotations are represented as typed trees carrying constructor invocations corresponding
+  *  to the annotation. For instance, the annotation in `@ann(1, 2) class C` is represented as `q"@new ann(1, 2)"`.
+  *
+  *  Unlike Java reflection, Scala reflection does not support evaluation of constructor invocations stored in annotations
+  *  into underlying objects. For instance it's impossible to go from `@ann(1, 2) class C` to `ann(1, 2)`, so one
+  *  has to analyze trees representing annotation arguments to manually extract corresponding values. Towards that end,
+  *  arguments of an annotation can be obtained via `annotation.tree.children.tail`.
+  *
+  *  For more information about `Annotation`s, see the [[http://docs.scala-lang.org/overviews/reflection/annotations-names-scopes.html Reflection Guide: Annotations, Names, Scopes, and More]]
+  *
+  *  @contentDiagram hideNodes "*Api"
+  *  @group ReflectionAPI
+  */
 trait Annotations { self: Universe =>
 
   /** Information about an annotation.
-   *  @template
-   *  @group Annotations
-   */
+    *  @template
+    *  @group Annotations
+    */
   type Annotation >: Null <: AnyRef with AnnotationApi
 
   /** The constructor/extractor for `Annotation` instances.
-   *  @group Extractors
-   */
+    *  @group Extractors
+    */
   val Annotation: AnnotationExtractor
 
   /** An extractor class to create and pattern match with syntax `Annotation(tpe, scalaArgs, javaArgs)`.
-   *  Here, `tpe` is the annotation type, `scalaArgs` the payload of Scala annotations, and `javaArgs` the payload of Java annotations.
+    *  Here, `tpe` is the annotation type, `scalaArgs` the payload of Scala annotations, and `javaArgs` the payload of Java annotations.
     *  @group Extractors
     */
   abstract class AnnotationExtractor {
@@ -74,10 +74,11 @@ trait Annotations { self: Universe =>
   }
 
   /** The API of `Annotation` instances.
-   *  The main source of information about annotations is the [[scala.reflect.api.Annotations]] page.
-   *  @group API
-   */
+    *  The main source of information about annotations is the [[scala.reflect.api.Annotations]] page.
+    *  @group API
+    */
   trait AnnotationApi {
+
     /** The tree underlying the annotation. */
     def tree: Tree = annotationToTree(this.asInstanceOf[Annotation])
 
@@ -86,14 +87,14 @@ trait Annotations { self: Universe =>
     def tpe: Type
 
     /** Payload of the Scala annotation: a list of abstract syntax trees that represent the argument.
-     *  Empty for Java annotations.
-     */
+      *  Empty for Java annotations.
+      */
     @deprecated("use `tree.children.tail` instead", "2.11.0")
     def scalaArgs: List[Tree]
 
     /** Payload of the Java annotation: a list of name-value pairs.
-     *  Empty for Scala annotations.
-     */
+      *  Empty for Scala annotations.
+      */
     @deprecated("use `tree.children.tail` instead", "2.11.0")
     def javaArgs: ListMap[Name, JavaArgument]
   }
@@ -102,15 +103,15 @@ trait Annotations { self: Universe =>
   protected[scala] def treeToAnnotation(tree: Tree): Annotation
 
   /** A Java annotation argument
-   *  @template
-   *  @group Annotations
-   */
+    *  @template
+    *  @group Annotations
+    */
   @deprecated("use `Annotation.tree` to inspect annotation arguments", "2.11.0")
   type JavaArgument >: Null <: AnyRef with JavaArgumentApi
 
   /** Has no special methods. Is here to provides erased identity for `CompoundType`.
-   *  @group API
-   */
+    *  @group API
+    */
   @deprecated("use `Annotation.tree` to inspect annotation arguments", "2.11.0")
   trait JavaArgumentApi
 }

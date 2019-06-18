@@ -23,9 +23,9 @@ import java.lang.reflect.{Method => JMethod}
 import scala.collection.generic.IsIterable
 
 /** The object ScalaRunTime provides support methods required by
- *  the scala runtime.  All these methods should be considered
- *  outside the API and subject to change or removal without notice.
- */
+  *  the scala runtime.  All these methods should be considered
+  *  outside the API and subject to change or removal without notice.
+  */
 object ScalaRunTime {
   def isArray(x: Any, atLevel: Int = 1): Boolean =
     x != null && isArrayClass(x.getClass, atLevel)
@@ -38,7 +38,7 @@ object ScalaRunTime {
     iterable(coll) drop num
 
   /** Return the class object representing an array with element class `clazz`.
-   */
+    */
   def arrayClass(clazz: jClass[_]): jClass[_] = {
     // newInstance throws an exception if the erasure is Void.TYPE. see scala/bug#5680
     if (clazz == java.lang.Void.TYPE) classOf[Array[Unit]]
@@ -46,10 +46,10 @@ object ScalaRunTime {
   }
 
   /** Return the class object representing an unboxed value type,
-   *  e.g., classOf[int], not classOf[java.lang.Integer].  The compiler
-   *  rewrites expressions like 5.getClass to come here.
-   */
-  def anyValClass[T <: AnyVal : ClassTag](value: T): jClass[T] =
+    *  e.g., classOf[int], not classOf[java.lang.Integer].  The compiler
+    *  rewrites expressions like 5.getClass to come here.
+    */
+  def anyValClass[T <: AnyVal: ClassTag](value: T): jClass[T] =
     classTag[T].runtimeClass.asInstanceOf[jClass[T]]
 
   /** Retrieve generic array element */
@@ -65,7 +65,7 @@ object ScalaRunTime {
       case x: Array[Short]   => x(idx).asInstanceOf[Any]
       case x: Array[Boolean] => x(idx).asInstanceOf[Any]
       case x: Array[Unit]    => x(idx).asInstanceOf[Any]
-      case null => throw new NullPointerException
+      case null              => throw new NullPointerException
     }
   }
 
@@ -82,7 +82,7 @@ object ScalaRunTime {
       case x: Array[Short]   => x(idx) = value.asInstanceOf[Short]
       case x: Array[Boolean] => x(idx) = value.asInstanceOf[Boolean]
       case x: Array[Unit]    => x(idx) = value.asInstanceOf[Unit]
-      case null => throw new NullPointerException
+      case null              => throw new NullPointerException
     }
   }
 
@@ -101,13 +101,13 @@ object ScalaRunTime {
     case x: Array[Byte]    => x.clone()
     case x: Array[Short]   => x.clone()
     case x: Array[Boolean] => x.clone()
-    case null => throw new NullPointerException
+    case null              => throw new NullPointerException
   }
 
   /** Convert an array to an object array.
-   *  Needed to deal with vararg arguments of primitive types that are passed
-   *  to a generic Java vararg parameter T ...
-   */
+    *  Needed to deal with vararg arguments of primitive types that are passed
+    *  to a generic Java vararg parameter T ...
+    */
   def toObjectArray(src: AnyRef): Array[Object] = src match {
     case x: Array[AnyRef] => x
     case _ =>
@@ -152,24 +152,24 @@ object ScalaRunTime {
   }
 
   /** Given any Scala value, convert it to a String.
-   *
-   * The primary motivation for this method is to provide a means for
-   * correctly obtaining a String representation of a value, while
-   * avoiding the pitfalls of naively calling toString on said value.
-   * In particular, it addresses the fact that (a) toString cannot be
-   * called on null and (b) depending on the apparent type of an
-   * array, toString may or may not print it in a human-readable form.
-   *
-   * @param   arg   the value to stringify
-   * @return        a string representation of arg.
-   */
+    *
+    * The primary motivation for this method is to provide a means for
+    * correctly obtaining a String representation of a value, while
+    * avoiding the pitfalls of naively calling toString on said value.
+    * In particular, it addresses the fact that (a) toString cannot be
+    * called on null and (b) depending on the apparent type of an
+    * array, toString may or may not print it in a human-readable form.
+    *
+    * @param   arg   the value to stringify
+    * @return        a string representation of arg.
+    */
   def stringOf(arg: Any): String = stringOf(arg, scala.Int.MaxValue)
   def stringOf(arg: Any, maxElements: Int): String = {
     def packageOf(x: AnyRef) = x.getClass.getPackage match {
-      case null   => ""
-      case p      => p.getName
+      case null => ""
+      case p    => p.getName
     }
-    def isScalaClass(x: AnyRef)         = packageOf(x) startsWith "scala."
+    def isScalaClass(x: AnyRef) = packageOf(x) startsWith "scala."
     def isScalaCompilerClass(x: AnyRef) = packageOf(x) startsWith "scala.tools.nsc."
 
     // includes specialized subclasses and future proofed against hypothetical TupleN (for N > 22)
@@ -184,7 +184,7 @@ object ScalaRunTime {
       } catch {
         case cnfe: ClassNotFoundException => false
       }
-    def isXmlNode(potentialSubClass: Class[_])     = isSubClassOf(potentialSubClass, "scala.xml.Node")
+    def isXmlNode(potentialSubClass: Class[_]) = isSubClassOf(potentialSubClass, "scala.xml.Node")
     def isXmlMetaData(potentialSubClass: Class[_]) = isSubClassOf(potentialSubClass, "scala.xml.MetaData")
 
     // When doing our own iteration is dangerous
@@ -192,7 +192,7 @@ object ScalaRunTime {
       // Range/NumericRange have a custom toString to avoid walking a gazillion elements
       case _: Range | _: NumericRange[_] => true
       // Sorted collections to the wrong thing (for us) on iteration - ticket #3493
-      case _: SortedOps[_, _]  => true
+      case _: SortedOps[_, _] => true
       // StringBuilder(a, b, c) and similar not so attractive
       case _: StringView | _: StringOps | _: StringBuilder => true
       // Don't want to evaluate any elements in a view
@@ -209,8 +209,8 @@ object ScalaRunTime {
 
     // A variation on inner for maps so they print -> instead of bare tuples
     def mapInner(arg: Any): String = arg match {
-      case (k, v)   => inner(k) + " -> " + inner(v)
-      case _        => inner(arg)
+      case (k, v) => inner(k) + " -> " + inner(v)
+      case _      => inner(arg)
     }
 
     // Special casing Unit arrays, the value class which uses a reference array type.
@@ -226,16 +226,16 @@ object ScalaRunTime {
     // last resort, because the parallel collections "foreach" in a
     // random order even on sequences.
     def inner(arg: Any): String = arg match {
-      case null                         => "null"
-      case ""                           => "\"\""
-      case x: String                    => if (x.head.isWhitespace || x.last.isWhitespace) "\"" + x + "\"" else x
-      case x if useOwnToString(x)       => x.toString
-      case x: AnyRef if isArray(x)      => arrayToString(x)
+      case null                          => "null"
+      case ""                            => "\"\""
+      case x: String                     => if (x.head.isWhitespace || x.last.isWhitespace) "\"" + x + "\"" else x
+      case x if useOwnToString(x)        => x.toString
+      case x: AnyRef if isArray(x)       => arrayToString(x)
       case x: scala.collection.Map[_, _] => x.iterator take maxElements map mapInner mkString (x.collectionClassName + "(", ", ", ")")
-      case x: Iterable[_]               => x.iterator take maxElements map inner mkString (x.collectionClassName + "(", ", ", ")")
-      case x: Product1[_] if isTuple(x) => "(" + inner(x._1) + ",)" // that special trailing comma
-      case x: Product if isTuple(x)     => x.productIterator map inner mkString ("(", ",", ")")
-      case x                            => x.toString
+      case x: Iterable[_]                => x.iterator take maxElements map inner mkString (x.collectionClassName + "(", ", ", ")")
+      case x: Product1[_] if isTuple(x)  => "(" + inner(x._1) + ",)" // that special trailing comma
+      case x: Product if isTuple(x)      => x.productIterator map inner mkString ("(", ",", ")")
+      case x                             => x.toString
     }
 
     // The try/catch is defense against iterables which aren't actually designed
@@ -249,9 +249,9 @@ object ScalaRunTime {
   /** stringOf formatted for use in a repl result. */
   def replStringOf(arg: Any, maxElements: Int): String =
     stringOf(arg, maxElements) match {
-      case null => "null toString"
+      case null                      => "null toString"
       case s if s.indexOf('\n') >= 0 => "\n" + s + "\n"
-      case s => s + "\n"
+      case s                         => s + "\n"
     }
 
   // Convert arrays to immutable.ArraySeq for use with Java varargs:

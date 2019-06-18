@@ -16,10 +16,10 @@ package sys
 import scala.collection.mutable
 
 /** The internal implementation of scala.sys.Prop.
- */
+  */
 private[sys] class PropImpl[+T](val key: String, valueFn: String => T) extends Prop[T] {
   def value: T = if (isSet) valueFn(get) else zero
-  def isSet    = underlying contains key
+  def isSet = underlying contains key
   def set(newValue: String): String = {
     val old = if (isSet) get else null
     underlying(key) = newValue
@@ -49,4 +49,3 @@ private[sys] class PropImpl[+T](val key: String, valueFn: String => T) extends P
 private[sys] abstract class CreatorImpl[+T](f: String => T) extends Prop.Creator[T] {
   def apply(key: String): Prop[T] = new PropImpl[T](key, f)
 }
-

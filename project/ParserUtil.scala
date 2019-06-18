@@ -27,8 +27,7 @@ object ParserUtil {
         } else {
           List(preFile).filter(fileFilter.accept).map(_.getPath)
         }
-      }
-      else if (parent != null) {
+      } else if (parent != null) {
         def ensureSuffix(s: String, suffix: String) = if (s.endsWith(suffix)) s else s + suffix
         def pathOf(f: File): String = {
           val f1 = if (preFile.getParentFile == null) f.relativeTo(cwd).getOrElse(f) else f
@@ -40,15 +39,22 @@ object ParserUtil {
       } else Nil
     }
     def displayPath = Completions.single(Completion.displayOnly("<path>"))
-    token(StringBasic, TokenCompletions.fixed((seen, level) => if (seen.isEmpty) displayPath else matching(seen) match {
-      case Nil => displayPath
-      case x :: Nil =>
-        if (fileFilter.accept(file(x)))
-          Completions.strict(Set(Completion.tokenDisplay(x.stripPrefix(seen), x)))
-        else
-          Completions.strict(Set(Completion.suggestion(x.stripPrefix(seen))))
-      case xs =>
-        Completions.strict(xs.map(x => Completion.tokenDisplay(x.stripPrefix(seen), x)).toSet)
-    })).filter(!_.startsWith("-"), x => x)
+    token(
+      StringBasic,
+      TokenCompletions.fixed(
+        (seen, level) =>
+          if (seen.isEmpty) displayPath
+          else
+            matching(seen) match {
+              case Nil => displayPath
+              case x :: Nil =>
+                if (fileFilter.accept(file(x)))
+                  Completions.strict(Set(Completion.tokenDisplay(x.stripPrefix(seen), x)))
+                else
+                  Completions.strict(Set(Completion.suggestion(x.stripPrefix(seen))))
+              case xs =>
+                Completions.strict(xs.map(x => Completion.tokenDisplay(x.stripPrefix(seen), x)).toSet)
+          })
+    ).filter(!_.startsWith("-"), x => x)
   }
 }

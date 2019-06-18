@@ -15,7 +15,7 @@ package sys
 package process
 
 import processInternal._
-import java.io.{ BufferedReader, InputStreamReader, FilterInputStream, FilterOutputStream }
+import java.io.{BufferedReader, InputStreamReader, FilterInputStream, FilterOutputStream}
 import java.util.concurrent.LinkedBlockingQueue
 import scala.annotation.tailrec
 
@@ -32,16 +32,17 @@ import scala.annotation.tailrec
   * features, but can also be used by client code.
   */
 object BasicIO {
+
   /** Size of the buffer used in all the functions that copy data */
   final val BufferSize = 8192
 
   /** Used to separate lines in the `processFully` function that takes `Appendable`. */
-  final val Newline    = System.lineSeparator
+  final val Newline = System.lineSeparator
 
   private[process] final class LazilyListed[T](
-    val  process:   T => Unit,
-    val     done: Int => Unit,
-    val lazyList: LazyList[T]
+      val process: T => Unit,
+      val done: Int => Unit,
+      val lazyList: LazyList[T]
   )
 
   private[process] object LazilyListed {
@@ -59,9 +60,9 @@ object BasicIO {
   }
 
   private[process] final class Streamed[T](
-    val process:   T => Unit,
-    val    done: Int => Unit,
-    val  stream:  () => Stream[T]
+      val process: T => Unit,
+      val done: Int => Unit,
+      val stream: () => Stream[T]
   )
 
   private[process] object Streamed {
@@ -80,9 +81,9 @@ object BasicIO {
     final override def close(): Unit = ()
   }
   private[process] object Uncloseable {
-    def apply(in: InputStream): InputStream      = new FilterInputStream(in) with Uncloseable { }
-    def apply(out: OutputStream): OutputStream   = new FilterOutputStream(out) with Uncloseable { }
-    def protect(in: InputStream): InputStream    = if (in eq stdin) Uncloseable(in) else in
+    def apply(in: InputStream): InputStream = new FilterInputStream(in) with Uncloseable {}
+    def apply(out: OutputStream): OutputStream = new FilterOutputStream(out) with Uncloseable {}
+    def protect(in: InputStream): InputStream = if (in eq stdin) Uncloseable(in) else in
     def protect(out: OutputStream): OutputStream = if ((out eq stdout) || (out eq stderr)) Uncloseable(out) else out
   }
 
@@ -159,7 +160,9 @@ object BasicIO {
   private def processOutFully(log: ProcessLogger) = processFully(log out _)
 
   /** Closes a `Closeable` without throwing an exception */
-  def close(c: Closeable) = try c.close() catch { case _: IOException => () }
+  def close(c: Closeable) =
+    try c.close()
+    catch { case _: IOException => () }
 
   /** Returns a function `InputStream => Unit` that appends all data read to the
     * provided `Appendable`. This function can be used to create a
@@ -190,8 +193,8 @@ object BasicIO {
   }
 
   /** Calls `processLine` with the result of `readLine` until the latter returns
-   *  `null` or the current thread is interrupted.
-   */
+    *  `null` or the current thread is interrupted.
+    */
   def processLinesFully(processLine: String => Unit)(readLine: () => String): Unit = {
     def working = (Thread.currentThread.isInterrupted == false)
     def halting = { Thread.currentThread.interrupt(); null }
@@ -230,13 +233,13 @@ object BasicIO {
   def standard(in: OutputStream => Unit): ProcessIO = new ProcessIO(in, toStdOut, toStdErr)
 
   /** Send all the input from the stream to stderr, and closes the input stream
-   * afterwards.
-   */
+    * afterwards.
+    */
   def toStdErr = (in: InputStream) => transferFully(in, stderr)
 
   /** Send all the input from the stream to stdout, and closes the input stream
-   * afterwards.
-   */
+    * afterwards.
+    */
   def toStdOut = (in: InputStream) => transferFully(in, stdout)
 
   /** Copy all input from the input stream to the output stream. Closes the
