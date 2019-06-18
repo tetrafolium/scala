@@ -1,9 +1,13 @@
 inspecode:
 
+  experimental:
+    ignore:
+    - test/files/
+
   cpd:              ## supports: C C++ C# Go Java JavaScript Objective-C PHP Python Ruby Scala Swift
     options:
       --skip-lexical-errors:
-      --minimum-tokens: 100
+      --minimum-tokens: 150
     machine:
       cpu: 1.0
     thresholds:
@@ -25,10 +29,12 @@ inspecode:
       num-issues: 1000
 
   scalafmt:         ## supports: Scala
+    # use default config-file: ./.scalafmt.conf
     auto-fix: true
     thresholds:
       num-issues: 1000
 
   scalastyle:       ## supports: Scala
+    # use default config-file: ./scalastyle_config.xml
     thresholds:
       num-issues: 1000
