@@ -23,7 +23,8 @@ inspecode:
 
   misspell:         ## supports: All Languages
     options:
-      -i: DOUBLELIFT
+      -i:
+      - DOUBLELIT
     auto-fix: true
     thresholds:
       num-issues: 1000
