@@ -799,7 +799,7 @@ trait ReificationSupport { self: SymbolTable =>
     // undo desugaring done in gen.mkFor
     protected object UnFor {
       def unapply(tree: Tree): Option[(List[Tree], Tree)] = {
-        val interm = tree match {
+        val interim = tree match {
           case UnFlatMap(UnFilter(rhs, filters), UnClosure(pat, UnFor(rest, body))) =>
             Some(((pat, rhs), filters ::: rest, body))
           case UnForeach(UnFilter(rhs, filters), UnClosure(pat, UnFor(rest, body))) =>
