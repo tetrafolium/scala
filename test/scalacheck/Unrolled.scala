@@ -23,4 +23,3 @@ object UnrolledTest extends Properties("UnrolledBuffer") {
   }
 
 }
-

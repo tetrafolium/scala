@@ -20,9 +20,10 @@ import scala.tools.nsc.{Global, Settings}
 import scala.tools.partest.ASMConverters._
 
 trait BytecodeTesting extends ClearAfterClass {
+
   /**
-   * Overwrite to set additional compiler flags
-   */
+    * Overwrite to set additional compiler flags
+    */
   def compilerArgs = ""
 
   val compiler = cached("compiler", () => BytecodeTesting.newCompiler(extraArgs = compilerArgs))
@@ -34,23 +35,22 @@ class Compiler(val global: Global) {
   private var keptPerRunCaches: List[Clearable] = Nil
 
   /**
-   * Clear certain per-run caches before a compilation, instead of after. This allows inspecting
-   * their content after a compilation run.
-   */
+    * Clear certain per-run caches before a compilation, instead of after. This allows inspecting
+    * their content after a compilation run.
+    */
   def keepPerRunCachesAfterRun(caches: List[Clearable]): Unit = {
     caches foreach global.perRunCaches.unrecordCache
     keptPerRunCaches = caches
   }
 
-
   /**
-   * Get class nodes stored in the byteCodeRepository. The ones returned by compileClasses are not
-   * the same, these are created new from the classfile byte array. They are completely separate
-   * instances which cannot be used to look up methods / callsites in the callGraph hash maps for
-   * example.
-   * NOTE: This method only works if `global.genBCode.bTypes.byteCodeRepository.compilingClasses`
-   * was passed to [[keepPerRunCachesAfterRun]].
-   */
+    * Get class nodes stored in the byteCodeRepository. The ones returned by compileClasses are not
+    * the same, these are created new from the classfile byte array. They are completely separate
+    * instances which cannot be used to look up methods / callsites in the callGraph hash maps for
+    * example.
+    * NOTE: This method only works if `global.genBCode.bTypes.byteCodeRepository.compilingClasses`
+    * was passed to [[keepPerRunCachesAfterRun]].
+    */
   def compiledClassesFromCache = global.genBCode.postProcessor.byteCodeRepository.compilingClasses.valuesIterator.map(_._1).toList.sortBy(_.name)
 
   def resetOutput(): Unit = {
@@ -184,15 +184,18 @@ object BytecodeTesting {
   }
 
   /**
-   * Compile multiple Scala files separately into a single output directory.
-   *
-   * Note that a new compiler instance is created for compiling each file because symbols survive
-   * across runs. This makes separate compilation slower.
-   *
-   * The output directory is a physical directory, I have not figured out if / how it's possible to
-   * add a VirtualDirectory to the classpath of a compiler.
-   */
-  def compileToBytesSeparately(codes: List[String], extraArgs: String = "", allowMessage: StoreReporter#Info => Boolean = _ => false, afterEach: AbstractFile => Unit = _ => ()): List[(String, Array[Byte])] = {
+    * Compile multiple Scala files separately into a single output directory.
+    *
+    * Note that a new compiler instance is created for compiling each file because symbols survive
+    * across runs. This makes separate compilation slower.
+    *
+    * The output directory is a physical directory, I have not figured out if / how it's possible to
+    * add a VirtualDirectory to the classpath of a compiler.
+    */
+  def compileToBytesSeparately(codes: List[String],
+                               extraArgs: String = "",
+                               allowMessage: StoreReporter#Info => Boolean = _ => false,
+                               afterEach: AbstractFile => Unit = _ => ()): List[(String, Array[Byte])] = {
     val outDir = AbstractFile.getDirectory(TempDir.createTempDir())
     val outDirPath = outDir.canonicalPath
     val argsWithOutDir = extraArgs + s" -d $outDirPath -cp $outDirPath"
@@ -222,10 +225,13 @@ object BytecodeTesting {
 
   def assertSameSummary(method: Method, expected: List[Any]): Unit = assertSameSummary(method.instructions, expected)
   def assertSameSummary(actual: List[Instruction], expected: List[Any]): Unit = {
-    def expectedString = expected.map({
-      case s: String => s""""$s""""
-      case i: Int => opcodeToString(i, i)
-    }).mkString("List(", ", ", ")")
+    def expectedString =
+      expected
+        .map({
+          case s: String => s""""$s""""
+          case i: Int    => opcodeToString(i, i)
+        })
+        .mkString("List(", ", ", ")")
     assert(actual.summary == expected, s"\nFound   : ${actual.summaryText}\nExpected: $expectedString")
   }
 
@@ -238,7 +244,7 @@ object BytecodeTesting {
   def assertInvoke(l: List[Instruction], receiver: String, method: String): Unit = {
     assert(l.exists {
       case Invoke(_, `receiver`, `method`, _, _) => true
-      case _ => false
+      case _                                     => false
     }, l.stringLines)
   }
 
@@ -246,7 +252,7 @@ object BytecodeTesting {
   def assertDoesNotInvoke(l: List[Instruction], method: String): Unit = {
     assert(!l.exists {
       case i: Invoke => i.name == method
-      case _ => false
+      case _         => false
     }, l.stringLines)
   }
 
@@ -286,7 +292,7 @@ object BytecodeTesting {
         val (statics, nonStatics) = ms.partition(BytecodeUtils.isStaticMethod)
         (statics, nonStatics) match {
           case (List(staticMethod), List(_)) => m1 // prefer the static method of the pair if methods in traits
-          case _ => fail()
+          case _                             => fail()
         }
       case ms => fail()
     }
@@ -302,9 +308,9 @@ object BytecodeTesting {
     getMethod(c, name).instructions
 
   /**
-   * Instructions that match `query` when textified.
-   * If `query` starts with a `+`, the next instruction is returned.
-   */
+    * Instructions that match `query` when textified.
+    * If `query` starts with a `+`, the next instruction is returned.
+    */
   def findInstrs(method: MethodNode, query: String): List[AbstractInsnNode] = {
     val useNext = query(0) == '+'
     val instrPart = if (useNext) query.drop(1) else query
@@ -313,9 +319,9 @@ object BytecodeTesting {
   }
 
   /**
-   * Instruction that matches `query` when textified.
-   * If `query` starts with a `+`, the next instruction is returned.
-   */
+    * Instruction that matches `query` when textified.
+    * If `query` starts with a `+`, the next instruction is returned.
+    */
   def findInstr(method: MethodNode, query: String): AbstractInsnNode = {
     val List(i) = findInstrs(method, query)
     i

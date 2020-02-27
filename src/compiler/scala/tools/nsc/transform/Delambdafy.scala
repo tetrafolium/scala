@@ -48,7 +48,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
     */
   private def targetMethod(fun: Function): Symbol = fun match {
     case Function(_, Apply(target, _)) => target.symbol
-    case _ =>
+    case _                             =>
       // any other shape of Function is unexpected at this point
       abort(s"could not understand function with tree $fun")
   }
@@ -82,9 +82,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
       val allCapturedArgRefs = {
         // find which variables are free in the lambda because those are captures that need to be
         // passed into the constructor of the anonymous function class
-        val captureArgs = FreeVarTraverser.freeVarsOf(fun).iterator.map(capture =>
-          gen.mkAttributedRef(capture) setPos pos
-        ).toList
+        val captureArgs = FreeVarTraverser.freeVarsOf(fun).iterator.map(capture => gen.mkAttributedRef(capture) setPos pos).toList
 
         if (!hasSelfParam) captureArgs.filterNot(arg => isSelfParam(arg.symbol))
         else if (currentMethod.hasFlag(Flags.STATIC)) captureArgs
@@ -129,12 +127,11 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
       apply
     }
 
-
     private val boxingBridgeMethods = mutable.ArrayBuffer[Tree]()
 
     private def reboxValueClass(tp: Type) = tp match {
       case ErasedValueType(valueClazz, _) => TypeRef(NoPrefix, valueClazz, Nil)
-      case _ => tp
+      case _                              => tp
     }
 
     // exclude primitives and value classes, which need special boxing
@@ -169,12 +166,12 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         * We can use the target method as-is -- if not, we create a bridging one that uses the types closest
         * to the target method that still meet the above requirements.
         */
-      val resTpOk = (
-           samResultType =:= UnitTpe
+      val resTpOk = (samResultType =:= UnitTpe
         || functionResultType =:= samResultType
         || (isReferenceType(samResultType) && isReferenceType(functionResultType))) // yes, this is what the spec says -- no further correspondence required
-      if (resTpOk && (samParamTypes corresponds functionParamTypes){ (samParamTp, funParamTp) =>
-          funParamTp =:= samParamTp || (isReferenceType(funParamTp) && isReferenceType(samParamTp) && funParamTp <:< samParamTp) }) target
+      if (resTpOk && (samParamTypes corresponds functionParamTypes) { (samParamTp, funParamTp) =>
+            funParamTp =:= samParamTp || (isReferenceType(funParamTp) && isReferenceType(samParamTp) && funParamTp <:< samParamTp)
+          }) target
       else {
         // We have to construct a new lambda target that bridges to the one created by uncurry.
         // The bridge must satisfy the above invariants, while also minimizing adaptation on our end.
@@ -189,7 +186,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         // which means the function's parameter -- even if it expects a value class -- will need to be
         // boxed on the generic call to the sam method.
 
-        val bridgeParamTypes = map2(samParamTypes, functionParamTypes){ (samParamTp, funParamTp) =>
+        val bridgeParamTypes = map2(samParamTypes, functionParamTypes) { (samParamTp, funParamTp) =>
           if (isReferenceType(samParamTp) && funParamTp <:< samParamTp) funParamTp
           else samParamTp
         }
@@ -202,7 +199,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         import typeAdapter.{adaptToType, unboxValueClass}
 
         val targetParams = target.paramss.head
-        val numCaptures  = targetParams.length - functionParamTypes.length
+        val numCaptures = targetParams.length - functionParamTypes.length
         val (targetCapturedParams, targetFunctionParams) = targetParams.splitAt(numCaptures)
 
         val methSym = oldClass.newMethod(target.name.append("$adapted").toTermName, target.pos, target.flags | FINAL | ARTIFACT | STATIC)
@@ -220,7 +217,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
           val functionArgRefs =
             map3(bridgeFunctionParams, functionParamTypes, targetParams.drop(numCaptures)) { (bridgeParam, functionParamTp, targetParam) =>
               val bridgeParamRef = gen.mkAttributedRef(bridgeParam)
-              val targetParamTp  = targetParam.tpe
+              val targetParamTp = targetParam.tpe
 
               // TODO: can we simplify this to something like `adaptToType(adaptToType(bridgeParamRef, functionParamTp), targetParamTp)`?
               val unboxed =
@@ -239,14 +236,13 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
           gen.mkMethodCall(Select(gen.mkAttributedThis(oldClass), target), capturedArgRefs ::: functionArgRefs)
         }
 
-        val bridge = postErasure.newTransformer(unit).transform(DefDef(methSym, List(bridgeParams.map(ValDef(_))),
-          adaptToType(forwarderCall setType functionResultType, bridgeResultType))).asInstanceOf[DefDef]
+        val bridge =
+          postErasure.newTransformer(unit).transform(DefDef(methSym, List(bridgeParams.map(ValDef(_))), adaptToType(forwarderCall setType functionResultType, bridgeResultType))).asInstanceOf[DefDef]
 
         boxingBridgeMethods += bridge
         bridge.symbol
       }
     }
-
 
     private def transformFunction(originalFunction: Function): Tree = {
       val target = targetMethod(originalFunction)
@@ -259,8 +255,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         if (!isFunctionSymbol(funSym)) (funSym, false)
         else {
           val specializedName =
-            specializeTypes.specializedFunctionName(funSym,
-              exitingErasure(target.info.paramTypes).map(reboxValueClass) :+ reboxValueClass(exitingErasure(target.info.resultType))).toTypeName
+            specializeTypes.specializedFunctionName(funSym, exitingErasure(target.info.paramTypes).map(reboxValueClass) :+ reboxValueClass(exitingErasure(target.info.resultType))).toTypeName
 
           val isSpecialized = specializedName != funSym.name
           val functionalInterface =
@@ -268,14 +263,13 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
               // Unfortunately we still need to use custom functional interfaces for specialized functions so that the
               // unboxed apply method is left abstract for us to implement.
               currentRun.runDefinitions.Scala_Java8_CompatPackage.info.decl(specializedName.prepend("J"))
-            }
-            else FunctionClass(originalFunction.vparams.length)
+            } else FunctionClass(originalFunction.vparams.length)
 
           (functionalInterface, isSpecialized)
         }
 
       val (sam, synthCls) = originalFunction.attachments.get[SAMFunction] match {
-        case Some(SAMFunction(_, sam, synthCls)) => (sam,      synthCls)
+        case Some(SAMFunction(_, sam, synthCls)) => (sam, synthCls)
         case None                                => (NoSymbol, NoSymbol)
       }
       mkLambdaMetaFactoryCall(originalFunction, target, functionalInterface, sam, synthCls, isSpecialized)
@@ -331,7 +325,9 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
     override def traverse(tree: Tree) = {
       tree match {
         case Function(args, _) =>
-          args foreach {arg => declared += arg.symbol}
+          args foreach { arg =>
+            declared += arg.symbol
+          }
         case ValDef(_, _, _, _) =>
           declared += tree.symbol
         case _: Bind =>
@@ -377,12 +373,12 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         else {
           seen += symbol
           (thisReferringMethods contains symbol) ||
-            (liftedMethodReferences.contains(symbol) && liftedMethodReferences(symbol).exists(loop)) && {
-              // add it early to memoize
-              debuglog(s"$symbol indirectly refers to 'this'")
-              thisReferringMethods += symbol
-              true
-            }
+          (liftedMethodReferences.contains(symbol) && liftedMethodReferences(symbol).exists(loop)) && {
+            // add it early to memoize
+            debuglog(s"$symbol indirectly refers to 'this'")
+            thisReferringMethods += symbol
+            true
+          }
         }
       }
       loop(symbol)
@@ -399,7 +395,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
         currentMethod = tree.symbol
         tree.traverse(this)
         currentMethod = NoSymbol
-      case fun@Function(_, _) =>
+      case fun @ Function(_, _) =>
         // we don't drill into functions because at the beginning of this phase they will always refer to 'this'.
         // They'll be of the form {(args...) => this.anonfun(args...)}
         // but we do need to make note of the lifted body method in case it refers to 'this'
@@ -416,7 +412,7 @@ abstract class Delambdafy extends Transform with TypingTransformers with ast.Tre
           thisReferringMethods add currentMethod
         }
       case _: ClassDef if !tree.symbol.isTopLevel =>
-      case _: DefDef =>
+      case _: DefDef                              =>
       case _ =>
         tree.traverse(this)
     }

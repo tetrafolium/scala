@@ -33,8 +33,8 @@ trait AllocationTest {
     val expected = fn
 
     if (result.min != 0) {
-      result.allocations foreach {
-        x => println(s"allocation $x")
+      result.allocations foreach { x =>
+        println(s"allocation $x")
       }
       fail(s"allocating min = ${result.min}")
     }
@@ -51,7 +51,7 @@ trait AllocationTest {
       assertEquals(s"warmup at index $i $expected $actual", expected, actual)
     }
 
-   //test
+    //test
     val counts = new Array[Long](execution.executionCount)
     for (i <- 0 until execution.executionCount) {
       val before = allocationCounter.getThreadAllocatedBytes(id)

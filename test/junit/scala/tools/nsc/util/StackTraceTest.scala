@@ -1,4 +1,3 @@
-
 package scala.tools.nsc.util
 
 import scala.language.reflectiveCalls
@@ -15,14 +14,12 @@ trait Expecting {
   /*
   import org.expecty.Expecty
   final val expect = new Expecty
-  */
+ */
 }
-
-
 @RunWith(classOf[JUnit4])
 class StackTraceTest extends Expecting {
   // formerly an enum
-  val CausedBy   = "Caused by: "
+  val CausedBy = "Caused by: "
   val Suppressed = "Suppressed: "
 
   // throws
@@ -63,7 +60,7 @@ class StackTraceTest extends Expecting {
   def represser: String = repressed
 
   // evaluating s should throw, p trims stack trace, t is the test of resulting trace string
-  def probe(s: =>String)(p: StackTraceElement => Boolean)(t: String => Unit): Unit = {
+  def probe(s: => String)(p: StackTraceElement => Boolean)(t: String => Unit): Unit = {
     Try(s) recover { case e => e stackTracePrefixString p } match {
       case Success(s) => t(s)
       case Failure(e) => throw e
@@ -80,8 +77,8 @@ class StackTraceTest extends Expecting {
         //s contains "sbt.TestFramework"
         //res.last contains "java.lang.Thread"
       }
-      */
-      assert (res.length > 5)
+       */
+      assert(res.length > 5)
     }
   }
   @Test def showsOnlyPrefix() = probe(sample)(_.getMethodName == "sample") { s =>
@@ -90,8 +87,8 @@ class StackTraceTest extends Expecting {
     expect {
       res.length == 3   // summary + one frame + elision
     }
-    */
-    assert (res.length == 3)
+     */
+    assert(res.length == 3)
   }
   @Test def showsCause() = probe(resampler)(_.getMethodName != "resampler") { s =>
     val res = s.linesIterator.toList
@@ -100,9 +97,9 @@ class StackTraceTest extends Expecting {
       res.length == 6   // summary + one frame + elision, caused by + one frame + elision
       res exists (_ startsWith CausedBy.toString)
     }
-    */
-    assert (res.length == 6)
-    assert (res exists (_ startsWith CausedBy.toString))
+     */
+    assert(res.length == 6)
+    assert(res exists (_ startsWith CausedBy.toString))
   }
   @Test def showsWrappedExceptions() = probe(rewrapperer)(_.getMethodName != "rewrapperer") { s =>
     val res = s.linesIterator.toList
@@ -114,12 +111,12 @@ class StackTraceTest extends Expecting {
         case s if s startsWith CausedBy.toString => s
       }).size == 2
     }
-    */
-    assert (res.length == 9)
-    assert (res exists (_ startsWith CausedBy.toString))
-    assert ((res collect {
-        case s if s startsWith CausedBy.toString => s
-      }).size == 2)
+     */
+    assert(res.length == 9)
+    assert(res exists (_ startsWith CausedBy.toString))
+    assert((res collect {
+      case s if s startsWith CausedBy.toString => s
+    }).size == 2)
   }
   @Test def dontBlowOnCycle() = probe(insaner)(_.getMethodName != "insaner") { s =>
     val res = s.linesIterator.toList
@@ -128,13 +125,13 @@ class StackTraceTest extends Expecting {
       res.length == 7   // summary + one frame + elision times two with extra frame
       res exists (_ startsWith CausedBy.toString)
     }
-    */
-    assert (res.length == 7)
-    assert (res exists (_ startsWith CausedBy.toString))
+     */
+    assert(res.length == 7)
+    assert(res exists (_ startsWith CausedBy.toString))
   }
 
   /** Java 7, but shouldn't bomb on Java 6.
-   *
+    *
 java.lang.RuntimeException: My problem
   at scala.tools.nsc.util.StackTraceTest.repressed(StackTraceTest.scala:56)
   ... 27 elided
@@ -142,18 +139,18 @@ java.lang.RuntimeException: My problem
     at scala.tools.nsc.util.StackTraceTest.sample(StackTraceTest.scala:29)
     at scala.tools.nsc.util.StackTraceTest.repressed(StackTraceTest.scala:54)
     ... 27 more
-  */
+    */
   @Test def showsSuppressed() = probe(represser)(_.getMethodName != "represser") { s =>
     val res = s.linesIterator.toList
     if (suppressable) {
-      assert (res.length == 7)
-      assert (res exists (_.trim startsWith Suppressed.toString))
+      assert(res.length == 7)
+      assert(res exists (_.trim startsWith Suppressed.toString))
     }
-    /*
+  /*
     expect {
       res.length == 7
       res exists (_ startsWith "  " + Suppressed.toString)
     }
-    */
+   */
   }
 }

@@ -13,7 +13,7 @@
 package scala.annotation
 
 /**
- * This annotation configures how Scala prints two-parameter generic types.
+  * This annotation configures how Scala prints two-parameter generic types.
   *
   * By default, types with symbolic names are printed infix; while types without
   * them are printed using the regular generic type syntax.

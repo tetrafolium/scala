@@ -175,7 +175,7 @@ class BytecodeTest extends BytecodeTesting {
     assert((c1Clone.access | Opcodes.ACC_BRIDGE) != 0)
     assertSameCode(convertMethod(c1Clone), List(VarOp(ALOAD, 0), Invoke(INVOKEVIRTUAL, "C1", "clone", "()Ljava/lang/String;", false), Op(ARETURN)))
 
-    def iv(m: Method) = getInstructions(c1b, "f1").collect({case i: Invoke => i})
+    def iv(m: Method) = getInstructions(c1b, "f1").collect({ case i: Invoke => i })
     assertSameCode(iv(getMethod(c1b, "f1")), List(Invoke(INVOKEINTERFACE, "T", "clone", "()Ljava/lang/String;", true)))
     assertSameCode(iv(getMethod(c1b, "f2")), List(Invoke(INVOKEINTERFACE, "T", "clone", "()Ljava/lang/String;", true)))
     // invokeinterface T.clone in C1 is OK here because it is not an override of Object.clone (different siganture)
@@ -241,9 +241,11 @@ class BytecodeTest extends BytecodeTesting {
     // see comment in SpecializeTypes.forwardCtorCall
     val code = "case class C[@specialized(Int) T](_1: T)"
     val List(c, cMod, cSpec) = compileClasses(code)
-    assertSameSummary(getMethod(cSpec, "<init>"),
+    assertSameSummary(
+      getMethod(cSpec, "<init>"),
       // pass `null` to super constructor, no box-unbox, no Integer created
-      List(ALOAD, ILOAD, PUTFIELD, ALOAD, ACONST_NULL, "<init>", RETURN))
+      List(ALOAD, ILOAD, PUTFIELD, ALOAD, ACONST_NULL, "<init>", RETURN)
+    )
   }
 
   @Test
@@ -255,8 +257,7 @@ class BytecodeTest extends BytecodeTesting {
     val List(c1, _) = noForwardersCompiler.compileClasses(code)
     val List(c2, _) = compileClasses(code)
     assert(getMethods(c1, "f").isEmpty)
-    assertSameCode(getMethod(c2, "f"),
-      List(VarOp(ALOAD, 0), Invoke(INVOKESTATIC, "T", "f$", "(LT;)I", true), Op(IRETURN)))
+    assertSameCode(getMethod(c2, "f"), List(VarOp(ALOAD, 0), Invoke(INVOKESTATIC, "T", "f$", "(LT;)I", true), Op(IRETURN)))
   }
 
   @Test
@@ -335,7 +336,6 @@ class BytecodeTest extends BytecodeTesting {
   def sd210(): Unit = {
     val jCode = List("interface A { default int m() { return 1; } }" -> "A.java")
 
-
     // used to crash in the backend (scala/scala-dev#210) under `-Xmixin-force-forwarders:true`
     val code1 =
       """trait B1 extends A // called "B1" not "B" due to scala-dev#214
@@ -350,7 +350,6 @@ class BytecodeTest extends BytecodeTesting {
     val List(_, c1b) = compileClasses(code1, jCode)
     assert(getAsmMethods(c1b, "m").isEmpty) // no forwarder: it cannot be implemented because A is not a direct parent of C
 
-
     val code2 =
       """abstract class B { def m(): Int }
         |trait T extends B with A
@@ -361,7 +360,6 @@ class BytecodeTest extends BytecodeTesting {
     val err = "Unable to implement a mixin forwarder for method m in class C unless interface A is directly extended by class C"
     val cs = compileClasses(code2, jCode, allowMessage = _.msg contains err)
     assert(cs.isEmpty, cs.map(_.name))
-
 
     val code3 =
       """abstract class B { def m: Int }
@@ -374,7 +372,6 @@ class BytecodeTest extends BytecodeTesting {
     val ins3 = getMethod(c3, "m").instructions
     assert(ins3 contains Invoke(INVOKESPECIAL, "A", "m", "()I", true), ins3.stringLines)
 
-
     val code4 =
       """trait B { self: A => override def m = 2 }
         |class C extends A with B // forwarder, invokestatic B.m$
@@ -383,7 +380,6 @@ class BytecodeTest extends BytecodeTesting {
     val List(_, c4) = compileClasses(code4, jCode)
     val ins4 = getMethod(c4, "m").instructions
     assert(ins4 contains Invoke(INVOKESTATIC, "B", "m$", "(LB;)I", true), ins4.stringLines)
-
 
     // scala-only example
     val code5 =

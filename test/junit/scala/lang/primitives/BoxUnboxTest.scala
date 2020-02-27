@@ -67,7 +67,7 @@ class BoxUnboxTest extends RunTesting {
     val mp = new java.util.HashMap[Int, Int]
     val n9 = mp.get(0)
     assertEquals(n9, 0)
-    val n10 = mp.get(0) == null                    // scala/bug#602
+    val n10 = mp.get(0) == null // scala/bug#602
     assertThrows[AssertionError](assertFalse(n10)) // should not throw
 
     def f(a: Any) = "" + a
@@ -131,10 +131,11 @@ class BoxUnboxTest extends RunTesting {
     //Unit.unbox({eff(); b}); chk()
     //Unit.unbox({eff(); null}); chk()
     //assertThrows[ClassCastException](Unit.unbox({eff(); ""})); chk()
-    unboxing({eff(); b}); chk()
-    unboxing({eff(); null}); chk()
+    unboxing({ eff(); b }); chk()
+    unboxing({ eff(); null }); chk()
     assertThrows[ClassCastException](
-      try unboxing({eff(); ""}) catch { case t: java.lang.reflect.InvocationTargetException => throw t.getCause }
+      try unboxing({ eff(); "" })
+      catch { case t: java.lang.reflect.InvocationTargetException => throw t.getCause }
     ); chk()
 
     val n1 = null.asInstanceOf[Unit]
@@ -167,79 +168,78 @@ class BoxUnboxTest extends RunTesting {
     def npe(s: => String) = try { s; throw new Error() } catch { case _: NullPointerException => "npe" }
 
     val result =
-          f1(null.asInstanceOf[Int])  +
-          f1(  n1.asInstanceOf[Int])  +
-          f1(  n2.asInstanceOf[Int])  +
-          f1(  n3.asInstanceOf[Int])  +
-          f1(               n4[Int])  + // "null"
-      "-"                             +
-          f1(null.asInstanceOf[VCI])  +
-      npe(f1(  n1.asInstanceOf[VCI])) + // scala/bug#8097
-          f1(  n2.asInstanceOf[VCI])  +
-      npe(f1(  n3.asInstanceOf[VCI])) + // scala/bug#8097
-          f1(               n4[VCI])  + // "null"
-      "-"                             +
-          f1(null.asInstanceOf[Unit]) +
-          f1(  n1.asInstanceOf[Unit]) +
-          f1(  n2.asInstanceOf[Unit]) +
-          f1(  n3.asInstanceOf[Unit]) +
-          f1(               n4[Unit]) + // "null"
-      "-"                             +
-          f2(null.asInstanceOf[Int])  +
-          f2(  n1.asInstanceOf[Int])  +
-          f2(  n2.asInstanceOf[Int])  +
-          f2(  n3.asInstanceOf[Int])  +
-          f2(               n4[Int])  + // "null"
-      "-"                             +
-          f2(null.asInstanceOf[VCI])  +
-      npe(f2(  n1.asInstanceOf[VCI])) + // scala/bug#8097
-          f2(  n2.asInstanceOf[VCI])  +
-      npe(f2(  n3.asInstanceOf[VCI])) + // scala/bug#8097
-          f2(               n4[VCI])  + // "null"
-      "-"                             +
-          f2(null.asInstanceOf[Unit]) +
-          f2(  n1.asInstanceOf[Unit]) +
-          f2(  n2.asInstanceOf[Unit]) +
-          f2(  n3.asInstanceOf[Unit]) +
-          f2(               n4[Unit]) + // "null"
-      "-"                             +
-          f3(null.asInstanceOf[Int])  +
-          f3(  n1.asInstanceOf[Int])  +
-          f3(  n2.asInstanceOf[Int])  +
-          f3(  n3.asInstanceOf[Int])  +
-          f3(               n4[Int])  + // "null"
-      "-"                             +
-          f3(null.asInstanceOf[VCI])  +
-      npe(f3(  n1.asInstanceOf[VCI])) + // scala/bug#8097
-          f3(  n2.asInstanceOf[VCI])  +
-      npe(f3(  n3.asInstanceOf[VCI])) + // scala/bug#8097
-          f3(               n4[VCI])  + // "null"
-      "-"                             +
-          f3(null.asInstanceOf[Unit]) +
-          f3(  n1.asInstanceOf[Unit]) +
-          f3(  n2.asInstanceOf[Unit]) +
-          f3(  n3.asInstanceOf[Unit]) +
-          f3(               n4[Unit]) + // "null"
-      "-"                             +
-          f4(null.asInstanceOf[Int])  +
-          f4(  n1.asInstanceOf[Int])  +
-          f4(  n2.asInstanceOf[Int])  +
-          f4(  n3.asInstanceOf[Int])  +
-          f4(               n4[Int])  +
-      "-"                             +
-          f5(null.asInstanceOf[VCI])  +
-      npe(f5(  n1.asInstanceOf[VCI])) + // scala/bug#8097
-          f5(  n2.asInstanceOf[VCI])  +
-      npe(f5(  n3.asInstanceOf[VCI])) + // scala/bug#8097
-      npe(f5(               n4[VCI])) + // scala/bug#8097
-      "-"                             +
-          f6(null.asInstanceOf[Unit]) +
-          f6(  n1.asInstanceOf[Unit]) +
-          f6(  n2.asInstanceOf[Unit]) +
-          f6(  n3.asInstanceOf[Unit]) +
-          f6(               n4[Unit])   // "null"
-    assertEquals(result,
-      "0000null-0npe0npenull-()()()()null-0000null-0npe0npenull-()()()()null-0000null-0npe0npenull-()()()()null-00000-0npe0npenpe-()()()()null")
+      f1(null.asInstanceOf[Int]) +
+        f1(n1.asInstanceOf[Int]) +
+        f1(n2.asInstanceOf[Int]) +
+        f1(n3.asInstanceOf[Int]) +
+        f1(n4[Int]) + // "null"
+        "-" +
+        f1(null.asInstanceOf[VCI]) +
+        npe(f1(n1.asInstanceOf[VCI])) + // scala/bug#8097
+        f1(n2.asInstanceOf[VCI]) +
+        npe(f1(n3.asInstanceOf[VCI])) + // scala/bug#8097
+        f1(n4[VCI]) + // "null"
+        "-" +
+        f1(null.asInstanceOf[Unit]) +
+        f1(n1.asInstanceOf[Unit]) +
+        f1(n2.asInstanceOf[Unit]) +
+        f1(n3.asInstanceOf[Unit]) +
+        f1(n4[Unit]) + // "null"
+        "-" +
+        f2(null.asInstanceOf[Int]) +
+        f2(n1.asInstanceOf[Int]) +
+        f2(n2.asInstanceOf[Int]) +
+        f2(n3.asInstanceOf[Int]) +
+        f2(n4[Int]) + // "null"
+        "-" +
+        f2(null.asInstanceOf[VCI]) +
+        npe(f2(n1.asInstanceOf[VCI])) + // scala/bug#8097
+        f2(n2.asInstanceOf[VCI]) +
+        npe(f2(n3.asInstanceOf[VCI])) + // scala/bug#8097
+        f2(n4[VCI]) + // "null"
+        "-" +
+        f2(null.asInstanceOf[Unit]) +
+        f2(n1.asInstanceOf[Unit]) +
+        f2(n2.asInstanceOf[Unit]) +
+        f2(n3.asInstanceOf[Unit]) +
+        f2(n4[Unit]) + // "null"
+        "-" +
+        f3(null.asInstanceOf[Int]) +
+        f3(n1.asInstanceOf[Int]) +
+        f3(n2.asInstanceOf[Int]) +
+        f3(n3.asInstanceOf[Int]) +
+        f3(n4[Int]) + // "null"
+        "-" +
+        f3(null.asInstanceOf[VCI]) +
+        npe(f3(n1.asInstanceOf[VCI])) + // scala/bug#8097
+        f3(n2.asInstanceOf[VCI]) +
+        npe(f3(n3.asInstanceOf[VCI])) + // scala/bug#8097
+        f3(n4[VCI]) + // "null"
+        "-" +
+        f3(null.asInstanceOf[Unit]) +
+        f3(n1.asInstanceOf[Unit]) +
+        f3(n2.asInstanceOf[Unit]) +
+        f3(n3.asInstanceOf[Unit]) +
+        f3(n4[Unit]) + // "null"
+        "-" +
+        f4(null.asInstanceOf[Int]) +
+        f4(n1.asInstanceOf[Int]) +
+        f4(n2.asInstanceOf[Int]) +
+        f4(n3.asInstanceOf[Int]) +
+        f4(n4[Int]) +
+        "-" +
+        f5(null.asInstanceOf[VCI]) +
+        npe(f5(n1.asInstanceOf[VCI])) + // scala/bug#8097
+        f5(n2.asInstanceOf[VCI]) +
+        npe(f5(n3.asInstanceOf[VCI])) + // scala/bug#8097
+        npe(f5(n4[VCI])) + // scala/bug#8097
+        "-" +
+        f6(null.asInstanceOf[Unit]) +
+        f6(n1.asInstanceOf[Unit]) +
+        f6(n2.asInstanceOf[Unit]) +
+        f6(n3.asInstanceOf[Unit]) +
+        f6(n4[Unit]) // "null"
+    assertEquals(result, "0000null-0npe0npenull-()()()()null-0000null-0npe0npenull-()()()()null-0000null-0npe0npenull-()()()()null-00000-0npe0npenpe-()()()()null")
   }
 
 }

@@ -39,8 +39,7 @@ object Osgi {
     jarlist := false,
     bundle := Def.task {
       val cp = (products in Compile in packageBin).value
-      bundleTask(headers.value.toMap, jarlist.value, cp,
-        (artifactPath in (Compile, packageBin)).value, cp, streams.value)
+      bundleTask(headers.value.toMap, jarlist.value, cp, (artifactPath in (Compile, packageBin)).value, cp, streams.value)
     }.value,
     packagedArtifact in (Compile, packageBin) := (((artifact in (Compile, packageBin)).value, bundle.value)),
     // Also create OSGi source bundles:
@@ -53,8 +52,7 @@ object Osgi {
     Keys.`package` := bundle.value
   )
 
-  def bundleTask(headers: Map[String, String], jarlist: Boolean, fullClasspath: Seq[File], artifactPath: File,
-                 resourceDirectories: Seq[File], streams: TaskStreams): File = {
+  def bundleTask(headers: Map[String, String], jarlist: Boolean, fullClasspath: Seq[File], artifactPath: File, resourceDirectories: Seq[File], streams: TaskStreams): File = {
     val log = streams.log
     val builder = new Builder
     builder.setClasspath(fullClasspath.toArray)
@@ -65,7 +63,7 @@ object Osgi {
     def resourceDirectoryRef(f: File) = (if (f.isDirectory) "" else "@") + f.getAbsolutePath
 
     val includeRes = resourceDirectories.filter(_.exists).map(resourceDirectoryRef).mkString(",")
-    if(!includeRes.isEmpty) builder.setProperty(INCLUDERESOURCE, includeRes)
+    if (!includeRes.isEmpty) builder.setProperty(INCLUDERESOURCE, includeRes)
     builder.getProperties.asScala.foreach { case (k, v) => log.debug(s"bnd: $k: $v") }
     // builder.build is not thread-safe because it uses a static SimpleDateFormat.  This ensures
     // that all calls to builder.build are serialized.
