@@ -9,33 +9,7 @@ inspecode:
       --skip-lexical-errors:
       --minimum-tokens: 250
     machine:
-      cpu: 1.0
+      cpu: 0.75
     thresholds:
       num-issues: 1000
 
-  grep:             ## supports: All Languages
-    thresholds:
-      num-issues: 1000
-
-  jscpd:            ## supports: C C++ C# CoffeeScript CSS Go HTML Java JavaScript Kotlin Objective-C PHP Python Ruby Scala Swift TypeScript
-    thresholds:
-      num-issues: 1000
-
-  misspell:         ## supports: All Languages
-    options:
-      -i:
-      - doublelit
-    auto-fix: true
-    thresholds:
-      num-issues: 1000
-
-  scalafmt:         ## supports: Scala
-    # use default config-file: ./.scalafmt.conf
-    auto-fix: true
-    thresholds:
-      num-issues: 1000
-
-  scalastyle:       ## supports: Scala
-    # use default config-file: ./scalastyle_config.xml
-    thresholds:
-      num-issues: 1000
